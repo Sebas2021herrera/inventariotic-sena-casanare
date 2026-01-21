@@ -12,7 +12,9 @@ class Dispositivo extends Model
     'placa', 'serial', 'marca', 'modelo', 'categoria', 
     'estado_fisico', 'estado_logico', 'observaciones', 
     'responsable_id', 'ubicacion_id',
-    'propietario', 'funcion', 'en_intune' // <-- Nuevos campos
+    'propietario', 'funcion', 'en_intune', // <-- Nuevos campos
+    // Nuevos campos de Redes
+    'descripcion_tecnica', 'puertos', 'mac_address', 'ap_conectado_a', 'puerto_origen'
 ];
 
     public function responsable(): BelongsTo
