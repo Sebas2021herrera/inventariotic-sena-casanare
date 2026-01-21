@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Dispositivo;
+use App\Models\Responsable;
+use App\Models\Ubicacion;
+use App\Models\Especificacion;
+use App\Models\Periferico; // Asegúrate de importar el modelo
 use Illuminate\Http\Request;
 use App\Imports\InventarioSenaImport; // Esto le dice a Laravel dónde buscar la clase
 use Maatwebsite\Excel\Facades\Excel;
@@ -67,74 +71,101 @@ public function create()
 }
 
 public function store(Request $request)
-{
-    // 1. Validación estricta para campos críticos
-    $request->validate([
-        'placa' => 'required|unique:dispositivos,placa',
-        'cedula' => 'required',
-        'nombre_responsable' => 'required',
-        'sede' => 'required',
-        'ambiente' => 'required',
-    ]);
 
-    try {
-        DB::beginTransaction();
 
-        // 2. RESPONSABLE: Blindamos contra nulos en dependencia y cargo
-        $responsable = \App\Models\Responsable::updateOrCreate(
-            ['cedula' => $request->cedula],
-            [
-                'nombre' => $request->nombre_responsable,
-                'correo_institucional' => $request->correo_institucional ?? 'sin_correo@sena.edu.co',
-                'dependencia' => $request->dependencia ?? 'General', 
-                'cargo' => $request->cargo ?? 'N/A',
-                'tipo_funcionario' => $request->tipo_funcionario ?? 'Contratista',
-                'numero_de_celular' => $request->numero_de_celular ?? null,
-            ]
-        );
-
-        // 3. UBICACIÓN
-        $ubicacion = \App\Models\Ubicacion::firstOrCreate([
-            'sede' => $request->sede,
-            'bloque' => $request->bloque ?? 'N/A',
-            'ambiente' => $request->ambiente,
+    {
+        // 1. Validación con los nuevos campos institucionales
+        $request->validate([
+            'placa' => 'required|unique:dispositivos,placa',
+            'serial' => 'required',
+            'cedula' => 'required',
+            'nombre_responsable' => 'required',
+            'sede' => 'required',
+            'ambiente' => 'required',
         ]);
 
-        // 4. DISPOSITIVO
-        $dispositivo = \App\Models\Dispositivo::create([
-            'placa' => $request->placa,
-            'serial' => $request->serial,
-            'marca' => $request->marca ?? 'Genérico',
-            'modelo' => $request->modelo ?? 'Genérico',
-            'categoria' => $request->categoria ?? 'computo',
-            'estado_fisico' => $request->estado_fisico ?? 'Bueno',
-            'estado_logico' => $request->estado_logico ?? 'Bueno',
-            'observaciones' => $request->observaciones,
-            'responsable_id' => $responsable->id,
-            'ubicacion_id' => $ubicacion->id,
-        ]);
+        try {
+            DB::beginTransaction();
 
-        // 5. ESPECIFICACIONES: Todos estos pueden ser null o N/A
-        \App\Models\Especificacion::create([
-            'dispositivo_id' => $dispositivo->id,
-            'procesador' => $request->procesador ?? 'N/A',
-            'ram' => $request->ram ?? 'N/A',
-            'tipo_disco' => $request->tipo_disco ?? 'N/A',
-            'capacidad_disco' => $request->capacidad_disco ?? 'N/A',
-            'so' => $request->so ?? 'N/A',
-            'mac_address' => $request->mac_address ?? 'N/A',
-            'placa_monitor' => $request->placa_monitor ?? null,
-            'serial_cargador' => $request->serial_cargador ?? null,
-        ]);
+            // 2. RESPONSABLE: Actualizar o crear
+            $responsable = Responsable::updateOrCreate(
+                ['cedula' => $request->cedula],
+                [
+                    'nombre' => $request->nombre_responsable,
+                    'correo_institucional' => $request->correo_institucional ?? 'sin_correo@sena.edu.co',
+                    'dependencia' => $request->dependencia ?? 'General', 
+                    'cargo' => $request->cargo ?? 'N/A',
+                    'tipo_funcionario' => $request->tipo_funcionario ?? 'Contratista',
+                    'numero_de_celular' => $request->numero_de_celular,
+                ]
+            );
 
-        DB::commit();
-        return redirect()->route('dispositivos.index')->with('success', 'Equipo registrado correctamente.');
+            // 3. UBICACIÓN
+            $ubicacion = Ubicacion::firstOrCreate([
+                'sede' => $request->sede,
+                'bloque' => $request->bloque ?? 'N/A',
+                'ambiente' => $request->ambiente,
+            ]);
 
-    } catch (\Exception $e) {
-        DB::rollback();
-        return back()->withErrors(['error' => 'Error crítico: ' . $e->getMessage()])->withInput();
+            // 4. DISPOSITIVO: Incluyendo Propietario, Función e Intune
+            $dispositivo = Dispositivo::create([
+                'placa' => $request->placa,
+                'serial' => $request->serial,
+                'marca' => $request->marca ?? 'Genérico',
+                'modelo' => $request->modelo ?? 'Genérico',
+                'categoria' => $request->categoria ?? 'computo',
+                'estado_fisico' => $request->estado_fisico ?? 'BUENO',
+                'estado_logico' => $request->estado_logico ?? 'BUENO',
+                'propietario' => $request->propietario ?? 'SENA',
+                'funcion' => $request->funcion ?? 'FORMACION',
+                'en_intune' => $request->en_intune ?? 'NO',
+                'observaciones' => $request->observaciones,
+                'responsable_id' => $responsable->id,
+                'ubicacion_id' => $ubicacion->id,
+            ]);
+
+            // 5. ESPECIFICACIONES (Tabla relacionada)
+            Especificacion::create([
+                'dispositivo_id' => $dispositivo->id,
+                'procesador' => $request->procesador ?? 'N/A',
+                'ram' => $request->ram ?? 'N/A',
+                'tipo_disco' => $request->tipo_disco ?? 'N/A',
+                'capacidad_disco' => $request->capacidad_disco ?? 'N/A',
+                'so' => $request->so ?? 'N/A',
+                'mac_address' => $request->mac_address ?? 'N/A',
+            ]);
+
+            // 6. PERIFÉRICOS: Guardado dinámico del array enviado desde el formulario
+            if ($request->has('perifericos')) {
+                foreach ($request->perifericos as $tipo => $datos) {
+                    // Solo creamos el registro si el usuario escribió al menos la Placa o el Serial
+                    if (!empty($datos['placa']) || !empty($datos['serial'])) {
+                        Periferico::create([
+                            'dispositivo_id' => $dispositivo->id,
+                            'tipo' => $tipo, // Monitor, Teclado, Mouse, Cargador
+                            'placa' => $datos['placa'] ?? 'N/A',
+                            'serial' => $datos['serial'] ?? 'N/A',
+                            'marca' => $datos['marca'] ?? 'N/A',
+                            'modelo' => $datos['modelo'] ?? 'N/A',
+                            'estado' => 'BUENO'
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('dispositivos.index')
+                             ->with('success', "Equipo con placa {$dispositivo->placa} registrado exitosamente.");
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            // Retornamos el error específico para debug, pero podrías personalizarlo
+            return back()->withErrors(['error' => 'Error al guardar en base de datos: ' . $e->getMessage()])->withInput();
+        }
     }
-}
+
+
+
 public function descargarPlantilla()
 {
     return Excel::download(new PlantillaInventarioExport, 'plantilla_inventario_sena.xlsx');

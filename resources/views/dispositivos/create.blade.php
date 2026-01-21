@@ -65,15 +65,15 @@
                                 <div>
                                     <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo</label>
                                     <select id="tipo_funcionario" name="tipo_funcionario" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                                        <option value="Contratista">Contratista</option>
-                                        <option value="Planta">Planta</option>
-                                        <option value="Aprendiz">Aprendiz</option>
+                                        <option value="Contratista" {{ old('tipo_funcionario') == 'Contratista' ? 'selected' : '' }}>Contratista</option>
+                                        <option value="Planta" {{ old('tipo_funcionario') == 'Planta' ? 'selected' : '' }}>Planta</option>
+                                        <option value="Aprendiz" {{ old('tipo_funcionario') == 'Aprendiz' ? 'selected' : '' }}>Aprendiz</option>
                                     </select>
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Dependencia / Oficina</label>
-                                <input type="text" id="dependencia" name="dependencia" value="{{ old('dependencia') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" placeholder="Ej: Centro de Formación">
+                                <input type="text" id="dependencia" name="dependencia" value="{{ old('dependencia') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" placeholder="Ej: Oficina TIC">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cargo</label>
@@ -90,16 +90,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Sede *</label>
-                            <input type="text" 
-                                id="input-sede" 
-                                name="sede" 
-                                list="listado-sedes" 
-                                value="{{ old('sede') }}" 
-                                placeholder="Seleccione o escriba la sede..."
-                                class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-green-500" 
-                                required 
-                                autocomplete="off">
-                            
+                            <input type="text" id="input-sede" name="sede" list="listado-sedes" value="{{ old('sede') }}" placeholder="Seleccione o escriba la sede..." class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-green-500" required autocomplete="off">
                             <datalist id="listado-sedes">
                                 <option value="Yopal">
                                 <option value="Paz de Ariporo">
@@ -116,20 +107,20 @@
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ambiente / Aula *</label>
                                 <input type="text" id="input-ambiente" name="ambiente" list="listado-ambientes" value="{{ old('ambiente') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
-                                <datalist id="listado-ambientes">
-                                    </datalist>
+                                <datalist id="listado-ambientes"></datalist>
                             </div>
                         </div>
-                        <p id="msg-ubicacion" class="text-[9px] text-gray-400 italic">Escriba para ver sugerencias de lugares registrados.</p>
                     </div>
                 </div>
             </div>
 
             <div class="lg:col-span-2 space-y-6">
+                
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="flex items-center mb-6 text-[#39A900] font-black uppercase text-xs tracking-widest border-b pb-2">
-                        <i class="fas fa-desktop mr-2"></i> Identificación del Equipo
+                        <i class="fas fa-desktop mr-2"></i> Identificación y Clasificación
                     </div>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Placa SENA *</label>
@@ -139,6 +130,32 @@
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Serial de Fábrica *</label>
                             <input type="text" name="serial" value="{{ old('serial') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase" required>
                         </div>
+
+                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Propietario</label>
+                                <select name="propietario" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold">
+                                    <option value="SENA" {{ old('propietario') == 'SENA' ? 'selected' : '' }}>SENA</option>
+                                    <option value="TELEFONICA" {{ old('propietario') == 'TELEFONICA' ? 'selected' : '' }}>TELEFÓNICA</option>
+                                    <option value="OTRO" {{ old('propietario') == 'OTRO' ? 'selected' : '' }}>OTRO</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Función</label>
+                                <select name="funcion" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold">
+                                    <option value="FORMACION" {{ old('funcion') == 'FORMACION' ? 'selected' : '' }}>FORMACIÓN</option>
+                                    <option value="ADMINISTRATIVO" {{ old('funcion') == 'ADMINISTRATIVO' ? 'selected' : '' }}>ADMINISTRATIVO</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">¿Registrado en INTUNE?</label>
+                                <select name="en_intune" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold">
+                                    <option value="NO" {{ old('en_intune') == 'NO' ? 'selected' : '' }}>NO (Pendiente)</option>
+                                    <option value="SI" {{ old('en_intune') == 'SI' ? 'selected' : '' }}>SÍ (Registrado)</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Marca</label>
@@ -173,7 +190,28 @@
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="flex items-center mb-6 text-[#39A900] font-black uppercase text-xs tracking-widest border-b pb-2">
-                        <i class="fas fa-microchip mr-2"></i> Especificaciones Técnicas
+                        <i class="fas fa-microchip mr-2"></i> Periféricos (Si aplica)
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @foreach(['Monitor', 'Teclado', 'Mouse', 'Cargador'] as $periferico)
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase mb-3 flex items-center">
+                                <span class="w-2 h-2 bg-[#39A900] rounded-full mr-2"></span> {{ $periferico }}
+                            </h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" name="perifericos[{{ $periferico }}][placa]" placeholder="Placa" class="text-[10px] p-2 rounded-lg border-gray-200">
+                                <input type="text" name="perifericos[{{ $periferico }}][serial]" placeholder="Serial" class="text-[10px] p-2 rounded-lg border-gray-200">
+                                <input type="text" name="perifericos[{{ $periferico }}][marca]" placeholder="Marca" class="text-[10px] p-2 rounded-lg border-gray-200">
+                                <input type="text" name="perifericos[{{ $periferico }}][modelo]" placeholder="Modelo" class="text-[10px] p-2 rounded-lg border-gray-200">
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex items-center mb-6 text-[#39A900] font-black uppercase text-xs tracking-widest border-b pb-2">
+                        <i class="fas fa-server mr-2"></i> Especificaciones del Sistema
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
@@ -220,22 +258,11 @@
 </div>
 
 <script>
-/**
- * Busca un responsable por Cédula y llena los campos automáticamente
- */
 function buscarResponsable() {
     const cedula = document.getElementById('cedula').value;
     const msg = document.getElementById('msg-responsable');
-    
-    if (!cedula) {
-        msg.innerText = "Ingrese una cédula para buscar.";
-        msg.className = "text-[10px] mt-1 text-orange-500 font-bold";
-        return;
-    }
-
-    msg.innerText = "Consultando base de datos...";
-    msg.className = "text-[10px] mt-1 text-blue-500";
-
+    if (!cedula) { msg.innerText = "Ingrese una cédula."; return; }
+    msg.innerText = "Consultando...";
     fetch(`/responsables/buscar/${cedula}`)
         .then(response => response.json())
         .then(data => {
@@ -245,36 +272,13 @@ function buscarResponsable() {
                 document.getElementById('tipo_funcionario').value = data.tipo_funcionario || 'Contratista';
                 document.getElementById('dependencia').value = data.dependencia || '';
                 document.getElementById('cargo').value = data.cargo || '';
-                
-                msg.innerText = "¡Responsable encontrado! Datos cargados.";
+                msg.innerText = "Responsable encontrado.";
                 msg.className = "text-[10px] mt-1 text-green-600 font-black";
             } else {
-                msg.innerText = "No existe en el sistema. Ingrese los datos para crearlo.";
+                msg.innerText = "Nuevo responsable.";
                 msg.className = "text-[10px] mt-1 text-orange-600 font-bold";
-                
-                // Limpiar campos para nuevo registro pero mantener el foco
-                ['nombre_responsable', 'numero_de_celular', 'dependencia', 'cargo'].forEach(id => {
-                    document.getElementById(id).value = '';
-                });
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            msg.innerText = "Error de conexión con el servidor.";
-            msg.className = "text-[10px] mt-1 text-red-600";
         });
 }
-
-/**
- * Escuchador para Sedes: Podrías añadir una ruta similar para Ambientes 
- * si quieres que la lista de ambientes cambie según la sede seleccionada.
- */
-document.getElementById('input-sede').addEventListener('change', function() {
-    const sede = this.value;
-    const datalistAmbientes = document.getElementById('listado-ambientes');
-    
-    // Aquí puedes hacer un fetch similar a buscar ambientes por sede
-    // fetch(`/sedes/ambientes/${sede}`)...
-});
 </script>
 @endsection
