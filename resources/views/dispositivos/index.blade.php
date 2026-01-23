@@ -155,6 +155,12 @@
                                 <a href="{{ route('dispositivos.show', $dispositivo) }}" class="text-blue-500 hover:text-blue-700 transition" title="Ver detalles">
                                     <i class="fas fa-eye text-lg"></i>
                                 </a>
+
+                                <a href="{{ route('dispositivos.edit', $dispositivo) }}" 
+                                        class="p-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-600 hover:text-white transition shadow-sm"
+                                        title="Editar equipo">
+                                        <i class="fas fa-pen text-sm"></i>
+                                 </a>
                                 <form action="{{ route('dispositivos.destroy', $dispositivo) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Eliminar equipo?');">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-500 hover:text-red-700 transition">

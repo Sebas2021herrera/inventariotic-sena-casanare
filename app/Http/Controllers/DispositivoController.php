@@ -189,4 +189,115 @@ public function destroy(Dispositivo $dispositivo)
     }
 }
 
+public function edit(Dispositivo $dispositivo)
+{
+    // Cargamos las relaciones para que el formulario tenga la data
+    $dispositivo->load(['responsable', 'ubicacion', 'especificaciones', 'perifericos']);
+    return view('dispositivos.edit', compact('dispositivo'));
+}
+
+public function update(Request $request, Dispositivo $dispositivo)
+{
+    // 1. VALIDACIÓN
+    // Importante: En 'placa' permitimos que sea la misma del dispositivo actual ($dispositivo->id)
+    $request->validate([
+        'placa' => 'required|unique:dispositivos,placa,' . $dispositivo->id,
+        'serial' => 'required',
+        'cedula' => 'required',
+        'nombre_responsable' => 'required',
+        'sede' => 'required',
+        'ambiente' => 'required',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        // 2. ACTUALIZAR O ASIGNAR NUEVO RESPONSABLE
+        $responsable = Responsable::updateOrCreate(
+            ['cedula' => $request->cedula],
+            [
+                'nombre' => $request->nombre_responsable,
+                'correo_institucional' => $request->correo_institucional ?? 'sin_correo@sena.edu.co',
+                'dependencia' => $request->dependencia ?? 'General',
+                'cargo' => $request->cargo ?? 'N/A',
+                'tipo_funcionario' => $request->tipo_funcionario ?? 'Contratista',
+                'numero_de_celular' => $request->numero_de_celular,
+            ]
+        );
+
+        // 3. ACTUALIZAR UBICACIÓN
+        $ubicacion = Ubicacion::firstOrCreate([
+            'sede' => $request->sede,
+            'bloque' => $request->bloque ?? 'N/A',
+            'ambiente' => $request->ambiente,
+        ]);
+
+        // 4. ACTUALIZAR DATOS BÁSICOS DEL DISPOSITIVO
+        $dispositivo->update([
+            'placa' => $request->placa,
+            'serial' => $request->serial,
+            'marca' => $request->marca,
+            'modelo' => $request->modelo,
+            'categoria' => $request->categoria,
+            'estado_fisico' => $request->estado_fisico,
+            'propietario' => $request->propietario,
+            'funcion' => $request->funcion,
+            'en_intune' => $request->en_intune,
+            'observaciones' => $request->observaciones,
+            'responsable_id' => $responsable->id,
+            'ubicacion_id' => $ubicacion->id,
+        ]);
+
+        // 5. ACTUALIZAR ESPECIFICACIONES (Relación hasOne)
+        // Usamos updateOrCreate por si el equipo no tenía especificaciones previas
+        $dispositivo->especificaciones()->updateOrCreate(
+            ['dispositivo_id' => $dispositivo->id],
+            [
+                'procesador' => $request->procesador ?? 'N/A',
+                'ram' => $request->ram ?? 'N/A',
+                'tipo_disco' => $request->tipo_disco ?? 'N/A',
+                'capacidad_disco' => $request->capacidad_disco ?? 'N/A',
+                'so' => $request->so ?? 'N/A',
+                'mac_address' => $request->mac_address ?? 'N/A',
+            ]
+        );
+
+        // 6. ACTUALIZAR PERIFÉRICOS (Relación hasMany)
+        if ($request->has('perifericos')) {
+            foreach ($request->perifericos as $tipo => $datos) {
+                if (!empty($datos['placa']) || !empty($datos['serial'])) {
+                    $dispositivo->perifericos()->updateOrCreate(
+                        ['tipo' => $tipo], // Busca por tipo (Monitor, Teclado, etc.) para este equipo
+                        [
+                            'placa' => $datos['placa'] ?? 'N/A',
+                            'serial' => $datos['serial'] ?? 'N/A',
+                            'estado' => 'BUENO'
+                        ]
+                    );
+                }
+            }
+        }
+
+        DB::commit();
+        
+        return redirect()->route('dispositivos.show', $dispositivo)
+                         ->with('success', "Equipo de la Regional Casanare actualizado con éxito.");
+
+    } catch (\Exception $e) {
+        DB::rollback();
+        return back()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()])->withInput();
+    }
+}
+
+public function verificarPlaca($placa)
+{
+    // Buscamos si la placa ya existe en la tabla dispositivos
+    $existe = \App\Models\Dispositivo::where('placa', $placa)->exists();
+    
+    return response()->json(['exists' => $existe]);
+}
+
+
+
+
 }

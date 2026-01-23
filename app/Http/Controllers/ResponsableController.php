@@ -72,4 +72,11 @@ class ResponsableController extends Controller
             ->route('responsables.index')
             ->with('success', 'Responsable eliminado correctamente');
     }
+    public function buscar($cedula)
+{
+    $responsable = Responsable::where('cedula', $cedula)->first();
+    return response()->json($responsable);
+}
+
+
 }

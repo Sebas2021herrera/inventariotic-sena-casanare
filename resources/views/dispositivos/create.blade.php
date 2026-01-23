@@ -31,45 +31,51 @@
     <form action="{{ route('dispositivos.store') }}" method="POST" id="form-inventario">
         @csrf
 
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <div class="lg:col-span-1 space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
-                    <div class="flex items-center mb-6 text-[#39A900] font-black uppercase text-xs tracking-widest border-b pb-2">
-                        <i class="fas fa-user-tie mr-2"></i> Datos del Responsable
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cédula / ID *</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="cedula" name="cedula" value="{{ old('cedula') }}" class="flex-1 bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-green-500 transition" required>
-                                <button type="button" onclick="buscarResponsable()" class="bg-blue-600 text-white px-4 rounded-xl hover:bg-blue-700 transition">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Nombre Completo *</label>
-                            <input type="text" id="nombre_responsable" name="nombre_responsable" value="{{ old('nombre_responsable') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Celular</label>
-                                <input type="text" id="numero_de_celular" name="numero_de_celular" value="{{ old('numero_de_celular') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo</label>
-                                <select id="tipo_funcionario" name="tipo_funcionario" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                                    <option value="Contratista">Contratista</option>
-                                    <option value="Planta">Planta</option>
-                                    <option value="Aprendiz">Aprendiz</option>
-                                </select>
-                            </div>
-                        </div>
-                        <input type="text" id="dependencia" name="dependencia" placeholder="Dependencia" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                        <input type="text" id="cargo" name="cargo" placeholder="Cargo" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                    </div>
+                <div class="flex items-center mb-6 text-[#39A900] font-black uppercase text-xs tracking-widest border-b pb-2">
+                    <i class="fas fa-user-tie mr-2"></i> Datos del Responsable
                 </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cédula / ID *</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="cedula" name="cedula" value="{{ old('cedula') }}" class="flex-1 bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-green-500 transition" required>
+                            <button type="button" onclick="buscarResponsable()" class="bg-blue-600 text-white px-4 rounded-xl hover:bg-blue-700 transition">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <p id="msj-responsable" class="text-[10px] font-bold mt-2 hidden italic uppercase tracking-tighter"></p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Nombre Completo *</label>
+                        <input type="text" id="nombre_responsable" name="nombre_responsable" value="{{ old('nombre_responsable') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Celular</label>
+                            <input type="text" id="numero_de_celular" name="numero_de_celular" value="{{ old('numero_de_celular') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo</label>
+                            <select id="tipo_funcionario" name="tipo_funcionario" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                <option value="Contratista">Contratista</option>
+                                <option value="Planta">Planta</option>
+                                <option value="Aprendiz">Aprendiz</option>
+                            </select>
+                        </div>
+        </div>
+
+        <input type="text" id="dependencia" name="dependencia" placeholder="Dependencia" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+        <input type="text" id="cargo" name="cargo" placeholder="Cargo" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+    </div>
+
+</div>
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="flex items-center mb-6 text-[#39A900] font-black uppercase text-xs tracking-widest border-b pb-2">
@@ -90,7 +96,7 @@
 
             <div class="lg:col-span-2 space-y-6">
                 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div id="card-identificacion" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 transition-all duration-500">
                     <div class="flex items-center mb-6 text-[#39A900] font-black uppercase text-xs tracking-widest border-b pb-2">
                         <i class="fas fa-desktop mr-2"></i> Identificación y Clasificación
                     </div>
@@ -98,17 +104,20 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Placa SENA *</label>
-                            <input type="text" name="placa" value="{{ old('placa') }}" class="w-full bg-white border-[#39A900] border-2 rounded-xl p-3 font-black text-xl text-[#39A900] shadow-inner" required>
+                            <input type="text" id="input-placa" name="placa" value="{{ old('placa') }}" 
+                                oninput="verificarPlacaRealTime()" 
+                               class="w-full bg-white border-[#39A900] border rounded-xl p-3 font-bold text-[#39A900] outline-none transition-all"  placeholder="Ej: 95191020321" required>
+                            <p id="msj-placa" class="text-[10px] font-bold mt-2 hidden italic uppercase tracking-tighter"></p>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Serial de Fábrica *</label>
-                            <input type="text" name="serial" value="{{ old('serial') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase" required>
+                            <input type="text" name="serial" value="{{ old('serial') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase outline-none focus:bg-white transition" required>
                         </div>
 
                         <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Propietario</label>
-                                <select name="propietario" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold">
+                                <select name="propietario" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold outline-none">
                                     <option value="SENA">SENA</option>
                                     <option value="TELEFONICA">TELEFÓNICA</option>
                                     <option value="OTRO">OTRO</option>
@@ -116,14 +125,14 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Función</label>
-                                <select name="funcion" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold">
+                                <select name="funcion" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold outline-none">
                                     <option value="FORMACION">FORMACIÓN</option>
                                     <option value="ADMINISTRATIVO">ADMINISTRATIVO</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">¿INTUNE?</label>
-                                <select name="en_intune" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold">
+                                <select name="en_intune" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold outline-none">
                                     <option value="NO">NO</option>
                                     <option value="SI">SI</option>
                                 </select>
@@ -133,18 +142,18 @@
                         <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Marca</label>
-                                <input type="text" name="marca" value="{{ old('marca') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                <input type="text" name="marca" value="{{ old('marca') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 outline-none focus:bg-white transition">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Modelo</label>
-                                <input type="text" name="modelo" value="{{ old('modelo') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                <input type="text" name="modelo" value="{{ old('modelo') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 outline-none focus:bg-white transition">
                             </div>
                         </div>
 
                         <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría</label>
-                                <select name="categoria" id="categoria-select" onchange="toggleSecciones()" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold text-[#39A900]">
+                                <select name="categoria" id="categoria-select" onchange="toggleSecciones()" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold text-[#39A900] outline-none">
                                     <option value="computo">Computadores</option>
                                     <option value="conectividad">Redes / Conectividad</option>
                                     <option value="impresoras">Impresoras / Escáner</option>
@@ -152,7 +161,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Estado Físico</label>
-                                <select name="estado_fisico" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold">
+                                <select name="estado_fisico" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold outline-none">
                                     <option value="Bueno" class="text-green-600">Bueno</option>
                                     <option value="Regular" class="text-yellow-600">Regular</option>
                                     <option value="Malo" class="text-red-600">Malo</option>
@@ -161,6 +170,8 @@
                         </div>
                     </div>
                 </div>
+
+
 
                 <div id="seccion-computo" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="flex items-center mb-6 text-[#39A900] font-black uppercase text-xs tracking-widest border-b pb-2">
@@ -259,6 +270,9 @@
                 </div>
             </div>
         </div>
+
+
+
     </form>
 </div>
 
@@ -286,20 +300,83 @@
     // Ejecutar al cargar para validar el estado inicial
     window.onload = toggleSecciones;
 
-    function buscarResponsable() {
-        const cedula = document.getElementById('cedula').value;
-        if (!cedula) return;
-        fetch(`/responsables/buscar/${cedula}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.id) {
-                    document.getElementById('nombre_responsable').value = data.nombre;
-                    document.getElementById('numero_de_celular').value = data.numero_de_celular;
-                    document.getElementById('tipo_funcionario').value = data.tipo_funcionario;
-                    document.getElementById('dependencia').value = data.dependencia;
-                    document.getElementById('cargo').value = data.cargo;
-                }
-            });
+ function buscarResponsable() {
+    const cedula = document.getElementById('cedula').value;
+    const msj = document.getElementById('msj-responsable');
+    
+    // Limpiamos mensajes previos y campos
+    msj.classList.add('hidden');
+    msj.innerText = '';
+
+    if (!cedula) return;
+
+    // Prefijo GITIC incluido
+    fetch(`/gitic/responsables/buscar/${cedula}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.id) {
+                // EXITO: Llenamos campos
+                document.getElementById('nombre_responsable').value = data.nombre;
+                document.getElementById('numero_de_celular').value = data.numero_de_celular;
+                document.getElementById('tipo_funcionario').value = data.tipo_funcionario;
+                document.getElementById('dependencia').value = data.dependencia;
+                document.getElementById('cargo').value = data.cargo;
+
+                // Aviso visual de éxito
+                msj.innerText = "✓ Responsable encontrado";
+                msj.className = "text-[10px] font-bold mt-2 text-green-600 block italic";
+            } else {
+                // ERROR: No existe
+                msj.innerText = "✗ El número de identificación no existe en la base de datos";
+                msj.className = "text-[10px] font-bold mt-2 text-red-500 block italic";
+                
+                // Limpiar campos de nombre por si acaso
+                document.getElementById('nombre_responsable').value = '';
+            }
+        })
+        .catch(error => {
+            msj.innerText = "⚠ Error de conexión con GITIC";
+            msj.className = "text-[10px] font-bold mt-2 text-orange-500 block";
+            console.error(error);
+        });
+}
+
+function verificarPlacaRealTime() {
+    const placa = document.getElementById('input-placa').value;
+    const msj = document.getElementById('msj-placa');
+    const card = document.getElementById('card-identificacion');
+    const input = document.getElementById('input-placa');
+
+    // Si el técnico borra la placa, reseteamos el visual
+    if (placa.length < 1) {
+        msj.classList.add('hidden');
+        card.classList.remove('border-red-500', 'border-green-500', 'ring-4', 'ring-red-50', 'ring-green-50');
+        input.classList.replace('text-red-600', 'text-[#39A900]');
+        return;
     }
+
+    // Ruta absoluta con prefijo /gitic
+    fetch(`/gitic/dispositivos/verificar-placa/${placa}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.exists) {
+                // SEMÁFORO ROJO: Placa Duplicada
+                msj.innerText = "✗ Esta placa ya está registrada en el inventario";
+                msj.className = "text-[10px] font-bold mt-2 text-red-500 block italic uppercase tracking-tighter";
+                card.classList.add('border-red-500', 'ring-4', 'ring-red-50');
+                card.classList.remove('border-green-500', 'ring-green-50');
+                input.classList.replace('text-[#39A900]', 'text-red-600');
+            } else {
+                // SEMÁFORO VERDE: Placa Disponible
+                msj.innerText = "✓ Placa disponible para registro";
+                msj.className = "text-[10px] font-bold mt-2 text-green-600 block italic uppercase tracking-tighter";
+                card.classList.add('border-green-500', 'ring-4', 'ring-green-50');
+                card.classList.remove('border-red-500', 'ring-red-50');
+                input.classList.replace('text-red-600', 'text-[#39A900]');
+            }
+        })
+        .catch(err => console.error("Error de conexión GITIC:", err));
+}
+
 </script>
 @endsection

@@ -7,10 +7,13 @@
             <i class="fas fa-arrow-left mr-2"></i> Volver al listado
         </a>
         <div class="flex gap-2">
-            <button onclick="window.print()" class="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-xl font-bold hover:bg-gray-50 transition">
-                <i class="fas fa-print mr-1"></i> Imprimir Ficha
-            </button>
-        </div>
+    <a href="{{ route('dispositivos.edit', $dispositivo) }}" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-blue-700 transition flex items-center">
+        <i class="fas fa-edit mr-2"></i> Editar Equipo
+    </a>
+    <button onclick="window.print()" class="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-xl font-bold hover:bg-gray-50 transition">
+        <i class="fas fa-print mr-1"></i> Imprimir Ficha
+    </button>
+</div>
     </div>
 
     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
