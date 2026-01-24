@@ -59,7 +59,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Celular</label>
-                            <input type="text" id="numero_de_celular" name="numero_de_celular" value="{{ old('numero_de_celular') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                            <input type="text" id="numero_de_celular" name="numero_de_celular" value="{{ old('numero_de_celular') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" placeholder="">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo</label>
@@ -67,12 +67,21 @@
                                 <option value="Contratista">Contratista</option>
                                 <option value="Planta">Planta</option>
                                 <option value="Aprendiz">Aprendiz</option>
+                                <option value="Aprendiz">Externo</option>
                             </select>
                         </div>
         </div>
 
-        <input type="text" id="dependencia" name="dependencia" placeholder="Dependencia" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-        <input type="text" id="cargo" name="cargo" placeholder="Cargo" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Dependencia</label>
+                    <input type="text" id="dependencia" name="dependencia" placeholder="Bienestar, Contratación, etc.." class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cargo</label>
+                  <input type="text" id="cargo" name="cargo" placeholder="Apoyo,Instructor,Evaluador, etc.." class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                </div>
+
     </div>
 
 </div>
@@ -332,6 +341,10 @@
                 
                 // Limpiar campos de nombre por si acaso
                 document.getElementById('nombre_responsable').value = '';
+                document.getElementById('numero_de_celular').value = '';
+                document.getElementById('tipo_funcionario').value = '';
+                 document.getElementById('dependencia').value = '';
+                  document.getElementById('cargo').value = '';
             }
         })
         .catch(error => {
