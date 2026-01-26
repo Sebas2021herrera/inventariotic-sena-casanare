@@ -5,35 +5,30 @@ use App\Http\Controllers\DispositivoController;
 use App\Http\Controllers\ResponsableController;
 use App\Http\Controllers\AuthController;
 
-// Redirección externa: si alguien entra a dominio.com/ lo mandamos a /gitic
+// 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
-    return redirect('/gitic');
+    return auth()->check() 
+        ? redirect()->route('dispositivos.index') 
+        : redirect()->route('login');
 });
 
-Route::prefix('gitic')->group(function () {
+// 2. RUTAS DE AUTENTICACIÓN (Sin prefijo gitic porque Apache ya lo da)
+Route::get('login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('login', [AuthController::class, 'login']);
+Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Rutas de Autenticación
-    Route::get('login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+// 3. RUTAS PROTEGIDAS
+Route::middleware(['auth'])->group(function () {
+    
+    // Recursos principales
+    Route::resource('dispositivos', DispositivoController::class);
+    Route::resource('responsables', ResponsableController::class);
+    
+    // Funcionalidades de Inventario SENA
+    Route::post('importar-inventario', [DispositivoController::class, 'importar'])->name('dispositivos.importar');
+    Route::get('descargar-plantilla', [DispositivoController::class, 'descargarPlantilla'])->name('dispositivos.plantilla');
 
-    // Rutas Protegidas
-    Route::middleware(['auth'])->group(function () {
-        
-        // Redirección interna: de /gitic a /gitic/dispositivos
-        Route::get('/', function () {
-            return redirect()->route('dispositivos.index');
-        });
-
-        Route::resource('dispositivos', DispositivoController::class);
-        Route::resource('responsables', ResponsableController::class);
-        
-        // Funcionalidades adicionales
-        Route::post('importar-inventario', [DispositivoController::class, 'importar'])->name('dispositivos.importar');
-        Route::get('descargar-plantilla', [DispositivoController::class, 'descargarPlantilla'])->name('dispositivos.plantilla');
-
-        Route::get('/responsables/buscar/{cedula}', [ResponsableController::class, 'buscar'])->name('responsables.buscar');
-        // Verificación de placa en tiempo real
-        Route::get('/dispositivos/verificar-placa/{placa}', [DispositivoController::class, 'verificarPlaca'])->name('dispositivos.verificar');
-    });
+    // Búsquedas dinámicas
+    Route::get('/responsables/buscar/{cedula}', [ResponsableController::class, 'buscar'])->name('responsables.buscar');
+    Route::get('/dispositivos/verificar-placa/{placa}', [DispositivoController::class, 'verificarPlaca'])->name('dispositivos.verificar');
 });
