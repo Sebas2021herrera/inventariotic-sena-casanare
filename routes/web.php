@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DispositivoController;
 use App\Http\Controllers\ResponsableController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MantenimientoController;
 
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
@@ -23,6 +24,9 @@ Route::middleware(['auth'])->group(function () {
     // Recursos principales
     Route::resource('dispositivos', DispositivoController::class);
     Route::resource('responsables', ResponsableController::class);
+
+    // 2. ESTA LÍNEA ES LA QUE CREA LA RUTA 'mantenimientos.create'
+    Route::resource('mantenimientos', MantenimientoController::class);
     
     // Funcionalidades de Inventario SENA
     Route::post('importar-inventario', [DispositivoController::class, 'importar'])->name('dispositivos.importar');

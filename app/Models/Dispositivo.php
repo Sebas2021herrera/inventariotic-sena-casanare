@@ -36,4 +36,9 @@ class Dispositivo extends Model
     {
         return $this->hasMany(Periferico::class);
     }
+
+    public function mantenimientos()
+{
+    return $this->hasMany(Mantenimiento::class);
+}
 }

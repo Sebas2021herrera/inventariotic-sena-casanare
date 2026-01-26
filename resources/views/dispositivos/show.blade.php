@@ -172,4 +172,65 @@
         @endif
     </div>
 </div>
+
+<div class="mt-8 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <div>
+                <h3 class="font-black text-gray-800 uppercase text-sm tracking-tighter flex items-center">
+                    <i class="fas fa-tools mr-2 text-[#39A900]"></i> 
+                    Hoja de Vida: Historial de Mantenimientos
+                </h3>
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Registros preventivos y correctivos del equipo</p>
+            </div>
+            <a href="{{ route('mantenimientos.create', ['dispositivo_id' => $dispositivo->id]) }}" 
+               class="bg-[#39A900] text-white px-4 py-2 rounded-xl text-xs font-black hover:bg-[#2d8500] transition shadow-lg flex items-center">
+                <i class="fas fa-plus-circle mr-2"></i> REGISTRAR MANTENIMIENTO
+            </a>
+        </div>
+
+        <div class="p-0">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100/50">
+                        <th class="p-4 text-[9px] font-black text-gray-400 uppercase">Fecha</th>
+                        <th class="p-4 text-[9px] font-black text-gray-400 uppercase">Tipo</th>
+                        <th class="p-4 text-[9px] font-black text-gray-400 uppercase">Técnico</th>
+                        <th class="p-4 text-[9px] font-black text-gray-400 uppercase">Tarea Realizada</th>
+                        <th class="p-4 text-[9px] font-black text-gray-400 uppercase text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-sm">
+                    @forelse($dispositivo->mantenimientos->sortByDesc('fecha') as $mtto)
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-4 font-bold text-gray-700 italic">{{ \Carbon\Carbon::parse($mtto->fecha)->format('d/m/Y') }}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase {{ $mtto->tipo == 'Correctivo' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-[#39A900]' }}">
+                                {{ $mtto->tipo }}
+                            </span>
+                        </td>
+                        <td class="p-4 text-gray-600 font-medium">{{ $mtto->tecnico_encargado }}</td>
+                        <td class="p-4 text-gray-500 max-w-xs truncate">{{ $mtto->tareas_realizadas }}</td>
+                        <td class="p-4 text-right">
+                            <div class="flex justify-end gap-2">
+                                <a href="{{ route('mantenimientos.edit', $mtto) }}" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></a>
+                                <form action="{{ route('mantenimientos.destroy', $mtto) }}" method="POST" onsubmit="return confirm('¿Eliminar este registro?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="p-12 text-center">
+                            <i class="fas fa-clipboard-check text-4xl text-gray-200 mb-3 block"></i>
+                            <p class="text-gray-400 italic text-sm">Este equipo no tiene mantenimientos registrados.</p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 @endsection
