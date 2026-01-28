@@ -11,10 +11,11 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'Administrador GITIC',
-            'email' => 'admin@sena.edu.co',
+            'name' => 'Alexandra Vargas',
+            'email' => 'avargast@sena.edu.co',
             'password' => Hash::make('S3n@yopal'), // Usa una clave robusta
             'email_verified_at' => now(),
+            
         ]);
     }
 }

@@ -13,29 +13,45 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use App\Exports\PlantillaInventarioExport;
 
+
 class DispositivoController extends Controller
 {
-  public function index()
-{
-    // Consultas robustas que ignoran mayúsculas/minúsculas y espacios
-    $stats = [
-        'total' => \App\Models\Dispositivo::count(),
-        
-        // Usamos ILIKE para que ignore si es BUENO, bueno o Bueno
-        'buenos' => \App\Models\Dispositivo::where('estado_fisico', 'ILIKE', 'Bueno%')->count(),
-        
-        // Contamos como novedades todo lo que NO sea "Bueno"
-        'criticos' => \App\Models\Dispositivo::where('estado_fisico', 'NOT ILIKE', 'Bueno%')->count(),
-        
-        'sedes' => \App\Models\Ubicacion::distinct('sede')->count(),
-    ];
+    
 
-    $dispositivos = \App\Models\Dispositivo::with(['responsable', 'ubicacion'])
-                    ->latest()
-                    ->paginate(15);
-
-    return view('dispositivos.index', compact('dispositivos', 'stats'));
-}
+    public function index(Request $request)
+    {
+        // 1. Capturamos el término de búsqueda
+        $search = $request->input('search');
+    
+        // 2. Iniciamos la consulta base con sus relaciones
+        $query = \App\Models\Dispositivo::with(['responsable', 'ubicacion']);
+    
+        // 3. Aplicamos el filtro solo si hay algo escrito en el buscador
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('placa', 'ILIKE', "%{$search}%")
+                  ->orWhere('serial', 'ILIKE', "%{$search}%");
+            });
+        }
+    
+        // 4. Ejecutamos la paginación incluyendo los parámetros de búsqueda en los links
+        $dispositivos = $query->latest()
+                              ->paginate(15)
+                              ->withQueryString();
+    
+        // 5. Mantenemos tus estadísticas robustas (estas se calculan sobre el total)
+        $stats = [
+            'total' => \App\Models\Dispositivo::count(),
+            
+            'buenos' => \App\Models\Dispositivo::where('estado_fisico', 'ILIKE', 'Bueno%')->count(),
+            
+            'criticos' => \App\Models\Dispositivo::where('estado_fisico', 'NOT ILIKE', 'Bueno%')->count(),
+            
+            'sedes' => \App\Models\Ubicacion::distinct('sede')->count(),
+        ];
+    
+        return view('dispositivos.index', compact('dispositivos', 'stats'));
+    }
 
 
     public function importar(Request $request)

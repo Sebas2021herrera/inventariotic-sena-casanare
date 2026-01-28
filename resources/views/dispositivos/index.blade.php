@@ -2,6 +2,7 @@
 
 @section('content')
 
+
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
     <div class="bg-white rounded-xl shadow-sm p-6 border-b-4 border-blue-500">
         <div class="flex items-center">
@@ -90,11 +91,33 @@
 
     <div class="w-full lg:w-3/4">
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                <h2 class="font-bold text-gray-700 uppercase tracking-wider">Inventario de Equipos</h2>
-                <a href="{{ route('dispositivos.create') }}" class="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-green-700 transition shadow">
-                    <i class="fas fa-plus mr-1"></i> Agregar Manualmente
-                </a>
+            <div class="p-6 border-b border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold text-gray-700 uppercase tracking-wider">Inventario de Equipos</h2>
+                    <a href="{{ route('dispositivos.create') }}" class="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-green-700 transition shadow">
+                        <i class="fas fa-plus mr-1"></i> Agregar Manualmente
+                    </a>
+                </div>
+
+                
+                <form action="{{ route('dispositivos.index') }}" method="GET" class="flex gap-2">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" name="search" value="{{ request('search') }}" 
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl text-xs font-bold placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 transition" 
+                               placeholder="BUSCAR POR PLACA O SERIAL DEL EQUIPO...">
+                    </div>
+                    <button type="submit" class="bg-gray-800 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition shadow-sm">
+                        Filtrar
+                    </button>
+                    @if(request('search'))
+                        <a href="{{ route('dispositivos.index') }}" class="bg-red-50 text-red-600 px-3 py-2 rounded-xl text-xs hover:bg-red-600 hover:text-white transition flex items-center" title="Limpiar filtro">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    @endif
+                </form>
             </div>
 
             <table class="w-full text-left">

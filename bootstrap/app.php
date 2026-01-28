@@ -11,11 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-    $middleware->redirectTo(
-        guests: '/gitic/login',
-        users: '/gitic/dispositivos'
-    );
-})
+        $middleware->redirectTo(
+            // Elimina el prefijo /gitic/ de las rutas
+            guests: '/login',
+            users: '/dispositivos'
+        );
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

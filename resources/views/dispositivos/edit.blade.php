@@ -41,10 +41,19 @@
                         <i class="fas fa-user-tie mr-2"></i> Datos del Responsable
                     </div>
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cédula / ID *</label>
-                            <input type="text" id="cedula" name="cedula" value="{{ old('cedula', $dispositivo->responsable->cedula) }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-green-500 transition" required>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cédula / ID *</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="cedula" name="cedula" value="{{ old('cedula', $dispositivo->responsable->cedula) }}" 
+                                class="flex-1 bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-green-500 transition" required>
+                            
+                            <button type="button" onclick="buscarResponsable()" 
+                                    class="bg-blue-600 text-white px-4 rounded-xl hover:bg-blue-700 transition shadow-sm flex items-center justify-center">
+                                <i class="fas fa-search"></i>
+                            </button>
                         </div>
+                        <p id="msj-responsable" class="text-[10px] font-bold mt-2 hidden italic uppercase tracking-tighter"></p>
+                    </div>
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Nombre Completo *</label>
                             <input type="text" id="nombre_responsable" name="nombre_responsable" value="{{ old('nombre_responsable', $dispositivo->responsable->nombre) }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
@@ -227,21 +236,65 @@
 </div>
 
 <script>
+    /**
+     * Alterna la visibilidad entre Cómputo y Redes
+     */
     function toggleSecciones() {
         const cat = document.getElementById('categoria-select').value;
         const sComputo = document.getElementById('seccion-computo');
         const sRedes = document.getElementById('seccion-redes');
-        const sPerifericos = document.getElementById('seccion-perifericos');
 
         if (cat === 'conectividad') {
-            sRedes.classList.remove('hidden');
-            sComputo.classList.add('hidden');
+            if (sRedes) sRedes.classList.remove('hidden');
+            if (sComputo) sComputo.classList.add('hidden');
         } else {
-            sRedes.classList.add('hidden');
-            sComputo.classList.remove('hidden');
+            if (sRedes) sRedes.classList.add('hidden');
+            if (sComputo) sComputo.classList.remove('hidden');
         }
     }
 
     window.onload = toggleSecciones;
+
+    /**
+     * Busca el responsable por cédula
+     */
+    function buscarResponsable() {
+        const cedula = document.getElementById('cedula').value.trim();
+        const msj = document.getElementById('msj-responsable');
+        
+        if (!cedula) return;
+
+        // Limpiar y mostrar estado
+        msj.classList.remove('hidden');
+        msj.innerText = 'Buscando...';
+        msj.className = "text-[10px] font-bold mt-2 text-blue-500 block italic";
+
+        fetch(`/gitic/responsables/buscar/${cedula}`)
+            .then(res => res.json())
+            .then(data => {
+                // Sincronizado con la lógica de 'create' que te funciona
+                // Detectamos si el responsable viene directo o en la llave 'responsable'
+                const resp = data.responsable || (data.id ? data : null);
+
+                if (resp && resp.id) {
+                    document.getElementById('nombre_responsable').value = resp.nombre || '';
+                    document.getElementById('numero_de_celular').value = resp.numero_de_celular || '';
+                    document.getElementById('tipo_funcionario').value = resp.tipo_funcionario || 'Contratista';
+                    document.getElementById('dependencia').value = resp.dependencia || '';
+                    document.getElementById('cargo').value = resp.cargo || '';
+
+                    msj.innerText = "✓ Responsable encontrado";
+                    msj.className = "text-[10px] font-bold mt-2 text-green-600 block italic";
+                } else {
+                    msj.innerText = "✗ El número de identificación no existe";
+                    msj.className = "text-[10px] font-bold mt-2 text-red-500 block italic";
+                }
+            })
+            .catch(error => {
+                msj.innerText = "⚠ Error de conexión con GITIC";
+                msj.className = "text-[10px] font-bold mt-2 text-orange-500 block";
+                console.error(error);
+            });
+    }
 </script>
 @endsection

@@ -6,98 +6,137 @@ use App\Models\Dispositivo;
 use App\Models\Responsable;
 use App\Models\Ubicacion;
 use App\Models\Especificacion;
-use App\Models\Periferico; // Importante asegurar que el modelo esté importado
+use App\Models\Periferico;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class InventarioSenaImport implements ToModel, WithHeadingRow
+class InventarioSenaImport implements ToModel, WithHeadingRow, WithChunkReading
 {
     public function model(array $row)
     {
-        // 1. VALIDACIÓN ESTRICTA
-        if (empty($row['placa']) || empty($row['cedula'])) {
-            return null;
+        // 1. Identificadores Clave (Limpieza de espacios)
+        $placa = isset($row['placa']) ? trim($row['placa']) : null;
+        $cedula = isset($row['cedula']) ? trim($row['cedula']) : null;
+
+        // Si faltan los datos raíz, ignoramos la fila
+        if (empty($placa) || empty($cedula)) {
+            return null; 
         }
 
-        // 2. Gestionar el Responsable
-        $responsable = Responsable::updateOrCreate(
-            ['cedula' => $row['cedula']],
-            [
-                'nombre' => trim($row['nombre_del_responsable'] ?? 'Desconocido'),
-                'correo_institucional' => trim($row['correo_institucional'] ?? null),
-                'numero_de_celular' => trim($row['numero_de_celular'] ?? null),
-                'dependencia' => trim($row['dependencia'] ?? 'N/A'),
-                'cargo' => trim($row['cargo'] ?? 'N/A'),
-                'tipo_funcionario' => trim($row['tipo_de_funcionario'] ?? 'Contratista'),
-            ]
-        );
+        // Eliminar límites de tiempo para procesos grandes
+        ini_set('max_execution_time', '0');
 
-        // 3. Gestionar la Ubicación
-        $ubicacion = Ubicacion::firstOrCreate([
-            'sede' => trim($row['sede_de_ubicacion_del_equipo'] ?? 'Casanare'),
-            'bloque' => trim($row['bloque'] ?? 'N/A'),
-            'ambiente' => trim($row['ambiente_de_formacion'] ?? 'N/A'),
-        ]);
-
-        // 4. Crear o Actualizar el Dispositivo (Incluyendo Propietario, Función e Intune)
-        $dispositivo = Dispositivo::updateOrCreate(
-            ['placa' => trim($row['placa'])],
-            [
-                'serial' => trim($row['serial'] ?? 'N/A'),
-                'marca' => trim($row['marca'] ?? 'N/A'),
-                'modelo' => trim($row['modelo'] ?? 'N/A'),
-                'propietario' => strtoupper(trim($row['propietario'] ?? 'SENA')),
-                'funcion' => strtoupper(trim($row['funcion'] ?? 'FORMACION')),
-                'en_intune' => strtoupper(trim($row['en_intune'] ?? 'NO')),
-                'categoria' => 'computo',
-                'estado_fisico' => isset($row['estado_fisico']) ? strtoupper(trim($row['estado_fisico'])) : 'N/A',
-                'estado_logico' => isset($row['estado_logico']) ? strtoupper(trim($row['estado_logico'])) : 'N/A',
-                'observaciones' => trim($row['novedades_u_observaciones'] ?? null),
-                'responsable_id' => $responsable->id,
-                'ubicacion_id' => $ubicacion->id,
-            ]
-        );
-
-        // 5. Especificaciones técnicas (Tabla interna)
-        Especificacion::updateOrCreate(
-            ['dispositivo_id' => $dispositivo->id],
-            [
-                'procesador' => trim($row['procesador'] ?? 'N/A'),
-                'ram' => trim($row['memoria_ram'] ?? 'N/A'),
-                'so' => trim($row['so'] ?? 'N/A'),
-                'tipo_disco' => trim($row['tipo_de_disco_duro'] ?? 'N/A'),
-                'capacidad_disco' => trim($row['capacidad_de_disco_duro'] ?? 'N/A'),
-                'mac_address' => trim($row['direccion_mac_del_pc_no_de_red'] ?? 'N/A'),
-            ]
-        );
-
-        // 6. Gestionar Periféricos (Mapeo exacto con la plantilla de Excel)
-        $perifericosMap = [
-            'Monitor'  => ['placa' => 'placa_monitor', 'marca' => 'marca_monitor', 'modelo' => 'modelo_monitor', 'serial' => 'serial_monitor'],
-            'Teclado'  => ['placa' => 'placa_teclado', 'marca' => 'marca_teclado', 'modelo' => 'modelo_teclado', 'serial' => 'serial_teclado'],
-            'Mouse'    => ['placa' => 'placa_mouse',   'marca' => 'marca_mouse',   'modelo' => 'modelo_mouse',   'serial' => 'serial_mouse'],
-            'Cargador' => ['placa' => 'placa_cargador','marca' => 'marca_cargador','modelo' => 'modelo_cargador','serial' => 'serial_cargador'],
-        ];
-
-        foreach ($perifericosMap as $tipo => $campos) {
-            // Verificamos si existe al menos placa o serial en la fila para este tipo de periférico
-            if (!empty($row[$campos['placa']]) || !empty($row[$campos['serial']])) {
-                Periferico::updateOrCreate(
+        try {
+            return DB::transaction(function () use ($row, $placa, $cedula) {
+                
+                // 2. RESPONSABLE (Mapeo de las 7 columnas del Export)
+                $responsable = Responsable::updateOrCreate(
+                    ['cedula' => $cedula],
                     [
-                        'dispositivo_id' => $dispositivo->id,
-                        'tipo' => $tipo
-                    ],
-                    [
-                        'placa'  => trim($row[$campos['placa']] ?? 'N/A'),
-                        'marca'  => trim($row[$campos['marca']] ?? 'N/A'),
-                        'modelo' => trim($row[$campos['modelo']] ?? 'N/A'),
-                        'serial' => trim($row[$campos['serial']] ?? 'N/A'),
-                        'estado' => 'BUENO'
+                        'nombre'               => trim($row['nombre_del_responsable'] ?? 'Desconocido'),
+                        'numero_de_celular'    => trim($row['numero_de_celular'] ?? null),
+                        'correo_institucional' => trim($row['correo_institucional'] ?? null),
+                        'dependencia'          => trim($row['dependencia'] ?? 'N/A'),
+                        'cargo'                => trim($row['cargo'] ?? 'N/A'),
+                        'tipo_funcionario'     => trim($row['tipo_de_funcionario'] ?? 'Contratista'),
                     ]
                 );
+
+                // 3. UBICACIÓN (Sede, Bloque, Ambiente)
+                $ubicacion = Ubicacion::firstOrCreate([
+                    'sede'     => trim($row['sede_de_ubicacion_del_equipo'] ?? 'YOPAL'),
+                    'bloque'   => trim($row['bloque'] ?? 'N/A'),
+                    'ambiente' => trim($row['ambiente_de_formacion'] ?? 'N/A'),
+                ]);
+
+                // 4. TRATAMIENTO DE SERIALES DUPLICADOS (Ej: Xxx, Pendiente, N/A)
+                $serialRaw = trim($row['serial'] ?? 'N/A');
+                $serialProcesado = in_array(strtoupper($serialRaw), ['X', 'XX', 'XXX', 'N/A', 'PENDIENTE', 'NO TIENE']) 
+                    ? $serialRaw . '-' . $placa 
+                    : $serialRaw;
+
+                // 5. DISPOSITIVO (Clasificación, Estados y Novedades)
+                $dispositivo = Dispositivo::updateOrCreate(
+                    ['placa' => $placa],
+                    [
+                        'serial'        => $serialProcesado,
+                        'marca'         => trim($row['marca'] ?? 'N/A'),
+                        'modelo'        => trim($row['modelo'] ?? 'N/A'),
+                        'propietario'   => strtoupper(trim($row['propietario'] ?? 'SENA')),
+                        'funcion'       => strtoupper(trim($row['funcion'] ?? 'FORMACION')),
+                        'en_intune'     => strtoupper(trim($row['en_intune'] ?? 'NO')),
+                        'categoria'     => 'computo',
+                        'estado_fisico' => strtoupper(trim($row['estado_fisico'] ?? 'BUENO')),
+                        'estado_logico' => strtoupper(trim($row['estado_logico'] ?? 'BUENO')),
+                        'observaciones' => trim($row['novedades_u_observaciones'] ?? null),
+                        'responsable_id' => $responsable->id,
+                        'ubicacion_id'   => $ubicacion->id,
+                    ]
+                );
+
+                // 6. ESPECIFICACIONES (Procesador, RAM, SO, Disco, MAC)
+                Especificacion::updateOrCreate(
+                    ['dispositivo_id' => $dispositivo->id],
+                    [
+                        'procesador'      => trim($row['procesador'] ?? 'N/A'),
+                        'ram'             => trim($row['memoria_ram'] ?? 'N/A'),
+                        'so'              => trim($row['so'] ?? 'N/A'),
+                        'tipo_disco'      => trim($row['tipo_de_disco_duro'] ?? 'N/A'),
+                        'capacidad_disco' => trim($row['capacidad_de_disco_duro'] ?? 'N/A'),
+                        'mac_address'     => trim($row['direccion_mac_del_pc_no_de_red'] ?? 'N/A'),
+                    ]
+                );
+
+                // 7. PERIFÉRICOS (Lógica de 16 columnas: Monitor, Teclado, Mouse, Cargador)
+                $this->importarPerifericos($dispositivo->id, $row);
+
+                return $dispositivo;
+            });
+        } catch (\Exception $e) {
+            Log::error("Fila saltada - Placa $placa: " . $e->getMessage());
+            return null; // Salta errores de serial duplicado u otros y sigue con el archivo
+        }
+    }
+
+    /**
+     * Mapeo inteligente de periféricos basado en los encabezados del Export
+     */
+    private function importarPerifericos($dispositivoId, $row)
+    {
+        $tipos = [
+            'Monitor'  => 'monitor',
+            'Teclado'  => 'teclado',
+            'Mouse'    => 'mouse',
+            'Cargador' => 'cargador'
+        ];
+
+        foreach ($tipos as $label => $key) {
+            $p_placa = trim($row["placa_$key"] ?? '');
+            $p_serial = trim($row["serial_$key"] ?? '');
+
+            // Si tiene placa o serial, lo registramos
+            if (!empty($p_placa) || !empty($p_serial)) {
+                if ($p_placa !== 'NA' && $p_placa !== 'N/A' && $p_placa !== '') {
+                    Periferico::updateOrCreate(
+                        ['dispositivo_id' => $dispositivoId, 'tipo' => $label],
+                        [
+                            'placa'  => $p_placa ?: 'N/A',
+                            'marca'  => trim($row["marca_$key"] ?? 'N/A'),
+                            'modelo' => trim($row["modelo_$key"] ?? 'N/A'),
+                            'serial' => $p_serial ?: 'N/A',
+                            'estado' => 'BUENO'
+                        ]
+                    );
+                }
             }
         }
+    }
 
-        return null;
+    public function chunkSize(): int
+    {
+        return 100; // Bloques de 100 para balancear velocidad y memoria
     }
 }
