@@ -234,13 +234,13 @@
         </div>
     </form>
 </div>
-
 <script>
     /**
      * Alterna la visibilidad entre Cómputo y Redes
+     * Se usa encadenamiento opcional (?.) para evitar errores si un ID no existe
      */
     function toggleSecciones() {
-        const cat = document.getElementById('categoria-select').value;
+        const cat = document.getElementById('categoria-select')?.value;
         const sComputo = document.getElementById('seccion-computo');
         const sRedes = document.getElementById('seccion-redes');
 
@@ -253,47 +253,54 @@
         }
     }
 
+    // Aseguramos que se ejecute al cargar para mostrar la sección correcta del equipo
     window.onload = toggleSecciones;
 
     /**
-     * Busca el responsable por cédula
+     * Busca el responsable por cédula (Ruta dinámica para clonación)
      */
     function buscarResponsable() {
-        const cedula = document.getElementById('cedula').value.trim();
+        const cedulaInput = document.getElementById('cedula');
         const msj = document.getElementById('msj-responsable');
+        
+        if (!cedulaInput || !msj) return;
+
+        const cedula = cedulaInput.value.trim();
         
         if (!cedula) return;
 
-        // Limpiar y mostrar estado
+        // Mostrar estado de carga
         msj.classList.remove('hidden');
-        msj.innerText = 'Buscando...';
+        msj.innerText = 'Buscando en base de datos...';
         msj.className = "text-[10px] font-bold mt-2 text-blue-500 block italic";
 
-        fetch(`/gitic/responsables/buscar/${cedula}`)
+        // URL DINÁMICA: Se adapta automáticamente al entorno (Local o Servidor)
+        fetch("{{ url('/responsables/buscar') }}/" + cedula)
             .then(res => res.json())
             .then(data => {
-                // Sincronizado con la lógica de 'create' que te funciona
-                // Detectamos si el responsable viene directo o en la llave 'responsable'
+                // Sincronizado con la lógica de 'create'
                 const resp = data.responsable || (data.id ? data : null);
 
                 if (resp && resp.id) {
+                    // ÉXITO: Actualizamos los campos con la información encontrada
                     document.getElementById('nombre_responsable').value = resp.nombre || '';
                     document.getElementById('numero_de_celular').value = resp.numero_de_celular || '';
                     document.getElementById('tipo_funcionario').value = resp.tipo_funcionario || 'Contratista';
                     document.getElementById('dependencia').value = resp.dependencia || '';
                     document.getElementById('cargo').value = resp.cargo || '';
 
-                    msj.innerText = "✓ Responsable encontrado";
-                    msj.className = "text-[10px] font-bold mt-2 text-green-600 block italic";
+                    msj.innerText = "✓ Responsable encontrado y actualizado";
+                    msj.className = "text-[10px] font-bold mt-2 text-green-600 block italic uppercase";
                 } else {
-                    msj.innerText = "✗ El número de identificación no existe";
-                    msj.className = "text-[10px] font-bold mt-2 text-red-500 block italic";
+                    // AVISO: No se encontró, pero permitimos que el técnico edite manualmente
+                    msj.innerText = "✗ El número de identificación no existe en el sistema";
+                    msj.className = "text-[10px] font-bold mt-2 text-red-500 block italic uppercase";
                 }
             })
             .catch(error => {
-                msj.innerText = "⚠ Error de conexión con GITIC";
-                msj.className = "text-[10px] font-bold mt-2 text-orange-500 block";
-                console.error(error);
+                msj.innerText = "⚠ Error de conexión con el servidor de GITIC";
+                msj.className = "text-[10px] font-bold mt-2 text-orange-500 block italic";
+                console.error("Fallo en fetch de edición:", error);
             });
     }
 </script>

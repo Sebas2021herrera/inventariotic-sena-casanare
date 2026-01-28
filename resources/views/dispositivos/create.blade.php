@@ -284,112 +284,131 @@
 
     </form>
 </div>
-
 <script>
     /**
      * Alterna la visibilidad entre Cómputo y Redes
+     * No se pierde la lógica de perifericos
      */
     function toggleSecciones() {
-        const cat = document.getElementById('categoria-select').value;
+        const cat = document.getElementById('categoria-select')?.value;
         const sComputo = document.getElementById('seccion-computo');
         const sRedes = document.getElementById('seccion-redes');
         const sPerifericos = document.getElementById('seccion-perifericos');
 
         if (cat === 'conectividad') {
-            sRedes.classList.remove('hidden');
-            sComputo.classList.add('hidden');
-            sPerifericos.classList.add('hidden'); // Opcional: ocultar monitor/teclado para redes
+            sRedes?.classList.remove('hidden');
+            sComputo?.classList.add('hidden');
+            sPerifericos?.classList.add('hidden'); 
         } else {
-            sRedes.classList.add('hidden');
-            sComputo.classList.remove('hidden');
-            sPerifericos.classList.remove('hidden');
+            sRedes?.classList.add('hidden');
+            sComputo?.classList.remove('hidden');
+            sPerifericos?.classList.remove('hidden');
         }
     }
 
     // Ejecutar al cargar para validar el estado inicial
     window.onload = toggleSecciones;
 
- function buscarResponsable() {
-    const cedula = document.getElementById('cedula').value;
-    const msj = document.getElementById('msj-responsable');
-    
-    // Limpiamos mensajes previos y campos
-    msj.classList.add('hidden');
-    msj.innerText = '';
+    /**
+     * Busca responsable con ruta dinámica
+     */
+    function buscarResponsable() {
+        const cedulaInput = document.getElementById('cedula');
+        const msj = document.getElementById('msj-responsable');
+        
+        if (!cedulaInput || !msj) return;
 
-    if (!cedula) return;
-
-    // Prefijo GITIC incluido
-    fetch(`/gitic/responsables/buscar/${cedula}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data && data.id) {
-                // EXITO: Llenamos campos
-                document.getElementById('nombre_responsable').value = data.nombre;
-                document.getElementById('numero_de_celular').value = data.numero_de_celular;
-                document.getElementById('tipo_funcionario').value = data.tipo_funcionario;
-                document.getElementById('dependencia').value = data.dependencia;
-                document.getElementById('cargo').value = data.cargo;
-
-                // Aviso visual de éxito
-                msj.innerText = "✓ Responsable encontrado";
-                msj.className = "text-[10px] font-bold mt-2 text-green-600 block italic";
-            } else {
-                // ERROR: No existe
-                msj.innerText = "✗ El número de identificación no existe en la base de datos";
-                msj.className = "text-[10px] font-bold mt-2 text-red-500 block italic";
-                
-                // Limpiar campos de nombre por si acaso
-                document.getElementById('nombre_responsable').value = '';
-                document.getElementById('numero_de_celular').value = '';
-                document.getElementById('tipo_funcionario').value = '';
-                 document.getElementById('dependencia').value = '';
-                  document.getElementById('cargo').value = '';
-            }
-        })
-        .catch(error => {
-            msj.innerText = "⚠ Error de conexión con GITIC";
-            msj.className = "text-[10px] font-bold mt-2 text-orange-500 block";
-            console.error(error);
-        });
-}
-
-function verificarPlacaRealTime() {
-    const placa = document.getElementById('input-placa').value;
-    const msj = document.getElementById('msj-placa');
-    const card = document.getElementById('card-identificacion');
-    const input = document.getElementById('input-placa');
-
-    // Si el técnico borra la placa, reseteamos el visual
-    if (placa.length < 1) {
+        const cedula = cedulaInput.value.trim();
+        
+        // Limpiamos mensajes previos
         msj.classList.add('hidden');
-        card.classList.remove('border-red-500', 'border-green-500', 'ring-4', 'ring-red-50', 'ring-green-50');
-        input.classList.replace('text-red-600', 'text-[#39A900]');
-        return;
+        msj.innerText = '';
+
+        if (!cedula) return;
+
+        // URL dinámica: Se adapta si es /gitic/ o si es localhost
+        fetch("{{ url('/responsables/buscar') }}/" + cedula)
+            .then(res => res.json())
+            .then(data => {
+                // Compatibilidad de objeto: data o data.responsable
+                const resp = data.responsable || (data.id ? data : null);
+
+                if (resp && resp.id) {
+                    // EXITO: Llenamos campos
+                    document.getElementById('nombre_responsable').value = resp.nombre || '';
+                    document.getElementById('numero_de_celular').value = resp.numero_de_celular || '';
+                    document.getElementById('tipo_funcionario').value = resp.tipo_funcionario || 'Contratista';
+                    document.getElementById('dependencia').value = resp.dependencia || '';
+                    document.getElementById('cargo').value = resp.cargo || '';
+
+                    // Aviso visual de éxito (Mantiene tu estilo)
+                    msj.innerText = "✓ Responsable encontrado";
+                    msj.className = "text-[10px] font-bold mt-2 text-green-600 block italic";
+                    msj.classList.remove('hidden');
+                } else {
+                    // ERROR: No existe
+                    msj.innerText = "✗ El número de identificación no existe en la base de datos";
+                    msj.className = "text-[10px] font-bold mt-2 text-red-500 block italic";
+                    msj.classList.remove('hidden');
+                    
+                    // Limpiar campos para evitar datos erróneos
+                    const campos = ['nombre_responsable', 'numero_de_celular', 'dependencia', 'cargo'];
+                    campos.forEach(id => document.getElementById(id).value = '');
+                }
+            })
+            .catch(error => {
+                msj.innerText = "⚠ Error de conexión con el sistema";
+                msj.className = "text-[10px] font-bold mt-2 text-orange-500 block";
+                msj.classList.remove('hidden');
+                console.error(error);
+            });
     }
 
-    // Ruta absoluta con prefijo /gitic
-    fetch(`/gitic/dispositivos/verificar-placa/${placa}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.exists) {
-                // SEMÁFORO ROJO: Placa Duplicada
-                msj.innerText = "✗ Esta placa ya está registrada en el inventario";
-                msj.className = "text-[10px] font-bold mt-2 text-red-500 block italic uppercase tracking-tighter";
-                card.classList.add('border-red-500', 'ring-4', 'ring-red-50');
-                card.classList.remove('border-green-500', 'ring-green-50');
-                input.classList.replace('text-[#39A900]', 'text-red-600');
-            } else {
-                // SEMÁFORO VERDE: Placa Disponible
-                msj.innerText = "✓ Placa disponible para registro";
-                msj.className = "text-[10px] font-bold mt-2 text-green-600 block italic uppercase tracking-tighter";
-                card.classList.add('border-green-500', 'ring-4', 'ring-green-50');
-                card.classList.remove('border-red-500', 'ring-red-50');
-                input.classList.replace('text-red-600', 'text-[#39A900]');
-            }
-        })
-        .catch(err => console.error("Error de conexión GITIC:", err));
-}
+    /**
+     * Verificación de placa en tiempo real con ruta dinámica
+     */
+    function verificarPlacaRealTime() {
+        const input = document.getElementById('input-placa');
+        const msj = document.getElementById('msj-placa');
+        const card = document.getElementById('card-identificacion');
 
+        if (!input || !msj || !card) return;
+
+        const placa = input.value.trim();
+
+        // Reseteo visual si está vacío
+        if (placa.length < 1) {
+            msj.classList.add('hidden');
+            card.classList.remove('border-red-500', 'border-green-500', 'ring-4', 'ring-red-50', 'ring-green-50');
+            input.classList.remove('text-red-600');
+            input.classList.add('text-[#39A900]');
+            return;
+        }
+
+        // URL dinámica para verificación
+        fetch("{{ url('/dispositivos/verificar-placa') }}/" + placa)
+            .then(res => res.json())
+            .then(data => {
+                msj.classList.remove('hidden');
+                if (data.exists) {
+                    // SEMÁFORO ROJO (Mismo estilo SENA)
+                    msj.innerText = "✗ Esta placa ya está registrada en el inventario";
+                    msj.className = "text-[10px] font-bold mt-2 text-red-500 block italic uppercase tracking-tighter";
+                    card.classList.add('border-red-500', 'ring-4', 'ring-red-50');
+                    card.classList.remove('border-green-500', 'ring-green-50');
+                    input.classList.remove('text-[#39A900]');
+                    input.classList.add('text-red-600');
+                } else {
+                    // SEMÁFORO VERDE
+                    msj.innerText = "✓ Placa disponible para registro";
+                    msj.className = "text-[10px] font-bold mt-2 text-green-600 block italic uppercase tracking-tighter";
+                    card.classList.add('border-green-500', 'ring-4', 'ring-green-50');
+                    card.classList.remove('border-red-500', 'ring-red-50');
+                    input.classList.remove('text-red-600');
+                    input.classList.add('text-[#39A900]');
+                }
+            })
+            .catch(err => console.error("Error de conexión:", err));
+    }
 </script>
 @endsection
