@@ -157,7 +157,7 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-xs text-gray-600">{{ $dispositivo->ubicacion->sede }}</div>
-                            <div class="text-xs font-bold text-green-600">Amb: {{ $dispositivo->ubicacion->ambiente }}</div>
+                            <div class="text-xs font-bold text-green-600">Amb: {{ $dispositivo->ubicacion->bloque }}  {{ $dispositivo->ubicacion->ambiente }}</div>
                         </td>
                         <td class="px-6 py-4">
                             @php
