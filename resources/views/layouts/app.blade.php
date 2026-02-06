@@ -15,6 +15,8 @@
         .sena-bg { background-color: #39A900; }
         .sena-text { color: #39A900; }
         .nav-link:hover { background-color: rgba(255, 255, 255, 0.15); }
+        /* Clase para resaltar el link activo */
+        .nav-active { background-color: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.3); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -34,8 +36,12 @@
 
             <div class="flex items-center space-x-2">
                 @auth
-                    <a href="{{ route('dispositivos.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center">
+                    <a href="{{ route('dispositivos.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('dispositivos.*') ? 'nav-active' : '' }}">
                         <i class="fas fa-layer-group mr-2"></i> Inventario
+                    </a>
+
+                    <a href="{{ route('reportes.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('reportes.*') ? 'nav-active' : '' }}">
+                        <i class="fas fa-chart-pie mr-2"></i> Reportes
                     </a>
                     
                     <div class="h-6 w-[1px] bg-white/20 mx-2"></div>

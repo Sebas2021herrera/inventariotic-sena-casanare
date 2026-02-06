@@ -5,7 +5,7 @@ use App\Http\Controllers\DispositivoController;
 use App\Http\Controllers\ResponsableController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MantenimientoController;
-
+use App\Http\Controllers\ReporteController;
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
     return auth()->check() 
@@ -35,4 +35,7 @@ Route::middleware(['auth'])->group(function () {
     // Búsquedas dinámicas
     Route::get('/responsables/buscar/{cedula}', [ResponsableController::class, 'buscar'])->name('responsables.buscar');
     Route::get('/dispositivos/verificar-placa/{placa}', [DispositivoController::class, 'verificarPlaca'])->name('dispositivos.verificar');
-});
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/exportar', [ReporteController::class, 'exportar'])->name('reportes.exportar');
+
+    });
