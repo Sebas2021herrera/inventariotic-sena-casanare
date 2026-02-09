@@ -36,15 +36,23 @@
             
             <div class="lg:col-span-1 space-y-6">
                 
+
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="flex justify-between items-center mb-6 border-b pb-2">
                         <div class="text-[#39A900] font-black uppercase text-xs tracking-widest">
                             <i class="fas fa-user-tie mr-2"></i> Datos del Responsable
                         </div>
-                        <button type="button" onclick="habilitarCambioResponsable()" id="btn-cambiar" 
-                                class="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-1 rounded-lg hover:bg-orange-200 transition">
-                            <i class="fas fa-exchange-alt mr-1"></i> CAMBIAR
-                        </button>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="habilitarEdicionActual()" id="btn-editar-actual" 
+                                    class="text-[10px] font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-200 transition">
+                                <i class="fas fa-user-edit mr-1"></i> ACTUALIZAR    
+                            </button>
+
+                            <button type="button" onclick="habilitarCambioResponsable()" id="btn-cambiar" 
+                                    class="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-1 rounded-lg hover:bg-orange-200 transition">
+                                <i class="fas fa-exchange-alt mr-1"></i> CAMBIAR
+                            </button>
+                        </div>
                     </div>
 
                     <div class="space-y-4">
@@ -56,7 +64,7 @@
                                     readonly required>
                                 
                                 <button type="button" id="btn-buscar" onclick="buscarResponsable()" 
-                                        class="hidden bg-blue-600 text-white px-4 rounded-xl hover:bg-blue-700 transition shadow-sm items-center justify-center">
+                                        class="hidden bg-blue-600 text-white px-4 rounded-xl hover:bg-blue-700 transition shadow-sm items-center justify-center w-12">
                                     <i class="fas fa-search"></i>
                                 </button>
                             </div>
@@ -82,9 +90,9 @@
                                 <input type="text" id="tipo_funcionario_display" value="{{ $dispositivo->responsable->tipo_funcionario }}" 
                                     class="w-full bg-gray-100 border-gray-200 rounded-xl p-3 text-gray-500 cursor-not-allowed" readonly>
                                 <select id="tipo_funcionario" name="tipo_funcionario" class="hidden w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                                    <option value="Contratista">Contratista</option>
-                                    <option value="Planta">Planta</option>
-                                    <option value="Aprendiz">Aprendiz</option>
+                                    <option value="Contratista" {{ $dispositivo->responsable->tipo_funcionario == 'Contratista' ? 'selected' : '' }}>Contratista</option>
+                                    <option value="Planta" {{ $dispositivo->responsable->tipo_funcionario == 'Planta' ? 'selected' : '' }}>Planta</option>
+                                    <option value="Aprendiz" {{ $dispositivo->responsable->tipo_funcionario == 'Aprendiz' ? 'selected' : '' }}>Aprendiz</option>
                                 </select>
                             </div>
                         </div>
@@ -321,37 +329,67 @@
             });
     }
 
+        /**
+     * OPCIÓN A: Actualiza datos del responsable actual.
+     * Mantiene la Cédula BLOQUEADA.
+     */
+    function habilitarEdicionActual() {
+        // Definimos qué campos se desbloquean (Cédula NO se incluye)
+        const campos = ['nombre_responsable', 'numero_de_celular', 'dependencia', 'cargo'];
+        
+        campos.forEach(id => {
+            const el = document.getElementById(id);
+            el.readOnly = false;
+            el.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+            el.classList.add('bg-white', 'border-blue-300', 'ring-1', 'ring-blue-100');
+        });
+
+        // Cambiar visualización del tipo de funcionario
+        document.getElementById('tipo_funcionario_display').classList.add('hidden');
+        document.getElementById('tipo_funcionario').classList.remove('hidden');
+
+        // Feedback visual
+        const msj = document.getElementById('msj-responsable');
+        msj.classList.remove('hidden');
+        msj.innerText = "✎ Modo edición: Corrigiendo datos del responsable actual";
+        msj.className = "text-[10px] font-bold mt-2 text-blue-600 block italic uppercase";
+
+        // Ocultar botones para evitar conflictos
+        document.getElementById('btn-cambiar').classList.add('hidden');
+        document.getElementById('btn-editar-actual').classList.add('hidden');
+    }
+
     /**
- * Desbloquea los campos del responsable para permitir la reasignación
- * Evita modificar accidentalmente al responsable actual
- */
-                function habilitarCambioResponsable() {
-                    // 1. Confirmación visual para el usuario
-                    if (!confirm("¿Deseas asignar un NUEVO responsable a este equipo? Esto limpiará los datos actuales.")) return;
+     * OPCIÓN B: Cambiar totalmente de responsable.
+     * Desbloquea TODO y limpia los campos.
+     */
+    function habilitarCambioResponsable() {
+        if(!confirm("¿Deseas asignar un responsable distinto? Se borrarán los datos actuales.")) return;
 
-                    // 2. IDs de los campos a habilitar
-                    const campos = ['cedula', 'nombre_responsable', 'numero_de_celular', 'dependencia', 'cargo'];
-                    
-                    campos.forEach(id => {
-                        const el = document.getElementById(id);
-                        el.value = ''; // Limpiamos el valor para evitar sobrescribir al anterior
-                        el.readOnly = false;
-                        el.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
-                        el.classList.add('bg-white', 'border-blue-300', 'ring-2', 'ring-blue-50');
-                    });
+        const campos = ['cedula', 'nombre_responsable', 'numero_de_celular', 'dependencia', 'cargo'];
+        
+        campos.forEach(id => {
+            const el = document.getElementById(id);
+            el.value = ''; // Limpiar campo
+            el.readOnly = false;
+            el.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+            el.classList.add('bg-white', 'border-orange-300', 'ring-1', 'ring-orange-100');
+        });
 
-                    // 3. Manejo especial de los selectores
-                    document.getElementById('tipo_funcionario_display').classList.add('hidden');
-                    document.getElementById('tipo_funcionario').classList.remove('hidden');
-                    document.getElementById('btn-buscar').classList.remove('hidden');
-                    document.getElementById('btn-buscar').classList.add('flex');
-                    document.getElementById('btn-cambiar').classList.add('hidden');
+        document.getElementById('tipo_funcionario_display').classList.add('hidden');
+        document.getElementById('tipo_funcionario').classList.remove('hidden');
+        document.getElementById('btn-buscar').classList.remove('hidden');
+        document.getElementById('btn-buscar').classList.add('flex');
 
-                    // 4. Foco en la cédula para iniciar búsqueda
-                    document.getElementById('cedula').focus();
-                }
+        const msj = document.getElementById('msj-responsable');
+        msj.classList.remove('hidden');
+        msj.innerText = "🔄 Ingrese la nueva cédula para buscar o registrar";
+        msj.className = "text-[10px] font-bold mt-2 text-orange-600 block italic uppercase";
 
-// Mantenemos tu función buscarResponsable() tal como la tienes, 
-// ya que funcionará perfectamente una vez desbloqueados los campos.
+        document.getElementById('btn-cambiar').classList.add('hidden');
+        document.getElementById('btn-editar-actual').classList.add('hidden');
+        
+        document.getElementById('cedula').focus();
+    }
 </script>
 @endsection
