@@ -37,44 +37,61 @@
             <div class="lg:col-span-1 space-y-6">
                 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex items-center mb-6 text-[#39A900] font-black uppercase text-xs tracking-widest border-b pb-2">
-                        <i class="fas fa-user-tie mr-2"></i> Datos del Responsable
-                    </div>
-                    <div class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cédula / ID *</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="cedula" name="cedula" value="{{ old('cedula', $dispositivo->responsable->cedula) }}" 
-                                class="flex-1 bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-green-500 transition" required>
-                            
-                            <button type="button" onclick="buscarResponsable()" 
-                                    class="bg-blue-600 text-white px-4 rounded-xl hover:bg-blue-700 transition shadow-sm flex items-center justify-center">
-                                <i class="fas fa-search"></i>
-                            </button>
+                    <div class="flex justify-between items-center mb-6 border-b pb-2">
+                        <div class="text-[#39A900] font-black uppercase text-xs tracking-widest">
+                            <i class="fas fa-user-tie mr-2"></i> Datos del Responsable
                         </div>
-                        <p id="msj-responsable" class="text-[10px] font-bold mt-2 hidden italic uppercase tracking-tighter"></p>
+                        <button type="button" onclick="habilitarCambioResponsable()" id="btn-cambiar" 
+                                class="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-1 rounded-lg hover:bg-orange-200 transition">
+                            <i class="fas fa-exchange-alt mr-1"></i> CAMBIAR
+                        </button>
                     </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cédula / ID *</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="cedula" name="cedula" value="{{ old('cedula', $dispositivo->responsable->cedula) }}" 
+                                    class="flex-1 bg-gray-100 border-gray-200 rounded-xl p-3 font-bold text-gray-500 shadow-inner cursor-not-allowed" 
+                                    readonly required>
+                                
+                                <button type="button" id="btn-buscar" onclick="buscarResponsable()" 
+                                        class="hidden bg-blue-600 text-white px-4 rounded-xl hover:bg-blue-700 transition shadow-sm items-center justify-center">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <p id="msj-responsable" class="text-[10px] font-bold mt-2 hidden italic uppercase tracking-tighter"></p>
+                        </div>
+
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Nombre Completo *</label>
-                            <input type="text" id="nombre_responsable" name="nombre_responsable" value="{{ old('nombre_responsable', $dispositivo->responsable->nombre) }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
+                            <input type="text" id="nombre_responsable" name="nombre_responsable" 
+                                value="{{ old('nombre_responsable', $dispositivo->responsable->nombre) }}" 
+                                class="w-full bg-gray-100 border-gray-200 rounded-xl p-3 text-gray-500 cursor-not-allowed" readonly required>
                         </div>
+
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Celular</label>
-                                <input type="text" id="numero_de_celular" name="numero_de_celular" value="{{ old('numero_de_celular', $dispositivo->responsable->numero_de_celular) }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                <input type="text" id="numero_de_celular" name="numero_de_celular" 
+                                    value="{{ old('numero_de_celular', $dispositivo->responsable->numero_de_celular) }}" 
+                                    class="w-full bg-gray-100 border-gray-200 rounded-xl p-3 text-gray-500 cursor-not-allowed" readonly>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo</label>
-                                @php $tipoF = old('tipo_funcionario', $dispositivo->responsable->tipo_funcionario); @endphp
-                                <select id="tipo_funcionario" name="tipo_funcionario" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                                    <option value="Contratista" {{ $tipoF == 'Contratista' ? 'selected' : '' }}>Contratista</option>
-                                    <option value="Planta" {{ $tipoF == 'Planta' ? 'selected' : '' }}>Planta</option>
-                                    <option value="Aprendiz" {{ $tipoF == 'Aprendiz' ? 'selected' : '' }}>Aprendiz</option>
+                                <input type="text" id="tipo_funcionario_display" value="{{ $dispositivo->responsable->tipo_funcionario }}" 
+                                    class="w-full bg-gray-100 border-gray-200 rounded-xl p-3 text-gray-500 cursor-not-allowed" readonly>
+                                <select id="tipo_funcionario" name="tipo_funcionario" class="hidden w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                    <option value="Contratista">Contratista</option>
+                                    <option value="Planta">Planta</option>
+                                    <option value="Aprendiz">Aprendiz</option>
                                 </select>
                             </div>
                         </div>
-                        <input type="text" id="dependencia" name="dependencia" value="{{ old('dependencia', $dispositivo->responsable->dependencia) }}" placeholder="Dependencia" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                        <input type="text" id="cargo" name="cargo" value="{{ old('cargo', $dispositivo->responsable->cargo) }}" placeholder="Cargo" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                        <input type="text" id="dependencia" name="dependencia" value="{{ old('dependencia', $dispositivo->responsable->dependencia) }}" 
+                            class="w-full bg-gray-100 border-gray-200 rounded-xl p-3 text-gray-500 cursor-not-allowed" readonly placeholder="Dependencia">
+                        <input type="text" id="cargo" name="cargo" value="{{ old('cargo', $dispositivo->responsable->cargo) }}" 
+                            class="w-full bg-gray-100 border-gray-200 rounded-xl p-3 text-gray-500 cursor-not-allowed" readonly placeholder="Cargo">
                     </div>
                 </div>
 
@@ -303,5 +320,38 @@
                 console.error("Fallo en fetch de edición:", error);
             });
     }
+
+    /**
+ * Desbloquea los campos del responsable para permitir la reasignación
+ * Evita modificar accidentalmente al responsable actual
+ */
+                function habilitarCambioResponsable() {
+                    // 1. Confirmación visual para el usuario
+                    if (!confirm("¿Deseas asignar un NUEVO responsable a este equipo? Esto limpiará los datos actuales.")) return;
+
+                    // 2. IDs de los campos a habilitar
+                    const campos = ['cedula', 'nombre_responsable', 'numero_de_celular', 'dependencia', 'cargo'];
+                    
+                    campos.forEach(id => {
+                        const el = document.getElementById(id);
+                        el.value = ''; // Limpiamos el valor para evitar sobrescribir al anterior
+                        el.readOnly = false;
+                        el.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+                        el.classList.add('bg-white', 'border-blue-300', 'ring-2', 'ring-blue-50');
+                    });
+
+                    // 3. Manejo especial de los selectores
+                    document.getElementById('tipo_funcionario_display').classList.add('hidden');
+                    document.getElementById('tipo_funcionario').classList.remove('hidden');
+                    document.getElementById('btn-buscar').classList.remove('hidden');
+                    document.getElementById('btn-buscar').classList.add('flex');
+                    document.getElementById('btn-cambiar').classList.add('hidden');
+
+                    // 4. Foco en la cédula para iniciar búsqueda
+                    document.getElementById('cedula').focus();
+                }
+
+// Mantenemos tu función buscarResponsable() tal como la tienes, 
+// ya que funcionará perfectamente una vez desbloqueados los campos.
 </script>
 @endsection
