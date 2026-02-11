@@ -70,12 +70,19 @@ class DispositivoController extends Controller
  */
 public function show(Dispositivo $dispositivo)
 {
-    // Cargamos las relaciones para que la vista tenga toda la información
-    $dispositivo->load(['responsable', 'ubicacion', 'especificaciones']);
+    // Cargamos todas las relaciones necesarias para que la vista tenga la data de hardware, 
+    // responsables, periféricos, mantenimientos y los nuevos conceptos GTI-F-132.
+    $dispositivo->load([
+        'responsable', 
+        'ubicacion', 
+        'especificaciones', 
+        'perifericos', 
+        'mantenimientos', 
+        'conceptos' // 👈 Esta es la que causaba el error
+    ]);
 
     return view('dispositivos.show', compact('dispositivo'));
 }
-// ... dentro de la clase DispositivoController
 
 public function create()
 {
@@ -188,20 +195,35 @@ public function descargarPlantilla()
 }
 public function destroy(Dispositivo $dispositivo)
 {
+    // 1. Bloque de seguridad: Solo el rol 'admin' puede proceder
+    if (auth()->user()?->role !== 'admin') {
+        return redirect()->back()->with('error', 'Acceso denegado: No tienes permisos de administrador para eliminar activos.');
+    }
+
     try {
-        // 1. Eliminamos primero las especificaciones asociadas (si existen)
+        DB::beginTransaction(); // Recomendado para asegurar que se borre todo o nada
+
+        // 2. Eliminamos las especificaciones asociadas
         if ($dispositivo->especificaciones) {
             $dispositivo->especificaciones()->delete();
         }
+        
+        // 3. Eliminamos periféricos asociados (si existen) para evitar errores de integridad
+        if ($dispositivo->perifericos()->count() > 0) {
+            $dispositivo->perifericos()->delete();
+        }
 
-        // 2. Eliminamos el dispositivo
+        // 4. Eliminamos el dispositivo
         $dispositivo->delete();
 
+        DB::commit();
+
         return redirect()->route('dispositivos.index')
-            ->with('success', 'El dispositivo y sus especificaciones han sido eliminados correctamente.');
+            ->with('success', 'El dispositivo y todos sus registros asociados han sido eliminados correctamente.');
             
     } catch (\Exception $e) {
-        return back()->withErrors(['error' => 'No se pudo eliminar el equipo: ' . $e->getMessage()]);
+        DB::rollback();
+        return back()->withErrors(['error' => 'No se pudo completar la eliminación: ' . $e->getMessage()]);
     }
 }
 
@@ -311,6 +333,7 @@ public function verificarPlaca($placa)
     $existe = \App\Models\Dispositivo::where('placa', $placa)->exists();
     
     return response()->json(['exists' => $existe]);
+
 }
 
 

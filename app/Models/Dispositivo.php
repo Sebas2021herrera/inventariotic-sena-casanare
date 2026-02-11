@@ -41,4 +41,10 @@ class Dispositivo extends Model
 {
     return $this->hasMany(Mantenimiento::class);
 }
+
+public function conceptos()
+{
+    // Un dispositivo tiene muchos conceptos técnicos GTI-F-132
+    return $this->hasMany(ConceptoTecnico::class, 'dispositivo_id');
+}
 }

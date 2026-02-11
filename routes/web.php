@@ -6,6 +6,7 @@ use App\Http\Controllers\ResponsableController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MantenimientoController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\ConceptoTecnicoController;
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
     return auth()->check() 
@@ -37,5 +38,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dispositivos/verificar-placa/{placa}', [DispositivoController::class, 'verificarPlaca'])->name('dispositivos.verificar');
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
     Route::get('/reportes/exportar', [ReporteController::class, 'exportar'])->name('reportes.exportar');
+
+    Route::get('/dispositivos/{dispositivo}/concepto/nuevo', [ConceptoTecnicoController::class, 'create'])->name('conceptos.create');
+    Route::post('/conceptos/guardar', [ConceptoTecnicoController::class, 'store'])->name('conceptos.store');
+    // RUTA FALTANTE PARA EL PDF
+    Route::get('/conceptos/{id}/pdf', [ConceptoTecnicoController::class, 'exportarPDF'])->name('conceptos.pdf');
 
     });

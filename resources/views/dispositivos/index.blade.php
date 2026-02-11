@@ -184,12 +184,22 @@
                                         title="Editar equipo">
                                         <i class="fas fa-pen text-sm"></i>
                                  </a>
-                                <form action="{{ route('dispositivos.destroy', $dispositivo) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Eliminar equipo?');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:text-red-700 transition">
+                               @if(auth()->user()->role === 'admin')
+                                    <form action="{{ route('dispositivos.destroy', $dispositivo) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Eliminar equipo permanentemente?');">
+                                        @csrf 
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-500 hover:text-red-700 transition">
+                                            <i class="fas fa-trash-alt text-lg"></i>
+                                        </button>
+                                    </form>
+                                @else
+                                    <button type="button" 
+                                            class="text-gray-300 cursor-not-allowed pointer-events-none" 
+                                            title="Solo el administrador puede eliminar activos" 
+                                            disabled>
                                         <i class="fas fa-trash-alt text-lg"></i>
                                     </button>
-                                </form>
+                                @endif
                             </div>
                         </td>
                     </tr>
