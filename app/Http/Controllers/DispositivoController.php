@@ -35,9 +35,9 @@ class DispositivoController extends Controller
         }
     
         // 4. Ejecutamos la paginación incluyendo los parámetros de búsqueda en los links
-        $dispositivos = $query->latest()
-                              ->paginate(15)
-                              ->withQueryString();
+                $dispositivos = $query->orderBy('updated_at', 'desc') 
+                ->paginate(15)
+                ->withQueryString();
     
         // 5. Mantenemos tus estadísticas robustas (estas se calculan sobre el total)
         $stats = [
