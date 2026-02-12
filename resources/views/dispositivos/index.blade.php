@@ -127,6 +127,7 @@
                         <th class="px-6 py-4">Equipo</th>
                         <th class="px-6 py-4">Responsable</th>
                         <th class="px-6 py-4">Ubicación</th>
+                        <th class= "px-6 py-4">Ultima Modificación</th>
                         <th class="px-6 py-4">Estado</th>
                         <th class="px-6 py-4 text-center">Acciones</th>
                     </tr>
@@ -159,7 +160,19 @@
                             <div class="text-xs text-gray-600">{{ $dispositivo->ubicacion->sede }}</div>
                             <div class="text-xs font-bold text-green-600">Amb: {{ $dispositivo->ubicacion->bloque }}  {{ $dispositivo->ubicacion->ambiente }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 text-center align-middle">
+                            <div class="flex flex-col items-center justify-center">
+                                <span title="{{ $dispositivo->updated_at }}" 
+                                    class="text-xs font-bold text-gray-700 leading-none">
+                                    {{ $dispositivo->updated_at->locale('es')->diffForHumans(null, true) }}
+                                </span>
+                                
+                                <span class="text-[10px] text-gray-400 italic leading-none mt-1">
+                                    {{ $dispositivo->updated_at->format('d/m/Y') }}
+                                </span>
+                            </div>
+                        </td>
+                                                <td class="px-6 py-4">
                             @php
                                 $estado = strtoupper(trim($dispositivo->estado_fisico));
                                 $color = match($estado) {
