@@ -32,7 +32,12 @@ class InventarioGeneralExport implements FromQuery, WithHeadings, WithMapping, S
             'placa_mouse', 'marca_mouse', 'modelo_mouse', 'serial_mouse',
             'placa_cargador', 'marca_cargador', 'modelo_cargador', 'serial_cargador',
             'procesador', 'memoria_ram', 'so', 'tipo_de_disco_duro', 'capacidad_de_disco_duro', 'direccion_mac_del_pc_no_de_red',
-            'estado_fisico', 'estado_logico', 'novedades_u_observaciones'
+            'estado_fisico', 'estado_logico', 'novedades_u_observaciones',
+            // --- NUEVAS COLUMNAS DE AUDITORÍA ---
+            'Creado Por',
+            'Fecha Registro',
+            'Modificado Por',
+            'Última Modificación'
         ];
     }
 
@@ -95,7 +100,14 @@ class InventarioGeneralExport implements FromQuery, WithHeadings, WithMapping, S
             // Estados y Observaciones
             $d->estado_fisico,
             $d->estado_logico ?? 'Bueno',
-            $d->observaciones
+            $d->observaciones,
+
+            // --- MAPEADO DE LAS 4 COLUMNAS DE AUDITORÍA ---
+            $d->creador->name ?? 'Sistema/Carga Masiva',
+            $d->created_at ? $d->created_at->format('d/m/Y H:i') : 'N/A',
+            $d->editor->name ?? 'Sin cambios',
+            $d->updated_at ? $d->updated_at->format('d/m/Y H:i') : 'N/A'
+        
         ];
     }
 }

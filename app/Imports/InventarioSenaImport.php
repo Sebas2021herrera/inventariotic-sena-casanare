@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Illuminate\Support\Facades\Auth;
 
 class InventarioSenaImport implements ToModel, WithHeadingRow, WithChunkReading
 {
@@ -74,8 +75,13 @@ class InventarioSenaImport implements ToModel, WithHeadingRow, WithChunkReading
                         'observaciones' => trim($row['novedades_u_observaciones'] ?? null),
                         'responsable_id' => $responsable->id,
                         'ubicacion_id'   => $ubicacion->id,
+                        'updated_by'     => Auth::id(),
                     ]
                 );
+                // 👈 3. LÓGICA DE CREADOR: Solo si el registro es nuevo en la BD
+                if ($dispositivo->wasRecentlyCreated) {
+                    $dispositivo->update(['created_by' => Auth::id()]);
+                }
 
                 // 6. ESPECIFICACIONES (Procesador, RAM, SO, Disco, MAC)
                 Especificacion::updateOrCreate(

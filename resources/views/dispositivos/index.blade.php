@@ -170,6 +170,13 @@
                                 <span class="text-[10px] text-gray-400 italic leading-none mt-1">
                                     {{ $dispositivo->updated_at->format('d/m/Y') }}
                                 </span>
+
+                                <span class="text-[8px] text-gray-500 mt-1 leading-none uppercase tracking-wider">
+                                    por: 
+                                    <span class="font-black text-blue-600">
+                                        {{ $dispositivo->editor->name ?? ($dispositivo->creador->name ?? 'Sistema') }}
+                                    </span>
+                                </span>
                             </div>
                         </td>
                                                 <td class="px-6 py-4">

@@ -12,7 +12,7 @@ use App\Imports\InventarioSenaImport; // Esto le dice a Laravel dónde buscar la
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use App\Exports\PlantillaInventarioExport;
-
+use Illuminate\Support\Facades\Auth;
 
 class DispositivoController extends Controller
 {
@@ -145,6 +145,7 @@ public function store(Request $request)
                 'observaciones' => $request->observaciones,
                 'responsable_id' => $responsable->id,
                 'ubicacion_id' => $ubicacion->id,
+                'created_by' => Auth::id(),
             ]);
 
             // 5. ESPECIFICACIONES (Tabla relacionada)
@@ -284,6 +285,7 @@ public function update(Request $request, Dispositivo $dispositivo)
             'observaciones' => $request->observaciones,
             'responsable_id' => $responsable->id,
             'ubicacion_id' => $ubicacion->id,
+            'updated_by' => Auth::id(),
         ]);
 
         // 5. ACTUALIZAR ESPECIFICACIONES (Relación hasOne)

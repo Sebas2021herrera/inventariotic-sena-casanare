@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\User;
 
 class Dispositivo extends Model
 {
@@ -14,7 +15,8 @@ class Dispositivo extends Model
     'responsable_id', 'ubicacion_id',
     'propietario', 'funcion', 'en_intune', // <-- Nuevos campos
     // Nuevos campos de Redes
-    'descripcion_tecnica', 'puertos', 'mac_address', 'ap_conectado_a', 'puerto_origen'
+    'descripcion_tecnica', 'puertos', 'mac_address', 'ap_conectado_a', 'puerto_origen',
+    'created_by', 'updated_by'
 ];
 
     public function responsable(): BelongsTo
@@ -47,4 +49,17 @@ public function conceptos()
     // Un dispositivo tiene muchos conceptos técnicos GTI-F-132
     return $this->hasMany(ConceptoTecnico::class, 'dispositivo_id');
 }
+
+// Relación: Quién creó el registro
+public function creador()
+{
+    return $this->belongsTo(User::class, 'created_by');
+}
+
+// Relación: Quién hizo la última modificación
+public function editor()
+{
+    return $this->belongsTo(User::class, 'updated_by');
+}
+
 }

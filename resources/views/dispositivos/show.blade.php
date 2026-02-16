@@ -139,19 +139,48 @@
             </div>
         </div>
 
-        @if($dispositivo->descripcion_tecnica || $dispositivo->observaciones)
-        <div class="px-8 pb-8">
-            <div class="bg-gray-900 text-gray-300 p-6 rounded-2xl font-mono text-xs leading-relaxed shadow-inner">
-                <div class="flex items-center text-white font-bold mb-3 border-b border-gray-700 pb-2 uppercase tracking-tighter">
-                    <i class="fas fa-info-circle mr-2 text-yellow-400"></i> Notas Técnicas y Observaciones
+@if($dispositivo->descripcion_tecnica || $dispositivo->observaciones || $dispositivo->creador || $dispositivo->editor)
+<div class="px-8 pb-8">
+    <div class="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm">
+        
+        <div class="flex flex-wrap items-center gap-3 mb-5 pb-4 border-b border-gray-100">
+            <div class="flex items-center text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                <i class="fas fa-user-plus mr-2 text-blue-400"></i>
+                Registrado por: 
+                <span class="ml-1 text-blue-900">{{ $dispositivo->creador->name ?? 'Sistema/Masivo' }}</span>
+            </div>
+
+            @if($dispositivo->editor)
+            <div class="flex items-center text-[10px] font-black uppercase tracking-wider text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">
+                <i class="fas fa-user-edit mr-2 text-green-400"></i>
+                Modificado por: 
+                <span class="ml-1 text-green-900">{{ $dispositivo->editor->name }}</span>
+            </div>
+            @endif
+        </div>
+
+        <div class="flex items-center text-gray-800 font-black mb-3 uppercase tracking-tighter text-sm">
+            <i class="fas fa-comment-dots mr-2 text-yellow-500"></i> Notas Técnicas y Observaciones
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300 font-mono text-[11px] leading-relaxed text-gray-700">
+            @if($dispositivo->descripcion_tecnica)
+                <div class="mb-3">
+                    <span class="text-gray-900 font-bold underline decoration-yellow-400 decoration-2">DESC:</span> 
+                    {{ $dispositivo->descripcion_tecnica }}
                 </div>
-                @if($dispositivo->descripcion_tecnica)
-                    <p class="mb-3 text-white">DESC: {{ $dispositivo->descripcion_tecnica }}</p>
-                @endif
-                <p class="italic">OBS: {{ $dispositivo->observaciones ?? 'Sin novedades registradas.' }}</p>
+            @endif
+            
+            <div>
+                <span class="text-gray-900 font-bold">OBS:</span> 
+                <span class="italic text-gray-600">
+                    {{ $dispositivo->observaciones ?? 'Sin novedades registradas.' }}
+                </span>
             </div>
         </div>
-        @endif
+    </div>
+</div>
+@endif
     </div>
 
     <div class="mt-8 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
