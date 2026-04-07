@@ -188,13 +188,10 @@
 
     {{-- FILA 5: Últimos Mantenimientos --}}
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center">
+        <div class="px-8 py-6 border-b border-gray-100">
             <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                 <i class="fas fa-history mr-2 text-gray-300"></i>Últimos Mantenimientos Registrados
             </h3>
-            <a href="{{ route('mantenimientos.index') }}" class="text-[10px] font-black text-[#39A900] uppercase tracking-widest hover:underline">
-                Ver todos <i class="fas fa-arrow-right ml-1"></i>
-            </a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-xs">
