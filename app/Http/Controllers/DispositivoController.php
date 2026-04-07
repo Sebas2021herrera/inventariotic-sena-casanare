@@ -20,37 +20,43 @@ class DispositivoController extends Controller
 
     public function index(Request $request)
     {
-        // 1. Capturamos el término de búsqueda
-        $search = $request->input('search');
-    
-        // 2. Iniciamos la consulta base con sus relaciones
-        $query = \App\Models\Dispositivo::with(['responsable', 'ubicacion']);
-    
-        // 3. Aplicamos el filtro solo si hay algo escrito en el buscador
+        $search    = $request->input('search');
+        $estado    = $request->input('estado');
+        $categoria = $request->input('categoria');
+        $intune    = $request->input('intune');
+        $sede      = $request->input('sede');
+
+        $query = Dispositivo::with(['responsable', 'ubicacion', 'editor', 'creador']);
+
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('placa', 'ILIKE', "%{$search}%")
-                  ->orWhere('serial', 'ILIKE', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('placa', 'LIKE', "%{$search}%")
+                  ->orWhere('serial', 'LIKE', "%{$search}%")
+                  ->orWhereHas('responsable', fn ($r) => $r->where('nombre', 'LIKE', "%{$search}%"));
             });
         }
-    
-        // 4. Ejecutamos la paginación incluyendo los parámetros de búsqueda en los links
-                $dispositivos = $query->orderBy('updated_at', 'desc') 
-                ->paginate(15)
-                ->withQueryString();
-    
-        // 5. Mantenemos tus estadísticas robustas (estas se calculan sobre el total)
+
+        if ($estado)    $query->where('estado_fisico', $estado);
+        if ($categoria) $query->where('categoria', $categoria);
+        if ($intune)    $query->where('en_intune', $intune);
+        if ($sede)      $query->whereHas('ubicacion', fn ($q) => $q->where('sede', 'LIKE', "%{$sede}%"));
+
+        $dispositivos = $query->orderBy('updated_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
         $stats = [
-            'total' => \App\Models\Dispositivo::count(),
-            
-            'buenos' => \App\Models\Dispositivo::where('estado_fisico', 'ILIKE', 'Bueno%')->count(),
-            
-            'criticos' => \App\Models\Dispositivo::where('estado_fisico', 'NOT ILIKE', 'Bueno%')->count(),
-            
-            'sedes' => \App\Models\Ubicacion::distinct('sede')->count(),
+            'total'    => Dispositivo::count(),
+            'buenos'   => Dispositivo::where('estado_fisico', 'BUENO')->count(),
+            'criticos' => Dispositivo::where('estado_fisico', '!=', 'BUENO')->count(),
+            'red'      => Dispositivo::where('categoria', 'conectividad')->count(),
         ];
-    
-        return view('dispositivos.index', compact('dispositivos', 'stats'));
+
+        $sedes      = Ubicacion::distinct()->orderBy('sede')->pluck('sede');
+        $estados    = Dispositivo::distinct()->whereNotNull('estado_fisico')->orderBy('estado_fisico')->pluck('estado_fisico');
+        $categorias = Dispositivo::distinct()->whereNotNull('categoria')->orderBy('categoria')->pluck('categoria');
+
+        return view('dispositivos.index', compact('dispositivos', 'stats', 'sedes', 'estados', 'categorias'));
     }
 
 
