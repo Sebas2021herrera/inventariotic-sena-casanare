@@ -55,7 +55,45 @@ public function store(Request $request)
     }
 }
 
-// app/Http/Controllers/ConceptoTecnicoController.php
+public function edit($id)
+{
+    $concepto = ConceptoTecnico::with([
+        'dispositivo.responsable',
+        'dispositivo.especificaciones',
+        'dispositivo.perifericos',
+        'dispositivo.ubicacion'
+    ])->findOrFail($id);
+
+    return view('conceptos.edit', compact('concepto'));
+}
+
+public function update(Request $request, $id)
+{
+    $concepto = ConceptoTecnico::findOrFail($id);
+
+    $request->validate([
+        'tipo_equipo'            => 'required',
+        'hostname'               => 'required',
+        'fecha_reporte'          => 'required|date',
+        'descripcion_solicitud'  => 'required',
+        'diagnostico_tecnico'    => 'required',
+        'tecnico_nombre'         => 'required',
+        'flujo_solicitud'        => 'required',
+        'concepto_tipo'          => 'required',
+    ]);
+
+    try {
+        $datos = $request->except('_token', '_method');
+        $datos['requiere_contingencia'] = $request->has('requiere_contingencia');
+
+        $concepto->update($datos);
+
+        return redirect()->route('dispositivos.show', $concepto->dispositivo_id)
+                         ->with('success', 'Reporte GTI-F-132 actualizado correctamente.');
+    } catch (\Exception $e) {
+        return back()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()])->withInput();
+    }
+}
 
 public function exportarPDF($id)
 {

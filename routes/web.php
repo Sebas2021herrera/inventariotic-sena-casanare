@@ -26,8 +26,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('dispositivos', DispositivoController::class);
     Route::resource('responsables', ResponsableController::class);
 
-    // 2. ESTA LÍNEA ES LA QUE CREA LA RUTA 'mantenimientos.create'
     Route::resource('mantenimientos', MantenimientoController::class);
+    Route::get('/mantenimientos/{mantenimiento}/pdf', [MantenimientoController::class, 'exportarPDF'])->name('mantenimientos.pdf');
     
     // Funcionalidades de Inventario SENA
     Route::post('importar-inventario', [DispositivoController::class, 'importar'])->name('dispositivos.importar');
@@ -38,10 +38,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dispositivos/verificar-placa/{placa}', [DispositivoController::class, 'verificarPlaca'])->name('dispositivos.verificar');
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
     Route::get('/reportes/exportar', [ReporteController::class, 'exportar'])->name('reportes.exportar');
+    Route::get('/reportes/ubicacion-stats', [ReporteController::class, 'ubicacionStats'])->name('reportes.ubicacion-stats');
 
     Route::get('/dispositivos/{dispositivo}/concepto/nuevo', [ConceptoTecnicoController::class, 'create'])->name('conceptos.create');
     Route::post('/conceptos/guardar', [ConceptoTecnicoController::class, 'store'])->name('conceptos.store');
-    // RUTA FALTANTE PARA EL PDF
+    Route::get('/dispositivos/{dispositivo}/hoja-vida-pdf', [DispositivoController::class, 'hojaVidaPDF'])->name('dispositivos.hoja-vida-pdf');
+    Route::get('/conceptos/{id}/editar', [ConceptoTecnicoController::class, 'edit'])->name('conceptos.edit');
+    Route::put('/conceptos/{id}', [ConceptoTecnicoController::class, 'update'])->name('conceptos.update');
     Route::get('/conceptos/{id}/pdf', [ConceptoTecnicoController::class, 'exportarPDF'])->name('conceptos.pdf');
 
     });

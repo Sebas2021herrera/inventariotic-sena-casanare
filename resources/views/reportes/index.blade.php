@@ -186,7 +186,69 @@
 
     </div>
 
-    {{-- FILA 5: Últimos Mantenimientos --}}
+    {{-- FILA 5: Gráfica por Ubicación Física (con filtros) --}}
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-8 py-5 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                    <i class="fas fa-map-pin mr-2 text-[#39A900]"></i>Inventario por Ubicación Física
+                </h3>
+                <p id="ubicacion-titulo" class="text-xs font-bold text-gray-500 mt-1">Equipos por sede</p>
+            </div>
+            {{-- Filtros en cascada --}}
+            <div class="flex flex-wrap gap-3 items-end">
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1">Sede</label>
+                    <select id="filtro-sede" onchange="actualizarBloques()" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-700 focus:ring-2 focus:ring-[#39A900] outline-none min-w-35">
+                        <option value="">— Todas las sedes —</option>
+                        @foreach($ubicacionOpciones['sedes'] as $sede)
+                            <option value="{{ $sede }}">{{ $sede }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1">Bloque</label>
+                    <select id="filtro-bloque" onchange="actualizarAmbientes()" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-700 focus:ring-2 focus:ring-[#39A900] outline-none min-w-35" disabled>
+                        <option value="">— Todos los bloques —</option>
+                    </select>
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1">Ambiente</label>
+                    <select id="filtro-ambiente" onchange="cargarGraficaUbicacion()" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-700 focus:ring-2 focus:ring-[#39A900] outline-none min-w-35" disabled>
+                        <option value="">— Todos los ambientes —</option>
+                    </select>
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1">Intune</label>
+                    <select id="filtro-intune" onchange="cargarGraficaUbicacion()" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-700 focus:ring-2 focus:ring-[#39A900] outline-none min-w-35">
+                        <option value="">— Todos —</option>
+                        <option value="SI">Enrolados (SI)</option>
+                        <option value="NO">No enrolados (NO)</option>
+                    </select>
+                </div>
+                <button onclick="limpiarFiltrosUbicacion()" class="px-4 py-2 rounded-xl border border-gray-200 text-[10px] font-black text-gray-500 hover:bg-gray-50 transition uppercase">
+                    <i class="fas fa-times mr-1"></i> Limpiar
+                </button>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <div id="ubicacion-loading" class="hidden items-center justify-center py-10">
+                <div class="w-6 h-6 border-2 border-[#39A900] border-t-transparent rounded-full animate-spin mr-3"></div>
+                <span class="text-xs font-bold text-gray-400 uppercase">Cargando datos...</span>
+            </div>
+            <div id="ubicacion-empty" class="hidden items-center justify-center py-12 text-center">
+                <i class="fas fa-map-marker-alt text-gray-200 text-4xl mb-3"></i>
+                <p class="text-xs font-bold text-gray-400 uppercase">Sin equipos para la ubicación seleccionada</p>
+            </div>
+            {{-- Wrapper con altura fija para evitar que Chart.js encoja el canvas al actualizar --}}
+            <div style="position:relative; height:320px;">
+                <canvas id="chartUbicacion"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {{-- FILA 6: Últimos Mantenimientos --}}
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-8 py-6 border-b border-gray-100">
             <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
@@ -368,5 +430,175 @@ new Chart(document.getElementById('chartDiscos'), {
     },
     options: { cutout: '60%', plugins: { legend: { display: false } } }
 });
+
+// ── 8. Gráfica de Ubicación Física con filtros en cascada ──────────────────
+
+// Todas las ubicaciones disponibles para el cascading de selects
+const todasUbicaciones = {!! json_encode($ubicacionOpciones['todas']) !!};
+
+let chartUbicacion = null;
+
+function mostrarCapa(id) {
+    ['ubicacion-loading', 'ubicacion-empty', 'chartUbicacion'].forEach(cId => {
+        const el = document.getElementById(cId);
+        if (!el) return;
+        if (cId === id) {
+            el.style.display = (cId === 'ubicacion-loading' || cId === 'ubicacion-empty') ? 'flex' : 'block';
+        } else {
+            el.style.display = 'none';
+        }
+    });
+}
+
+function actualizarBloques() {
+    const sede = document.getElementById('filtro-sede').value;
+    const selectBloque = document.getElementById('filtro-bloque');
+    const selectAmbiente = document.getElementById('filtro-ambiente');
+
+    // Resetear bloques y ambientes
+    selectBloque.innerHTML = '<option value="">— Todos los bloques —</option>';
+    selectAmbiente.innerHTML = '<option value="">— Todos los ambientes —</option>';
+    selectAmbiente.disabled = true;
+
+    if (sede) {
+        const bloques = [...new Set(
+            todasUbicaciones
+                .filter(u => u.sede === sede && u.bloque)
+                .map(u => u.bloque)
+        )].sort();
+
+        bloques.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b;
+            opt.textContent = b;
+            selectBloque.appendChild(opt);
+        });
+        selectBloque.disabled = bloques.length === 0;
+    } else {
+        selectBloque.disabled = true;
+    }
+
+    cargarGraficaUbicacion();
+}
+
+function actualizarAmbientes() {
+    const sede   = document.getElementById('filtro-sede').value;
+    const bloque = document.getElementById('filtro-bloque').value;
+    const selectAmbiente = document.getElementById('filtro-ambiente');
+
+    selectAmbiente.innerHTML = '<option value="">— Todos los ambientes —</option>';
+
+    if (bloque) {
+        const ambientes = [...new Set(
+            todasUbicaciones
+                .filter(u => u.sede === sede && u.bloque === bloque)
+                .map(u => u.ambiente)
+        )].sort();
+
+        ambientes.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a;
+            opt.textContent = a;
+            selectAmbiente.appendChild(opt);
+        });
+        selectAmbiente.disabled = ambientes.length === 0;
+    } else {
+        selectAmbiente.disabled = true;
+    }
+
+    cargarGraficaUbicacion();
+}
+
+function limpiarFiltrosUbicacion() {
+    document.getElementById('filtro-sede').value     = '';
+    document.getElementById('filtro-intune').value   = '';
+    document.getElementById('filtro-bloque').innerHTML   = '<option value="">— Todos los bloques —</option>';
+    document.getElementById('filtro-ambiente').innerHTML  = '<option value="">— Todos los ambientes —</option>';
+    document.getElementById('filtro-bloque').disabled    = true;
+    document.getElementById('filtro-ambiente').disabled  = true;
+    cargarGraficaUbicacion();
+}
+
+async function cargarGraficaUbicacion() {
+    const sede     = document.getElementById('filtro-sede').value;
+    const bloque   = document.getElementById('filtro-bloque').value;
+    const ambiente = document.getElementById('filtro-ambiente').value;
+    const intune   = document.getElementById('filtro-intune').value;
+
+    mostrarCapa('ubicacion-loading');
+
+    const params = new URLSearchParams();
+    if (sede)     params.set('sede', sede);
+    if (bloque)   params.set('bloque', bloque);
+    if (ambiente) params.set('ambiente', ambiente);
+    if (intune)   params.set('intune', intune);
+
+    try {
+        const res  = await fetch(`{{ route('reportes.ubicacion-stats') }}?${params}`);
+        const data = await res.json();
+
+        document.getElementById('ubicacion-titulo').textContent = data.titulo;
+
+        if (!data.values || data.values.length === 0) {
+            mostrarCapa('ubicacion-empty');
+            return;
+        }
+
+        mostrarCapa('chartUbicacion');
+
+        // Colores dinámicos por cantidad de barras
+        const bgColors = data.labels.map((_, i) => palette[i % palette.length]);
+
+        if (chartUbicacion) {
+            chartUbicacion.data.labels   = data.labels;
+            chartUbicacion.data.datasets[0].data = data.values;
+            chartUbicacion.data.datasets[0].backgroundColor = bgColors;
+            chartUbicacion.update();
+        } else {
+            chartUbicacion = new Chart(document.getElementById('chartUbicacion'), {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Equipos',
+                        data: data.values,
+                        backgroundColor: bgColors,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.y} equipo${ctx.parsed.y !== 1 ? 's' : ''}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, font: { size: 10 } },
+                            grid: { color: '#f3f4f6' }
+                        },
+                        x: {
+                            ticks: { font: { size: 10 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+    } catch (e) {
+        mostrarCapa('ubicacion-empty');
+        console.error('Error cargando stats de ubicación:', e);
+    }
+}
+
+// Carga inicial sin filtros
+cargarGraficaUbicacion();
 </script>
 @endsection

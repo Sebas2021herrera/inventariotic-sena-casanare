@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Dispositivo;
 use App\Models\Mantenimiento;
+use App\Models\Ubicacion;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\InventarioGeneralExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -84,7 +86,74 @@ class ReporteController extends Controller
                 ->get(),
         ];
 
-        return view('reportes.index', compact('stats'));
+        // Datos para los dropdowns de ubicación (todos los valores únicos)
+        $ubicacionOpciones = [
+            'sedes'    => Ubicacion::distinct()->orderBy('sede')->pluck('sede'),
+            'bloques'  => Ubicacion::distinct()->orderBy('bloque')->whereNotNull('bloque')->pluck('bloque'),
+            'ambientes'=> Ubicacion::distinct()->orderBy('ambiente')->pluck('ambiente'),
+            // Relaciones completas para el cascading JS
+            'todas'    => Ubicacion::select('sede', 'bloque', 'ambiente')->orderBy('sede')->orderBy('bloque')->orderBy('ambiente')->get(),
+        ];
+
+        return view('reportes.index', compact('stats', 'ubicacionOpciones'));
+    }
+
+    public function ubicacionStats(Request $request)
+    {
+        $sede     = $request->input('sede');
+        $bloque   = $request->input('bloque');
+        $ambiente = $request->input('ambiente');
+        $intune   = $request->input('intune');
+
+        $query = DB::table('ubicaciones')
+            ->join('dispositivos', 'ubicaciones.id', '=', 'dispositivos.ubicacion_id');
+
+        if ($sede)     $query->where('ubicaciones.sede', $sede);
+        if ($bloque)   $query->where('ubicaciones.bloque', $bloque);
+        if ($ambiente) $query->where('ubicaciones.ambiente', $ambiente);
+        if ($intune)   $query->where('dispositivos.en_intune', $intune);
+
+        // Sufijo para el título cuando hay filtro Intune activo
+        $sufIntune = $intune ? (' · Intune: ' . ($intune === 'SI' ? 'Enrolados' : 'No enrolados')) : '';
+
+        // Nivel de agrupación progresivo según filtros activos
+        if ($ambiente) {
+            $datos = $query->select('dispositivos.estado_fisico as etiqueta', DB::raw('count(dispositivos.id) as total'))
+                ->groupBy('dispositivos.estado_fisico')
+                ->orderBy('total', 'desc')
+                ->get();
+            $titulo = "Estado físico · {$sede} › {$bloque} › {$ambiente}{$sufIntune}";
+        } elseif ($bloque) {
+            $datos = $query->select('ubicaciones.ambiente as etiqueta', DB::raw('count(dispositivos.id) as total'))
+                ->groupBy('ubicaciones.ambiente')
+                ->orderBy('total', 'desc')
+                ->get();
+            $titulo = "Por ambiente · {$sede} › {$bloque}{$sufIntune}";
+        } elseif ($sede) {
+            $datos = $query->select(
+                    DB::raw("COALESCE(NULLIF(TRIM(ubicaciones.bloque),''), 'Sin bloque') as etiqueta"),
+                    DB::raw('count(dispositivos.id) as total')
+                )
+                ->groupBy('ubicaciones.bloque')
+                ->orderBy('total', 'desc')
+                ->get();
+            $titulo = "Por bloque · {$sede}{$sufIntune}";
+        } else {
+            $datos = $query->select(
+                    DB::raw('UPPER(TRIM(ubicaciones.sede)) as etiqueta'),
+                    DB::raw('count(dispositivos.id) as total')
+                )
+                ->groupBy('ubicaciones.sede')
+                ->orderBy('total', 'desc')
+                ->get();
+            $titulo = 'Equipos por sede' . $sufIntune;
+        }
+
+        return response()->json([
+            'labels' => $datos->pluck('etiqueta'),
+            'values' => $datos->pluck('total'),
+            'titulo' => $titulo,
+        ]);
     }
 
     public function exportar()

@@ -10,13 +10,12 @@
             <a href="{{ route('conceptos.create', $dispositivo) }}" class="bg-orange-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-orange-600 transition flex items-center shadow-lg shadow-orange-100">
                 <i class="fas fa-file-signature mr-2"></i> Nuevo GTI-F-132
             </a>
-            
             <a href="{{ route('dispositivos.edit', $dispositivo) }}" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-blue-700 transition flex items-center">
                 <i class="fas fa-edit mr-2"></i> Editar Equipo
             </a>
-            <button onclick="window.print()" class="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-xl font-bold hover:bg-gray-50 transition">
-                <i class="fas fa-print mr-1"></i> Imprimir Ficha
-            </button>
+            <a href="{{ route('dispositivos.hoja-vida-pdf', $dispositivo) }}" class="bg-[#39A900] text-white px-4 py-2 rounded-xl font-bold hover:bg-[#2d8500] transition flex items-center shadow-lg shadow-green-100">
+                <i class="fas fa-file-pdf mr-2"></i> Hoja de Vida PDF
+            </a>
         </div>
     </div>
 
@@ -223,9 +222,14 @@
                         </td>
                         <td class="p-4 text-gray-600 font-medium">{{ $concepto->tecnico_nombre }}</td>
                         <td class="p-4 text-right">
-                            <a href="{{ route('conceptos.pdf', $concepto->id) }}" class="text-red-500 hover:text-red-700 font-bold uppercase text-[10px] tracking-widest">
-                                <i class="fas fa-file-pdf mr-1"></i> Descargar
-                            </a>
+                            <div class="flex justify-end gap-3">
+                                <a href="{{ route('conceptos.edit', $concepto->id) }}" class="text-blue-500 hover:text-blue-700 font-bold uppercase text-[10px] tracking-widest">
+                                    <i class="fas fa-edit mr-1"></i> Editar
+                                </a>
+                                <a href="{{ route('conceptos.pdf', $concepto->id) }}" class="text-red-500 hover:text-red-700 font-bold uppercase text-[10px] tracking-widest">
+                                    <i class="fas fa-file-pdf mr-1"></i> PDF
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     @empty
@@ -275,8 +279,13 @@
                         </td>
                         <td class="p-4 text-gray-600 font-medium">{{ $mtto->tecnico_encargado }}</td>
                         <td class="p-4 text-right">
-                            <div class="flex justify-end gap-2">
-                                <a href="{{ route('mantenimientos.edit', $mtto) }}" class="text-blue-500"><i class="fas fa-edit"></i></a>
+                            <div class="flex justify-end gap-3">
+                                <a href="{{ route('mantenimientos.edit', $mtto) }}" class="text-blue-500 hover:text-blue-700 font-bold uppercase text-[10px] tracking-widest">
+                                    <i class="fas fa-edit mr-1"></i> Editar
+                                </a>
+                                <a href="{{ route('mantenimientos.pdf', $mtto) }}" class="text-red-500 hover:text-red-700 font-bold uppercase text-[10px] tracking-widest">
+                                    <i class="fas fa-file-pdf mr-1"></i> Imprimir
+                                </a>
                             </div>
                         </td>
                     </tr>

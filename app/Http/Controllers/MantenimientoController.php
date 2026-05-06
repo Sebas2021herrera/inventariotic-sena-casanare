@@ -6,6 +6,7 @@ use App\Models\Mantenimiento;
 use App\Models\Dispositivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MantenimientoController extends Controller
 {
@@ -100,5 +101,13 @@ class MantenimientoController extends Controller
         $mantenimiento->delete();
         return redirect()->route('dispositivos.show', $dispositivoId)
                          ->with('success', 'Registro eliminado.');
+    }
+
+    public function exportarPDF(Mantenimiento $mantenimiento)
+    {
+        $mantenimiento->load(['dispositivo.responsable', 'dispositivo.ubicacion', 'dispositivo.especificaciones']);
+        $pdf = Pdf::loadView('mantenimientos.pdf', compact('mantenimiento'));
+        $pdf->setPaper('letter', 'portrait');
+        return $pdf->download('Mantenimiento_Placa_' . $mantenimiento->dispositivo->placa . '_' . $mantenimiento->fecha . '.pdf');
     }
 }

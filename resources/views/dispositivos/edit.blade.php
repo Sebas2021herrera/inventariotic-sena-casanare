@@ -231,14 +231,16 @@
                         @endphp
 
                         @foreach($tipos as $tipo)
-                        @php 
-                            $existente = $dispositivo->perifericos->where('tipo', $tipo)->first(); 
+                        @php
+                            $existente = $dispositivo->perifericos->where('tipo', $tipo)->first();
                         @endphp
                         <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
                             <h4 class="text-[10px] font-black text-gray-400 uppercase mb-2">{{ $tipo }}</h4>
                             <div class="grid grid-cols-2 gap-2">
-                                <input type="text" name="perifericos[{{ $tipo }}][placa]" value="{{ old("perifericos.$tipo.placa", $existente->placa ?? '') }}" placeholder="Placa" class="text-[10px] p-2 rounded-lg border-gray-200">
-                                <input type="text" name="perifericos[{{ $tipo }}][serial]" value="{{ old("perifericos.$tipo.serial", $existente->serial ?? '') }}" placeholder="Serial" class="text-[10px] p-2 rounded-lg border-gray-200">
+                                <input type="text" name="perifericos[{{ $tipo }}][placa]"  value="{{ old("perifericos.$tipo.placa",  $existente->placa  ?? '') }}" placeholder="Placa SENA" class="text-[10px] p-2 rounded-lg border-gray-200 bg-white">
+                                <input type="text" name="perifericos[{{ $tipo }}][serial]" value="{{ old("perifericos.$tipo.serial", $existente->serial ?? '') }}" placeholder="Serial"      class="text-[10px] p-2 rounded-lg border-gray-200 bg-white">
+                                <input type="text" name="perifericos[{{ $tipo }}][marca]"  value="{{ old("perifericos.$tipo.marca",  $existente->marca  ?? '') }}" placeholder="Marca"       class="text-[10px] p-2 rounded-lg border-gray-200 bg-white">
+                                <input type="text" name="perifericos[{{ $tipo }}][modelo]" value="{{ old("perifericos.$tipo.modelo", $existente->modelo ?? '') }}" placeholder="Modelo"      class="text-[10px] p-2 rounded-lg border-gray-200 bg-white">
                             </div>
                         </div>
                         @endforeach

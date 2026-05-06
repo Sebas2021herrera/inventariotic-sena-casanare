@@ -259,8 +259,10 @@
                         <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
                             <h4 class="text-[10px] font-black text-gray-400 uppercase mb-3 italic">{{ $periferico }}</h4>
                             <div class="grid grid-cols-2 gap-2">
-                                <input type="text" name="perifericos[{{ $periferico }}][placa]" placeholder="Placa" class="text-[10px] p-2 rounded-lg border-gray-200">
-                                <input type="text" name="perifericos[{{ $periferico }}][serial]" placeholder="Serial" class="text-[10px] p-2 rounded-lg border-gray-200">
+                                <input type="text" name="perifericos[{{ $periferico }}][placa]"  placeholder="Placa SENA"  class="text-[10px] p-2 rounded-lg border-gray-200 bg-white">
+                                <input type="text" name="perifericos[{{ $periferico }}][serial]" placeholder="Serial"       class="text-[10px] p-2 rounded-lg border-gray-200 bg-white">
+                                <input type="text" name="perifericos[{{ $periferico }}][marca]"  placeholder="Marca"        class="text-[10px] p-2 rounded-lg border-gray-200 bg-white">
+                                <input type="text" name="perifericos[{{ $periferico }}][modelo]" placeholder="Modelo"       class="text-[10px] p-2 rounded-lg border-gray-200 bg-white">
                             </div>
                         </div>
                         @endforeach

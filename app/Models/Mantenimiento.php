@@ -9,8 +9,8 @@ class Mantenimiento extends Model
     
 
 protected $fillable = [
-    'dispositivo_id', 'fecha', 'tipo', 'descripcion_falla', 
-    'tareas_realizadas', 'piezas_cambiadas', 'tecnico_encargado', 'observaciones'
+    'dispositivo_id', 'fecha', 'tipo', 'descripcion_falla',
+    'tareas_realizadas', 'piezas_cambiadas', 'tecnico_encargado', 'observaciones', 'finalizado'
 ];
 
 public function dispositivo()

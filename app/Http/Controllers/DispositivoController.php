@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use App\Exports\PlantillaInventarioExport;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DispositivoController extends Controller
 {
@@ -313,11 +314,13 @@ public function update(Request $request, Dispositivo $dispositivo)
             foreach ($request->perifericos as $tipo => $datos) {
                 if (!empty($datos['placa']) || !empty($datos['serial'])) {
                     $dispositivo->perifericos()->updateOrCreate(
-                        ['tipo' => $tipo], // Busca por tipo (Monitor, Teclado, etc.) para este equipo
+                        ['tipo' => $tipo],
                         [
-                            'placa' => $datos['placa'] ?? 'N/A',
+                            'placa'  => $datos['placa']  ?? 'N/A',
                             'serial' => $datos['serial'] ?? 'N/A',
-                            'estado' => 'BUENO'
+                            'marca'  => $datos['marca']  ?? 'N/A',
+                            'modelo' => $datos['modelo'] ?? 'N/A',
+                            'estado' => 'BUENO',
                         ]
                     );
                 }
@@ -333,6 +336,25 @@ public function update(Request $request, Dispositivo $dispositivo)
         DB::rollback();
         return back()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()])->withInput();
     }
+}
+
+public function hojaVidaPDF(Dispositivo $dispositivo)
+{
+    $dispositivo->load([
+        'responsable',
+        'ubicacion',
+        'especificaciones',
+        'perifericos',
+        'mantenimientos',
+        'conceptos',
+        'creador',
+        'editor',
+    ]);
+
+    $pdf = Pdf::loadView('dispositivos.hoja_vida_pdf', compact('dispositivo'));
+    $pdf->setPaper('letter', 'portrait');
+
+    return $pdf->download('HojaVida_Placa_' . $dispositivo->placa . '.pdf');
 }
 
 public function verificarPlaca($placa)
