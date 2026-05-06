@@ -112,12 +112,13 @@
         @endforeach
     </table>
 
+    @php $gb = fn($v) => is_numeric($v ?? '') ? $v . ' GB' : ($v ?? 'N/A'); @endphp
     <table>
         <tr>
             <td class="bg-gray" style="width: 15%;">DISCO DURO:</td>
-            <td style="width: 35%;">{{ $concepto->dispositivo->especificaciones->capacidad_disco ?? 'N/A' }}</td>
+            <td style="width: 35%;">{{ $gb($concepto->dispositivo->especificaciones->capacidad_disco ?? '') }}</td>
             <td class="bg-gray" style="width: 15%;">MEMORIA RAM:</td>
-            <td style="width: 35%;">{{ $concepto->dispositivo->especificaciones->ram ?? 'N/A' }}</td>
+            <td style="width: 35%;">{{ $gb($concepto->dispositivo->especificaciones->ram ?? '') }}</td>
         </tr>
         <tr>
             <td class="bg-gray">PROCESADOR:</td>

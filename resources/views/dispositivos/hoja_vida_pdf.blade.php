@@ -234,15 +234,16 @@
         <td class="bg-gray" style="width:25%;">PROCESADOR:</td>
         <td colspan="3">{{ $dispositivo->especificaciones->procesador ?? 'N/A' }}</td>
     </tr>
+    @php $gb = fn($v) => is_numeric($v ?? '') ? $v . ' GB' : ($v ?? 'N/A'); @endphp
     <tr>
         <td class="bg-gray">MEMORIA RAM:</td>
-        <td style="width:25%;">{{ $dispositivo->especificaciones->ram ?? 'N/A' }}</td>
+        <td style="width:25%;">{{ $gb($dispositivo->especificaciones->ram ?? '') }}</td>
         <td class="bg-gray" style="width:25%;">TIPO DISCO:</td>
         <td style="width:25%;">{{ $dispositivo->especificaciones->tipo_disco ?? 'N/A' }}</td>
     </tr>
     <tr>
         <td class="bg-gray">CAPACIDAD DISCO:</td>
-        <td>{{ $dispositivo->especificaciones->capacidad_disco ?? 'N/A' }}</td>
+        <td>{{ $gb($dispositivo->especificaciones->capacidad_disco ?? '') }}</td>
         <td class="bg-gray">SISTEMA OPERATIVO:</td>
         <td>{{ $dispositivo->especificaciones->so ?? 'N/A' }}</td>
     </tr>

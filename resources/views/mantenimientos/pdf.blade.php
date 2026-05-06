@@ -91,11 +91,12 @@
             <td>{{ $mantenimiento->dispositivo->responsable->cargo }}</td>
         </tr>
         @if($mantenimiento->dispositivo->especificaciones)
+        @php $gb = fn($v) => is_numeric($v ?? '') ? $v . ' GB' : ($v ?? 'N/A'); @endphp
         <tr>
             <td class="bg-gray">PROCESADOR:</td>
             <td>{{ $mantenimiento->dispositivo->especificaciones->procesador ?? 'N/A' }}</td>
             <td class="bg-gray">RAM / DISCO:</td>
-            <td>{{ $mantenimiento->dispositivo->especificaciones->ram ?? 'N/A' }} / {{ $mantenimiento->dispositivo->especificaciones->capacidad_disco ?? 'N/A' }}</td>
+            <td>{{ $gb($mantenimiento->dispositivo->especificaciones->ram ?? '') }} / {{ $gb($mantenimiento->dispositivo->especificaciones->capacidad_disco ?? '') }}</td>
         </tr>
         @endif
     </table>
