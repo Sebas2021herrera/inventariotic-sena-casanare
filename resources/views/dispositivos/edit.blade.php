@@ -233,12 +233,11 @@
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo de Disco</label>
                             <select name="tipo_disco" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#39A900]">
                                 <option value="">— Seleccionar —</option>
-                                <option value="SSD"     {{ $tipoActual == 'SSD'     ? 'selected' : '' }}>SSD — Sólido SATA</option>
-                                <option value="SSD M.2" {{ $tipoActual == 'SSD M.2' ? 'selected' : '' }}>SSD M.2 — NVMe</option>
-                                <option value="HDD"     {{ $tipoActual == 'HDD'     ? 'selected' : '' }}>HDD — Mecánico</option>
-                                <option value="eMMC"    {{ $tipoActual == 'eMMC'    ? 'selected' : '' }}>eMMC</option>
-                                <option value="SSHD"    {{ $tipoActual == 'SSHD'    ? 'selected' : '' }}>SSHD — Híbrido</option>
-                                <option value="N/A"     {{ $tipoActual == 'N/A'     ? 'selected' : '' }}>N/A</option>
+                                <option value="SSD — Sólido SATA"  {{ $tipoActual == 'SSD — Sólido SATA'  ? 'selected' : '' }}>SSD — Sólido SATA</option>
+                                <option value="SSD M.2 — NVMe"     {{ $tipoActual == 'SSD M.2 — NVMe'     ? 'selected' : '' }}>SSD M.2 — NVMe</option>
+                                <option value="HDD — Mecánico"     {{ $tipoActual == 'HDD — Mecánico'     ? 'selected' : '' }}>HDD — Mecánico</option>
+                                <option value="SSHD — Híbrido"     {{ $tipoActual == 'SSHD — Híbrido'     ? 'selected' : '' }}>SSHD — Híbrido</option>
+                                <option value="N/A"                {{ $tipoActual == 'N/A'                ? 'selected' : '' }}>N/A</option>
                             </select>
                         </div>
 
