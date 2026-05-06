@@ -60,7 +60,7 @@
             </div>
             <div class="p-4 text-center">
                 <p class="text-[9px] font-black text-gray-400 uppercase">Sede</p>
-                <p class="font-bold text-gray-700">{{ $dispositivo->ubicacion->sede }}</p>
+                <p class="font-bold text-gray-700">{{ $dispositivo->ubicacion->sede->nombre }}</p>
             </div>
         </div>
 

@@ -278,7 +278,7 @@
 
                             {{-- Ubicación --}}
                             <td class="px-5 py-4">
-                                <div class="text-xs font-black text-gray-600">{{ $d->ubicacion->sede ?? '—' }}</div>
+                                <div class="text-xs font-black text-gray-600">{{ $d->ubicacion->sede->nombre ?? '—' }}</div>
                                 <div class="text-[10px] text-[#39A900] font-bold">
                                     Amb: {{ $d->ubicacion->bloque ?? '' }} {{ $d->ubicacion->ambiente ?? '' }}
                                 </div>

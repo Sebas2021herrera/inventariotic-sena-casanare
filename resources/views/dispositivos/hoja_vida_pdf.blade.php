@@ -156,7 +156,7 @@
 <table>
     <tr>
         <td class="bg-gray" style="width:18%;">SEDE / REGIONAL:</td>
-        <td style="width:32%;">{{ $dispositivo->ubicacion->sede }}</td>
+        <td style="width:32%;">{{ $dispositivo->ubicacion->sede->nombre }}</td>
         <td class="bg-gray" style="width:18%;">BLOQUE:</td>
         <td style="width:32%;">{{ $dispositivo->ubicacion->bloque ?? 'N/A' }}</td>
     </tr>

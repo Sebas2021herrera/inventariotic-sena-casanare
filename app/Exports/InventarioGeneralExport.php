@@ -15,7 +15,7 @@ class InventarioGeneralExport implements FromQuery, WithHeadings, WithMapping, S
      */
     public function query()
     {
-        return Dispositivo::with(['responsable', 'ubicacion', 'especificaciones', 'perifericos']);
+        return Dispositivo::with(['responsable', 'ubicacion.sede', 'especificaciones', 'perifericos', 'creador', 'editor']);
     }
 
     /**
@@ -76,7 +76,7 @@ class InventarioGeneralExport implements FromQuery, WithHeadings, WithMapping, S
             $d->responsable->tipo_funcionario,
 
             // Ubicación
-            $d->ubicacion->sede,
+            $d->ubicacion->sede->nombre ?? '',
             $d->ubicacion->bloque,
             $d->ubicacion->ambiente,
 

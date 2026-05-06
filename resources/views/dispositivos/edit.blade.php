@@ -108,9 +108,11 @@
                         <i class="fas fa-map-marker-alt mr-2"></i> Ubicación Física
                     </div>
                     <div class="space-y-4">
-                        <input type="text" name="sede" list="listado-sedes" value="{{ old('sede', $dispositivo->ubicacion->sede) }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
+                        <input type="text" name="sede" list="listado-sedes" value="{{ old('sede', $dispositivo->ubicacion->sede->nombre) }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
                         <datalist id="listado-sedes">
-                            <option value="Yopal"><option value="Paz de Ariporo"><option value="Monterrey"><option value="Aguazul"><option value="Villanueva">
+                            @foreach($sedes as $s)
+                                <option value="{{ $s }}">
+                            @endforeach
                         </datalist>
                         <div class="grid grid-cols-2 gap-3">
                             <input type="text" name="bloque" value="{{ old('bloque', $dispositivo->ubicacion->bloque) }}" placeholder="Bloque" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">

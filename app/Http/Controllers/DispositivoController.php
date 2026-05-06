@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Dispositivo;
 use App\Models\Responsable;
 use App\Models\Ubicacion;
+use App\Models\Sede;
 use App\Models\Especificacion;
-use App\Models\Periferico; // Asegúrate de importar el modelo
+use App\Models\Periferico;
 use Illuminate\Http\Request;
 use App\Imports\InventarioSenaImport; // Esto le dice a Laravel dónde buscar la clase
 use Maatwebsite\Excel\Facades\Excel;
@@ -40,7 +41,7 @@ class DispositivoController extends Controller
         if ($estado)    $query->where('estado_fisico', $estado);
         if ($categoria) $query->where('categoria', $categoria);
         if ($intune)    $query->where('en_intune', $intune);
-        if ($sede)      $query->whereHas('ubicacion', fn ($q) => $q->where('sede', 'LIKE', "%{$sede}%"));
+        if ($sede)      $query->whereHas('ubicacion.sede', fn ($q) => $q->where('nombre', 'LIKE', "%{$sede}%"));
 
         $dispositivos = $query->orderBy('updated_at', 'desc')
             ->paginate(15)
@@ -53,7 +54,7 @@ class DispositivoController extends Controller
             'red'      => Dispositivo::where('categoria', 'conectividad')->count(),
         ];
 
-        $sedes      = Ubicacion::distinct()->orderBy('sede')->pluck('sede');
+        $sedes      = Sede::orderBy('nombre')->pluck('nombre');
         $estados    = Dispositivo::distinct()->whereNotNull('estado_fisico')->orderBy('estado_fisico')->pluck('estado_fisico');
         $categorias = Dispositivo::distinct()->whereNotNull('categoria')->orderBy('categoria')->pluck('categoria');
 
@@ -94,10 +95,10 @@ public function show(Dispositivo $dispositivo)
 public function create()
 {
     // Obtenemos responsables y ubicaciones existentes para sugerir en el formulario
-    $responsables = \App\Models\Responsable::all();
-    $ubicaciones = \App\Models\Ubicacion::all();
-    
-    return view('dispositivos.create', compact('responsables', 'ubicaciones'));
+    $responsables = Responsable::all();
+    $sedes        = Sede::orderBy('nombre')->pluck('nombre');
+
+    return view('dispositivos.create', compact('responsables', 'sedes'));
 }
 
 public function store(Request $request)
@@ -130,11 +131,12 @@ public function store(Request $request)
                 ]
             );
 
-            // 3. UBICACIÓN
+            // 3. SEDE + UBICACIÓN
+            $sede = Sede::firstOrCreate(['nombre' => $request->sede]);
             $ubicacion = Ubicacion::firstOrCreate([
-                'sede' => $request->sede,
-                'bloque' => $request->bloque ?? 'N/A',
-                'ambiente' => $request->ambiente,
+                'sede_id' => $sede->id,
+                'bloque'  => $request->bloque ?? 'N/A',
+                'ambiente'=> $request->ambiente,
             ]);
 
             // 4. DISPOSITIVO: Incluyendo Propietario, Función e Intune
@@ -237,9 +239,9 @@ public function destroy(Dispositivo $dispositivo)
 
 public function edit(Dispositivo $dispositivo)
 {
-    // Cargamos las relaciones para que el formulario tenga la data
-    $dispositivo->load(['responsable', 'ubicacion', 'especificaciones', 'perifericos']);
-    return view('dispositivos.edit', compact('dispositivo'));
+    $dispositivo->load(['responsable', 'ubicacion.sede', 'especificaciones', 'perifericos']);
+    $sedes = Sede::orderBy('nombre')->pluck('nombre');
+    return view('dispositivos.edit', compact('dispositivo', 'sedes'));
 }
 
 public function update(Request $request, Dispositivo $dispositivo)
@@ -271,11 +273,12 @@ public function update(Request $request, Dispositivo $dispositivo)
             ]
         );
 
-        // 3. ACTUALIZAR UBICACIÓN
+        // 3. ACTUALIZAR SEDE + UBICACIÓN
+        $sede = Sede::firstOrCreate(['nombre' => $request->sede]);
         $ubicacion = Ubicacion::firstOrCreate([
-            'sede' => $request->sede,
-            'bloque' => $request->bloque ?? 'N/A',
-            'ambiente' => $request->ambiente,
+            'sede_id' => $sede->id,
+            'bloque'  => $request->bloque ?? 'N/A',
+            'ambiente'=> $request->ambiente,
         ]);
 
         // 4. ACTUALIZAR DATOS BÁSICOS DEL DISPOSITIVO

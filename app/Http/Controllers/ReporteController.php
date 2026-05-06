@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Dispositivo;
 use App\Models\Mantenimiento;
 use App\Models\Ubicacion;
+use App\Models\Sede;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\InventarioGeneralExport;
@@ -25,21 +26,19 @@ class ReporteController extends Controller
         $intuneEnrolados = $intuneData->where('en_intune', 'SI')->first()->total ?? 0;
 
         $stats = [
-            'total_general'       => $totalGeneral,
-            'intune_enrolados'    => $intuneEnrolados,
-            'intune_pendientes'   => $totalGeneral - $intuneEnrolados,
-            'en_reparacion'       => Dispositivo::where('estado_fisico', 'EN REPARACIÓN')->count(),
-            'mantenimientos_mes'  => Mantenimiento::whereYear('fecha', $ahora->year)
-                                        ->whereMonth('fecha', $ahora->month)
-                                        ->count(),
+            'total_general'      => $totalGeneral,
+            'intune_enrolados'   => $intuneEnrolados,
+            'intune_pendientes'  => $totalGeneral - $intuneEnrolados,
+            'en_reparacion'      => Dispositivo::where('estado_fisico', 'EN REPARACIÓN')->count(),
+            'mantenimientos_mes' => Mantenimiento::whereYear('fecha', $ahora->year)
+                                       ->whereMonth('fecha', $ahora->month)
+                                       ->count(),
 
-            'por_sede' => DB::table('ubicaciones')
+            'por_sede' => DB::table('sedes')
+                ->join('ubicaciones', 'sedes.id', '=', 'ubicaciones.sede_id')
                 ->join('dispositivos', 'ubicaciones.id', '=', 'dispositivos.ubicacion_id')
-                ->select(
-                    DB::raw('UPPER(TRIM(sede)) as sede_nombre'),
-                    DB::raw('count(dispositivos.id) as total')
-                )
-                ->groupBy(DB::raw('UPPER(TRIM(sede))'))
+                ->select('sedes.nombre as sede_nombre', DB::raw('count(dispositivos.id) as total'))
+                ->groupBy('sedes.id', 'sedes.nombre')
                 ->orderBy('total', 'desc')
                 ->get(),
 
@@ -86,13 +85,18 @@ class ReporteController extends Controller
                 ->get(),
         ];
 
-        // Datos para los dropdowns de ubicación (todos los valores únicos)
+        // Datos para los dropdowns de ubicación (cascading JS)
         $ubicacionOpciones = [
-            'sedes'    => Ubicacion::distinct()->orderBy('sede')->pluck('sede'),
-            'bloques'  => Ubicacion::distinct()->orderBy('bloque')->whereNotNull('bloque')->pluck('bloque'),
-            'ambientes'=> Ubicacion::distinct()->orderBy('ambiente')->pluck('ambiente'),
-            // Relaciones completas para el cascading JS
-            'todas'    => Ubicacion::select('sede', 'bloque', 'ambiente')->orderBy('sede')->orderBy('bloque')->orderBy('ambiente')->get(),
+            'sedes'    => Sede::orderBy('nombre')->pluck('nombre'),
+            'todas'    => Ubicacion::with('sede')
+                            ->orderBy('bloque')
+                            ->orderBy('ambiente')
+                            ->get()
+                            ->map(fn($u) => [
+                                'sede'     => $u->sede->nombre ?? '',
+                                'bloque'   => $u->bloque,
+                                'ambiente' => $u->ambiente,
+                            ]),
         ];
 
         return view('reportes.index', compact('stats', 'ubicacionOpciones'));
@@ -105,18 +109,17 @@ class ReporteController extends Controller
         $ambiente = $request->input('ambiente');
         $intune   = $request->input('intune');
 
-        $query = DB::table('ubicaciones')
+        $query = DB::table('sedes')
+            ->join('ubicaciones', 'sedes.id', '=', 'ubicaciones.sede_id')
             ->join('dispositivos', 'ubicaciones.id', '=', 'dispositivos.ubicacion_id');
 
-        if ($sede)     $query->where('ubicaciones.sede', $sede);
+        if ($sede)     $query->where('sedes.nombre', $sede);
         if ($bloque)   $query->where('ubicaciones.bloque', $bloque);
         if ($ambiente) $query->where('ubicaciones.ambiente', $ambiente);
         if ($intune)   $query->where('dispositivos.en_intune', $intune);
 
-        // Sufijo para el título cuando hay filtro Intune activo
         $sufIntune = $intune ? (' · Intune: ' . ($intune === 'SI' ? 'Enrolados' : 'No enrolados')) : '';
 
-        // Nivel de agrupación progresivo según filtros activos
         if ($ambiente) {
             $datos = $query->select('dispositivos.estado_fisico as etiqueta', DB::raw('count(dispositivos.id) as total'))
                 ->groupBy('dispositivos.estado_fisico')
@@ -139,11 +142,8 @@ class ReporteController extends Controller
                 ->get();
             $titulo = "Por bloque · {$sede}{$sufIntune}";
         } else {
-            $datos = $query->select(
-                    DB::raw('UPPER(TRIM(ubicaciones.sede)) as etiqueta'),
-                    DB::raw('count(dispositivos.id) as total')
-                )
-                ->groupBy('ubicaciones.sede')
+            $datos = $query->select('sedes.nombre as etiqueta', DB::raw('count(dispositivos.id) as total'))
+                ->groupBy('sedes.id', 'sedes.nombre')
                 ->orderBy('total', 'desc')
                 ->get();
             $titulo = 'Equipos por sede' . $sufIntune;

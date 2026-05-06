@@ -77,7 +77,7 @@
         </tr>
         <tr>
             <td class="bg-gray">SEDE / CENTRO:</td>
-            <td colspan="3">{{ $concepto->dispositivo->ubicacion->sede }} - {{ $concepto->dispositivo->ubicacion->ambiente }}</td>
+            <td colspan="3">{{ $concepto->dispositivo->ubicacion->sede->nombre }} - {{ $concepto->dispositivo->ubicacion->ambiente }}</td>
         </tr>
         <tr>
             <td class="bg-gray">DESCRIPCIÓN:</td>

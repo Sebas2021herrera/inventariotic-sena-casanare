@@ -30,7 +30,7 @@
         </div>
         <div class="text-center md:text-right">
             <p class="text-[10px] font-black text-gray-400 uppercase">Sede Actual</p>
-            <p class="text-sm font-bold text-gray-700">{{ $concepto->dispositivo->ubicacion->sede }} - {{ $concepto->dispositivo->ubicacion->ambiente }}</p>
+            <p class="text-sm font-bold text-gray-700">{{ $concepto->dispositivo->ubicacion->sede->nombre }} - {{ $concepto->dispositivo->ubicacion->ambiente }}</p>
         </div>
     </div>
 

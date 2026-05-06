@@ -93,7 +93,9 @@
                     <div class="space-y-4">
                         <input type="text" name="sede" list="listado-sedes" placeholder="Sede" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
                         <datalist id="listado-sedes">
-                            <option value="Yopal"><option value="Paz de Ariporo"><option value="Monterrey"><option value="Aguazul"><option value="Villanueva">
+                            @foreach($sedes as $s)
+                                <option value="{{ $s }}">
+                            @endforeach
                         </datalist>
                         <div class="grid grid-cols-2 gap-3">
                             <input type="text" name="bloque" placeholder="Bloque" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">

@@ -82,7 +82,7 @@
         </tr>
         <tr>
             <td class="bg-gray">SEDE / AMBIENTE:</td>
-            <td colspan="3">{{ $mantenimiento->dispositivo->ubicacion->sede }} — Ambiente {{ $mantenimiento->dispositivo->ubicacion->ambiente }}</td>
+            <td colspan="3">{{ $mantenimiento->dispositivo->ubicacion->sede->nombre }} — Ambiente {{ $mantenimiento->dispositivo->ubicacion->ambiente }}</td>
         </tr>
         <tr>
             <td class="bg-gray">RESPONSABLE:</td>

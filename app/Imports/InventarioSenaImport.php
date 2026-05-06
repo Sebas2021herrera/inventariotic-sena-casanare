@@ -5,6 +5,7 @@ namespace App\Imports;
 use App\Models\Dispositivo;
 use App\Models\Responsable;
 use App\Models\Ubicacion;
+use App\Models\Sede;
 use App\Models\Especificacion;
 use App\Models\Periferico;
 use Illuminate\Support\Facades\DB;
@@ -46,9 +47,12 @@ class InventarioSenaImport implements ToModel, WithHeadingRow, WithChunkReading
                     ]
                 );
 
-                // 3. UBICACIÓN (Sede, Bloque, Ambiente)
+                // 3. SEDE + UBICACIÓN
+                $nombreSede = trim($row['sede_de_ubicacion_del_equipo'] ?? 'Yopal');
+                $sede = Sede::firstOrCreate(['nombre' => $nombreSede]);
+
                 $ubicacion = Ubicacion::firstOrCreate([
-                    'sede'     => trim($row['sede_de_ubicacion_del_equipo'] ?? 'YOPAL'),
+                    'sede_id'  => $sede->id,
                     'bloque'   => trim($row['bloque'] ?? 'N/A'),
                     'ambiente' => trim($row['ambiente_de_formacion'] ?? 'N/A'),
                 ]);
