@@ -377,7 +377,7 @@ document.getElementById('searchInput').addEventListener('input', function () {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         document.getElementById('filtroForm').submit();
-    }, 1200);
+    }, 2000);
 });
 
 // Toggle panel de filtros

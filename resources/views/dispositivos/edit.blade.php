@@ -198,13 +198,67 @@
                         <i class="fas fa-server mr-2"></i> Especificaciones de Cómputo
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        @php $especs = $dispositivo->especificaciones; @endphp
-                        <input type="text" name="procesador" value="{{ old('procesador', $especs->procesador ?? '') }}" placeholder="Procesador" class="bg-gray-50 border-gray-200 rounded-xl p-3 text-sm">
-                        <input type="text" name="ram" value="{{ old('ram', $especs->ram ?? '') }}" placeholder="Memoria RAM" class="bg-gray-50 border-gray-200 rounded-xl p-3 text-sm">
-                        <input type="text" name="so" value="{{ old('so', $especs->so ?? '') }}" placeholder="Sistema Operativo" class="bg-gray-50 border-gray-200 rounded-xl p-3 text-sm">
-                        <input type="text" name="tipo_disco" value="{{ old('tipo_disco', $especs->tipo_disco ?? '') }}" placeholder="Tipo Disco" class="bg-gray-50 border-gray-200 rounded-xl p-3 text-sm">
-                        <input type="text" name="capacidad_disco" value="{{ old('capacidad_disco', $especs->capacidad_disco ?? '') }}" placeholder="Capacidad" class="bg-gray-50 border-gray-200 rounded-xl p-3 text-sm">
-                        <input type="text" name="mac_address" value="{{ old('mac_address', $especs->mac_address ?? '') }}" placeholder="MAC PC" class="bg-gray-50 border-gray-200 rounded-xl p-3 font-mono text-xs">
+                        @php
+                            $especs   = $dispositivo->especificaciones;
+                            $ramNum   = intval($especs->ram ?? 0) ?: '';
+                            $capNum   = intval($especs->capacidad_disco ?? 0) ?: '';
+                            $tipoActual = old('tipo_disco', $especs->tipo_disco ?? '');
+                        @endphp
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Procesador</label>
+                            <input type="text" name="procesador" value="{{ old('procesador', $especs->procesador ?? '') }}" placeholder="Ej: Core i7-1165G7" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 text-sm">
+                        </div>
+
+                        {{-- RAM: solo número, badge GB --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                Memoria RAM <span class="text-gray-300 font-normal normal-case">(en GB)</span>
+                            </label>
+                            <div class="flex items-stretch bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
+                                <input type="number" name="ram" value="{{ old('ram', $ramNum) }}" min="1" max="512" step="1"
+                                       class="flex-1 bg-transparent px-3 py-3 text-sm outline-none"
+                                       placeholder="Ej: 16">
+                                <span class="px-3 flex items-center text-[10px] font-black text-gray-400 bg-gray-100 border-l border-gray-200">GB</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">S.O.</label>
+                            <input type="text" name="so" value="{{ old('so', $especs->so ?? '') }}" placeholder="Ej: Windows 11 Pro" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 text-sm">
+                        </div>
+
+                        {{-- Tipo Disco: lista predefinida --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo de Disco</label>
+                            <select name="tipo_disco" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#39A900]">
+                                <option value="">— Seleccionar —</option>
+                                <option value="SSD"     {{ $tipoActual == 'SSD'     ? 'selected' : '' }}>SSD — Sólido SATA</option>
+                                <option value="SSD M.2" {{ $tipoActual == 'SSD M.2' ? 'selected' : '' }}>SSD M.2 — NVMe</option>
+                                <option value="HDD"     {{ $tipoActual == 'HDD'     ? 'selected' : '' }}>HDD — Mecánico</option>
+                                <option value="eMMC"    {{ $tipoActual == 'eMMC'    ? 'selected' : '' }}>eMMC</option>
+                                <option value="SSHD"    {{ $tipoActual == 'SSHD'    ? 'selected' : '' }}>SSHD — Híbrido</option>
+                                <option value="N/A"     {{ $tipoActual == 'N/A'     ? 'selected' : '' }}>N/A</option>
+                            </select>
+                        </div>
+
+                        {{-- Capacidad: solo número, badge GB --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                Capacidad <span class="text-gray-300 font-normal normal-case">(en GB)</span>
+                            </label>
+                            <div class="flex items-stretch bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
+                                <input type="number" name="capacidad_disco" value="{{ old('capacidad_disco', $capNum) }}" min="1" step="1"
+                                       class="flex-1 bg-transparent px-3 py-3 text-sm outline-none"
+                                       placeholder="Ej: 512">
+                                <span class="px-3 flex items-center text-[10px] font-black text-gray-400 bg-gray-100 border-l border-gray-200">GB</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">MAC Address</label>
+                            <input type="text" name="mac_address" value="{{ old('mac_address', $especs->mac_address ?? '') }}" placeholder="Ej: AA:BB:CC:DD:EE:FF" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono text-xs">
+                        </div>
                     </div>
                 </div>
 

@@ -191,27 +191,57 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Procesador</label>
-                            <input type="text" name="procesador" value="{{ old('procesador') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 text-sm" placeholder="Ej: Core i7">
+                            <input type="text" name="procesador" value="{{ old('procesador') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 text-sm" placeholder="Ej: Core i7-1165G7">
                         </div>
+
+                        {{-- RAM: solo número, badge GB --}}
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Memoria RAM</label>
-                            <input type="text" name="ram" value="{{ old('ram') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 text-sm" placeholder="Ej: 16 GB">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                Memoria RAM <span class="text-gray-300 font-normal normal-case">(en GB)</span>
+                            </label>
+                            <div class="flex items-stretch bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
+                                <input type="number" name="ram" value="{{ old('ram') }}" min="1" max="512" step="1"
+                                       class="flex-1 bg-transparent px-3 py-3 text-sm outline-none"
+                                       placeholder="Ej: 16">
+                                <span class="px-3 flex items-center text-[10px] font-black text-gray-400 bg-gray-100 border-l border-gray-200">GB</span>
+                            </div>
                         </div>
+
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">S.O.</label>
-                            <input type="text" name="so" value="{{ old('so') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 text-sm">
+                            <input type="text" name="so" value="{{ old('so') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 text-sm" placeholder="Ej: Windows 11 Pro">
                         </div>
+
+                        {{-- Tipo Disco: lista predefinida --}}
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo Disco</label>
-                            <input type="text" name="tipo_disco" value="{{ old('tipo_disco') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 text-sm" placeholder="SSD / HDD">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo de Disco</label>
+                            <select name="tipo_disco" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#39A900]">
+                                <option value="">— Seleccionar —</option>
+                                <option value="SSD"     {{ old('tipo_disco') == 'SSD'     ? 'selected' : '' }}>SSD — Sólido SATA</option>
+                                <option value="SSD M.2" {{ old('tipo_disco') == 'SSD M.2' ? 'selected' : '' }}>SSD M.2 — NVMe</option>
+                                <option value="HDD"     {{ old('tipo_disco') == 'HDD'     ? 'selected' : '' }}>HDD — Mecánico</option>
+                                <option value="eMMC"    {{ old('tipo_disco') == 'eMMC'    ? 'selected' : '' }}>eMMC</option>
+                                <option value="SSHD"    {{ old('tipo_disco') == 'SSHD'    ? 'selected' : '' }}>SSHD — Híbrido</option>
+                                <option value="N/A"     {{ old('tipo_disco') == 'N/A'     ? 'selected' : '' }}>N/A</option>
+                            </select>
                         </div>
+
+                        {{-- Capacidad: solo número, badge GB --}}
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Capacidad</label>
-                            <input type="text" name="capacidad_disco" value="{{ old('capacidad_disco') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 text-sm">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                Capacidad <span class="text-gray-300 font-normal normal-case">(en GB)</span>
+                            </label>
+                            <div class="flex items-stretch bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
+                                <input type="number" name="capacidad_disco" value="{{ old('capacidad_disco') }}" min="1" step="1"
+                                       class="flex-1 bg-transparent px-3 py-3 text-sm outline-none"
+                                       placeholder="Ej: 512">
+                                <span class="px-3 flex items-center text-[10px] font-black text-gray-400 bg-gray-100 border-l border-gray-200">GB</span>
+                            </div>
                         </div>
+
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">MAC Address</label>
-                            <input type="text" name="mac_address" value="{{ old('mac_address') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono text-xs uppercase">
+                            <input type="text" name="mac_address" value="{{ old('mac_address') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono text-xs uppercase" placeholder="Ej: AA:BB:CC:DD:EE:FF">
                         </div>
                     </div>
                 </div>
