@@ -137,6 +137,40 @@
 
     </div>
 
+    {{-- FILA 3.5: Propietario --}}
+    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 pb-3">
+            <i class="fas fa-building mr-2 text-[#39A900]"></i>Equipos por Propietario
+        </h3>
+        @if($stats['propietario']->isEmpty())
+            <p class="text-xs text-gray-400 font-bold italic text-center py-8">Sin datos de propietario registrados.</p>
+        @else
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                <div class="lg:col-span-2" style="position:relative; height:{{ max(120, $stats['propietario']->count() * 44) }}px">
+                    <canvas id="chartPropietario"></canvas>
+                </div>
+                <ul class="space-y-3">
+                    @php $totalProp = $stats['propietario']->sum('total'); @endphp
+                    @foreach($stats['propietario']->sortByDesc('total')->values() as $i => $p)
+                    <li class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="w-2.5 h-2.5 rounded-full flex-shrink-0 inline-block"
+                                  style="background:{{ $colores[$i % count($colores)] }}"></span>
+                            <span class="text-xs font-bold text-gray-600 truncate">{{ $p->propietario ?? 'Sin especificar' }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <span class="text-xs font-black text-gray-800">{{ $p->total }}</span>
+                            <span class="text-[10px] text-gray-400 font-bold">
+                                ({{ $totalProp > 0 ? number_format($p->total / $totalProp * 100, 1) : 0 }}%)
+                            </span>
+                        </div>
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+    </div>
+
     {{-- FILA 4: RAM + Discos --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -431,7 +465,42 @@ new Chart(document.getElementById('chartDiscos'), {
     options: { cutout: '60%', plugins: { legend: { display: false } } }
 });
 
-// ── 8. Gráfica de Ubicación Física con filtros en cascada ──────────────────
+// 8. Propietario — Barras horizontales
+@if($stats['propietario']->isNotEmpty())
+@php
+    $propSorted = $stats['propietario']->sortByDesc('total')->values();
+    $propLabels = $propSorted->map(fn($p) => $p->propietario ?? 'Sin especificar');
+    $propTotals = $propSorted->pluck('total');
+    $propColors = $propSorted->keys()->map(fn($i) => $colores[$i % count($colores)]);
+@endphp
+new Chart(document.getElementById('chartPropietario'), {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode($propLabels->values()) !!},
+        datasets: [{
+            label: 'Equipos',
+            data: {!! json_encode($propTotals->values()) !!},
+            backgroundColor: {!! json_encode($propColors->values()) !!},
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} equipo${ctx.parsed.x !== 1 ? 's' : ''}` } }
+        },
+        scales: {
+            x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: '#f3f4f6' } },
+            y: { ticks: { font: { size: 11, weight: 'bold' } }, grid: { display: false } }
+        }
+    }
+});
+@endif
+
+// ── 9. Gráfica de Ubicación Física con filtros en cascada ──────────────────
 
 // Todas las ubicaciones disponibles para el cascading de selects
 const todasUbicaciones = {!! json_encode($ubicacionOpciones['todas']) !!};

@@ -47,4 +47,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/conceptos/{id}', [ConceptoTecnicoController::class, 'update'])->name('conceptos.update');
     Route::get('/conceptos/{id}/pdf', [ConceptoTecnicoController::class, 'exportarPDF'])->name('conceptos.pdf');
 
+    Route::get('/perfil/cambiar-clave', [AuthController::class, 'showCambiarClave'])->name('perfil.cambiar-clave');
+    Route::post('/perfil/cambiar-clave', [AuthController::class, 'cambiarClave']);
+
     });

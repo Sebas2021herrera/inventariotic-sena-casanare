@@ -51,7 +51,13 @@
                             <p class="text-[10px] font-black uppercase opacity-70 leading-none">Usuario</p>
                             <p class="text-xs font-bold">{{ Auth::user()->name }}</p>
                         </div>
-                        
+
+                        <a href="{{ route('perfil.cambiar-clave') }}"
+                            title="Cambiar contraseña"
+                            class="bg-white/10 hover:bg-white/25 text-white px-3 py-2 rounded-xl transition shadow-sm flex items-center {{ request()->routeIs('perfil.*') ? 'nav-active' : '' }}">
+                            <i class="fas fa-key text-sm"></i>
+                        </a>
+
                         <form action="{{ route('logout') }}" method="POST" class="inline">
                             @csrf
                             <button type="submit" class="bg-white/10 hover:bg-red-500 text-white px-3 py-2 rounded-xl transition shadow-sm flex items-center group">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -26,15 +27,37 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            
-            // intended() intentará llevar al usuario a donde quería ir, 
-            // de lo contrario lo manda al index de dispositivos bajo /gitic
             return redirect()->intended(route('dispositivos.index'));
         }
 
         return back()->withErrors([
             'email' => 'Las credenciales no coinciden con nuestros registros del equipo técnico.',
         ])->withInput($request->only('email'));
+    }
+
+    public function showCambiarClave() {
+        return view('auth.cambiar_clave');
+    }
+
+    public function cambiarClave(Request $request) {
+        $request->validate([
+            'clave_actual'      => ['required'],
+            'nueva_clave'       => ['required', 'min:8', 'confirmed'],
+        ], [
+            'clave_actual.required'     => 'Debes ingresar tu contraseña actual.',
+            'nueva_clave.required'      => 'La nueva contraseña es obligatoria.',
+            'nueva_clave.min'           => 'La nueva contraseña debe tener al menos 8 caracteres.',
+            'nueva_clave.confirmed'     => 'La confirmación no coincide con la nueva contraseña.',
+        ]);
+
+        if (!Hash::check($request->clave_actual, Auth::user()->password)) {
+            return back()->withErrors(['clave_actual' => 'La contraseña actual no es correcta.']);
+        }
+
+        Auth::user()->update(['password' => $request->nueva_clave]);
+
+        return redirect()->route('perfil.cambiar-clave')
+            ->with('success', 'Contraseña actualizada correctamente.');
     }
 
     public function logout(Request $request) {
