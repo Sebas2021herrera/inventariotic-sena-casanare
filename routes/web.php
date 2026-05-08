@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MantenimientoController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ConceptoTecnicoController;
+use App\Http\Controllers\UsuarioController;
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
     return auth()->check() 
@@ -37,8 +38,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/responsables/buscar/{cedula}', [ResponsableController::class, 'buscar'])->name('responsables.buscar');
     Route::get('/dispositivos/verificar-placa/{placa}', [DispositivoController::class, 'verificarPlaca'])->name('dispositivos.verificar');
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
-    Route::get('/reportes/exportar', [ReporteController::class, 'exportar'])->name('reportes.exportar');
     Route::get('/reportes/ubicacion-stats', [ReporteController::class, 'ubicacionStats'])->name('reportes.ubicacion-stats');
+    Route::get('/reportes/exportar', [ReporteController::class, 'exportar'])->name('reportes.exportar')->middleware('admin');
 
     Route::get('/dispositivos/{dispositivo}/concepto/nuevo', [ConceptoTecnicoController::class, 'create'])->name('conceptos.create');
     Route::post('/conceptos/guardar', [ConceptoTecnicoController::class, 'store'])->name('conceptos.store');
@@ -49,5 +50,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/perfil/cambiar-clave', [AuthController::class, 'showCambiarClave'])->name('perfil.cambiar-clave');
     Route::post('/perfil/cambiar-clave', [AuthController::class, 'cambiarClave']);
+
+    // Solo admin
+    Route::middleware('admin')->group(function () {
+        Route::resource('usuarios', UsuarioController::class)->only(['index', 'create', 'store', 'destroy']);
+    });
 
     });

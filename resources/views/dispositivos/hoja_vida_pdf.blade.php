@@ -110,9 +110,9 @@
         <td class="bg-gray">ESTADO FÍSICO:</td>
         <td>
             @php $ef = $dispositivo->estado_fisico; @endphp
-            @if($ef == 'BUENO')
+            @if($ef == 'Bueno')
                 <span class="badge-bueno">{{ $ef }}</span>
-            @elseif($ef == 'EN REPARACIÓN')
+            @elseif($ef == 'En Reparación')
                 <span class="badge-reparacion">{{ $ef }}</span>
             @else
                 <span class="badge-malo">{{ $ef }}</span>

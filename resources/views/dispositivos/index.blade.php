@@ -11,10 +11,10 @@
     ])->filter()->count();
 
     $estadoConfig = [
-        'BUENO'         => ['bg-green-100 text-green-700',  'fa-check-circle'],
-        'REGULAR'       => ['bg-orange-100 text-orange-700','fa-exclamation-circle'],
-        'MALO'          => ['bg-red-100 text-red-700',      'fa-times-circle'],
-        'EN REPARACIÓN' => ['bg-yellow-100 text-yellow-700','fa-tools'],
+        'Bueno'         => ['bg-green-100 text-green-700',  'fa-check-circle'],
+        'Regular'       => ['bg-orange-100 text-orange-700','fa-exclamation-circle'],
+        'Malo'          => ['bg-red-100 text-red-700',      'fa-times-circle'],
+        'En Reparación' => ['bg-yellow-100 text-yellow-700','fa-tools'],
     ];
 
     $catConfig = [
@@ -242,7 +242,7 @@
                     <tbody class="divide-y divide-gray-50">
                         @forelse($dispositivos as $d)
                         @php
-                            $estado   = strtoupper(trim($d->estado_fisico ?? ''));
+                            $estado   = trim($d->estado_fisico ?? '');
                             $eCfg     = $estadoConfig[$estado] ?? ['bg-gray-100 text-gray-600', 'fa-question-circle'];
                             $cat      = strtolower($d->categoria ?? '');
                             $cCfg     = $catConfig[$cat] ?? ['bg-gray-100 text-gray-600', ucfirst($d->categoria ?? 'N/A')];

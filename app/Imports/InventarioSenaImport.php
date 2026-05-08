@@ -74,8 +74,8 @@ class InventarioSenaImport implements ToModel, WithHeadingRow, WithChunkReading
                         'funcion'       => strtoupper(trim($row['funcion'] ?? 'FORMACION')),
                         'en_intune'     => strtoupper(trim($row['en_intune'] ?? 'NO')),
                         'categoria'     => 'computo',
-                        'estado_fisico' => strtoupper(trim($row['estado_fisico'] ?? 'BUENO')),
-                        'estado_logico' => strtoupper(trim($row['estado_logico'] ?? 'BUENO')),
+                        'estado_fisico' => self::normalizarEstado($row['estado_fisico'] ?? 'Bueno'),
+                        'estado_logico' => self::normalizarEstado($row['estado_logico'] ?? 'Bueno'),
                         'observaciones' => trim($row['novedades_u_observaciones'] ?? null),
                         'responsable_id' => $responsable->id,
                         'ubicacion_id'   => $ubicacion->id,
@@ -137,7 +137,7 @@ class InventarioSenaImport implements ToModel, WithHeadingRow, WithChunkReading
                             'marca'  => trim($row["marca_$key"] ?? 'N/A'),
                             'modelo' => trim($row["modelo_$key"] ?? 'N/A'),
                             'serial' => $p_serial ?: 'N/A',
-                            'estado' => 'BUENO'
+                            'estado' => 'Bueno'
                         ]
                     );
                 }
@@ -147,6 +147,18 @@ class InventarioSenaImport implements ToModel, WithHeadingRow, WithChunkReading
 
     public function chunkSize(): int
     {
-        return 100; // Bloques de 100 para balancear velocidad y memoria
+        return 100;
+    }
+
+    private static function normalizarEstado(string $valor): string
+    {
+        $mapa = [
+            'bueno'          => 'Bueno',
+            'regular'        => 'Regular',
+            'malo'           => 'Malo',
+            'en reparacion'  => 'En Reparación',
+            'en reparación'  => 'En Reparación',
+        ];
+        return $mapa[strtolower(trim($valor))] ?? 'Bueno';
     }
 }

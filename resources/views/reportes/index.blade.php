@@ -22,10 +22,16 @@
             </h1>
             <p class="text-gray-500 font-bold italic text-sm">Gestión de Infraestructura TIC — Regional Casanare</p>
         </div>
+        @if(Auth::user()->role === 'admin')
         <a href="{{ route('reportes.exportar') }}"
            class="bg-[#39A900] text-white px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-green-700 transition flex items-center gap-2">
             <i class="fas fa-file-excel text-base"></i> Exportar Consolidado
         </a>
+        @else
+        <span class="bg-gray-200 text-gray-400 px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center gap-2 cursor-not-allowed select-none" title="Solo disponible para administradores">
+            <i class="fas fa-file-excel text-base"></i> Exportar Consolidado
+        </span>
+        @endif
     </div>
 
     {{-- KPI CARDS --}}

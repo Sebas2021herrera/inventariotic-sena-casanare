@@ -29,7 +29,7 @@ class ReporteController extends Controller
             'total_general'      => $totalGeneral,
             'intune_enrolados'   => $intuneEnrolados,
             'intune_pendientes'  => $totalGeneral - $intuneEnrolados,
-            'en_reparacion'      => Dispositivo::where('estado_fisico', 'EN REPARACIÓN')->count(),
+            'en_reparacion'      => Dispositivo::where('estado_fisico', 'En Reparación')->count(),
             'mantenimientos_mes' => Mantenimiento::whereYear('fecha', $ahora->year)
                                        ->whereMonth('fecha', $ahora->month)
                                        ->count(),

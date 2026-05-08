@@ -39,9 +39,9 @@ class MantenimientoController extends Controller
             $esFinalizado = $request->boolean('finalizado');
 
             if ($request->tipo === 'Correctivo' && !$esFinalizado) {
-                $dispositivo->update(['estado_fisico' => 'EN REPARACIÓN']);
+                $dispositivo->update(['estado_fisico' => 'En Reparación']);
             } else {
-                $dispositivo->update(['estado_fisico' => 'BUENO']);
+                $dispositivo->update(['estado_fisico' => 'Bueno']);
             }
 
             DB::commit();
@@ -79,9 +79,9 @@ class MantenimientoController extends Controller
             $esFinalizado = $request->boolean('finalizado');
 
             if ($request->tipo === 'Correctivo' && !$esFinalizado) {
-                $dispositivo->update(['estado_fisico' => 'EN REPARACIÓN']);
+                $dispositivo->update(['estado_fisico' => 'En Reparación']);
             } else {
-                $dispositivo->update(['estado_fisico' => 'BUENO']);
+                $dispositivo->update(['estado_fisico' => 'Bueno']);
             }
 
             DB::commit();

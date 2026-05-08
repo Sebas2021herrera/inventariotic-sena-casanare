@@ -43,7 +43,13 @@
                     <a href="{{ route('reportes.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('reportes.*') ? 'nav-active' : '' }}">
                         <i class="fas fa-chart-pie mr-2"></i> Reportes
                     </a>
-                    
+
+                    @if(Auth::user()->role === 'admin')
+                    <a href="{{ route('usuarios.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('usuarios.*') ? 'nav-active' : '' }}">
+                        <i class="fas fa-users-cog mr-2"></i> Usuarios
+                    </a>
+                    @endif
+
                     <div class="h-6 w-[1px] bg-white/20 mx-2"></div>
 
                     <div class="flex items-center space-x-4">
@@ -75,6 +81,12 @@
     </nav>
 
     <main class="container mx-auto px-6 py-10 min-h-[85vh]">
+        @if(session('error'))
+            <div class="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-5 py-4 flex items-center gap-3">
+                <i class="fas fa-exclamation-circle text-red-500 flex-shrink-0"></i>
+                <span class="text-xs font-bold">{{ session('error') }}</span>
+            </div>
+        @endif
         @yield('content')
     </main>
 

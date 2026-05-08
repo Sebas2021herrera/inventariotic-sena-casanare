@@ -49,8 +49,8 @@ class DispositivoController extends Controller
 
         $stats = [
             'total'    => Dispositivo::count(),
-            'buenos'   => Dispositivo::where('estado_fisico', 'BUENO')->count(),
-            'criticos' => Dispositivo::where('estado_fisico', '!=', 'BUENO')->count(),
+            'buenos'   => Dispositivo::where('estado_fisico', 'Bueno')->count(),
+            'criticos' => Dispositivo::where('estado_fisico', '!=', 'Bueno')->count(),
             'red'      => Dispositivo::where('categoria', 'conectividad')->count(),
         ];
 
@@ -146,8 +146,8 @@ public function store(Request $request)
                 'marca' => $request->marca ?? 'Genérico',
                 'modelo' => $request->modelo ?? 'Genérico',
                 'categoria' => $request->categoria ?? 'computo',
-                'estado_fisico' => $request->estado_fisico ?? 'BUENO',
-                'estado_logico' => $request->estado_logico ?? 'BUENO',
+                'estado_fisico' => $request->estado_fisico ?? 'Bueno',
+                'estado_logico' => $request->estado_logico ?? 'Bueno',
                 'propietario' => $request->propietario ?? 'SENA',
                 'funcion' => $request->funcion ?? 'FORMACION',
                 'en_intune' => $request->en_intune ?? 'NO',
@@ -180,7 +180,7 @@ public function store(Request $request)
                             'serial' => $datos['serial'] ?? 'N/A',
                             'marca' => $datos['marca'] ?? 'N/A',
                             'modelo' => $datos['modelo'] ?? 'N/A',
-                            'estado' => 'BUENO'
+                            'estado' => 'Bueno'
                         ]);
                     }
                 }
@@ -323,7 +323,7 @@ public function update(Request $request, Dispositivo $dispositivo)
                             'serial' => $datos['serial'] ?? 'N/A',
                             'marca'  => $datos['marca']  ?? 'N/A',
                             'modelo' => $datos['modelo'] ?? 'N/A',
-                            'estado' => 'BUENO',
+                            'estado' => 'Bueno',
                         ]
                     );
                 }
