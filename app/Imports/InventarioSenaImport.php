@@ -68,6 +68,7 @@ class InventarioSenaImport implements ToModel, WithHeadingRow, WithChunkReading
                     ['placa' => $placa],
                     [
                         'serial'        => $serialProcesado,
+                        'hostname'      => trim($row['hostname'] ?? '') ?: null,
                         'marca'         => trim($row['marca'] ?? 'N/A'),
                         'modelo'        => trim($row['modelo'] ?? 'N/A'),
                         'propietario'   => strtoupper(trim($row['propietario'] ?? 'SENA')),

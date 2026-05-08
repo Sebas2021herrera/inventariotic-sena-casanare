@@ -107,6 +107,18 @@
         <td class="mono font-bold">{{ $dispositivo->placa }}</td>
     </tr>
     <tr>
+        <td class="bg-gray">HOSTNAME:</td>
+        <td class="mono font-bold">{{ $dispositivo->hostname ?? '—' }}</td>
+        <td class="bg-gray">INTUNE:</td>
+        <td>
+            @if($dispositivo->en_intune == 'SI')
+                <span class="badge-si">SI</span>
+            @else
+                NO
+            @endif
+        </td>
+    </tr>
+    <tr>
         <td class="bg-gray">ESTADO FÍSICO:</td>
         <td>
             @php $ef = $dispositivo->estado_fisico; @endphp
@@ -128,16 +140,8 @@
         <td>{{ $dispositivo->funcion ?? 'N/A' }}</td>
     </tr>
     <tr>
-        <td class="bg-gray">EN INTUNE:</td>
-        <td>
-            @if($dispositivo->en_intune == 'SI')
-                <span class="badge-si">SI</span>
-            @else
-                NO
-            @endif
-        </td>
         <td class="bg-gray">FECHA REGISTRO:</td>
-        <td>{{ $dispositivo->created_at->format('d/m/Y') }}</td>
+        <td colspan="3">{{ $dispositivo->created_at->format('d/m/Y') }}</td>
     </tr>
     @if($dispositivo->observaciones)
     <tr>

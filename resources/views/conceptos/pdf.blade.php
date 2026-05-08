@@ -57,7 +57,7 @@
                 <span class="box">{{ $concepto->tipo_equipo == 'Formación' ? 'X' : '' }}</span> Formación
             </td>
             <td class="bg-gray" style="width: 15%;">HOSTNAME:</td>
-            <td style="width: 35%;" class="font-bold">{{ $concepto->hostname }}</td>
+            <td style="width: 35%;" class="font-bold mono">{{ $concepto->dispositivo->hostname ?? $concepto->hostname ?? '—' }}</td>
         </tr>
         <tr>
             <td class="bg-gray">DOMINIO:</td>

@@ -77,8 +77,12 @@
         <tr>
             <td class="bg-gray">SERIAL:</td>
             <td class="font-bold" style="font-family: monospace;">{{ $mantenimiento->dispositivo->serial }}</td>
+            <td class="bg-gray">HOSTNAME:</td>
+            <td class="font-bold" style="font-family: monospace;">{{ $mantenimiento->dispositivo->hostname ?? '—' }}</td>
+        </tr>
+        <tr>
             <td class="bg-gray">ESTADO FÍSICO:</td>
-            <td class="font-bold">{{ $mantenimiento->dispositivo->estado_fisico }}</td>
+            <td class="font-bold" colspan="3">{{ $mantenimiento->dispositivo->estado_fisico }}</td>
         </tr>
         <tr>
             <td class="bg-gray">SEDE / AMBIENTE:</td>

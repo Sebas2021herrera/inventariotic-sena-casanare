@@ -10,11 +10,10 @@ use App\Models\User;
 class Dispositivo extends Model
 {
   protected $fillable = [
-    'placa', 'serial', 'marca', 'modelo', 'categoria', 
-    'estado_fisico', 'estado_logico', 'observaciones', 
+    'placa', 'serial', 'hostname', 'marca', 'modelo', 'categoria',
+    'estado_fisico', 'estado_logico', 'observaciones',
     'responsable_id', 'ubicacion_id',
-    'propietario', 'funcion', 'en_intune', // <-- Nuevos campos
-    // Nuevos campos de Redes
+    'propietario', 'funcion', 'en_intune',
     'descripcion_tecnica', 'puertos', 'mac_address', 'ap_conectado_a', 'puerto_origen',
     'created_by', 'updated_by'
 ];

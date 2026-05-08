@@ -125,6 +125,16 @@
                             <input type="text" name="serial" value="{{ old('serial') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase outline-none focus:bg-white transition" required>
                         </div>
 
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Hostname / Nombre del Equipo</label>
+                            <input type="text" name="hostname" value="{{ old('hostname') }}"
+                                class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono outline-none focus:bg-white transition"
+                                placeholder="Ej: YOPAPRCNCSD001, LAPTOP-ADMIN-01"
+                                pattern="[a-zA-Z0-9\-_\.]+"
+                                title="Solo letras, números, guiones, guión bajo y puntos. Sin espacios ni caracteres especiales.">
+                            <p class="text-[10px] text-gray-400 mt-1"> sin espacios ni caracteres especiales</p>
+                        </div>
+
                         <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Propietario</label>

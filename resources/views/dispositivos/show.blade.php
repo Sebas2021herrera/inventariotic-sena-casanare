@@ -28,8 +28,11 @@
                     </span>
                     <h1 class="text-4xl font-black italic tracking-tighter uppercase">{{ $dispositivo->marca }} {{ $dispositivo->modelo }}</h1>
                     <p class="text-white/80 font-mono text-lg mt-1">
-                        PLACA: <span class="bg-white text-gray-800 px-2 rounded">{{ $dispositivo->placa }}</span> 
+                        PLACA: <span class="bg-white text-gray-800 px-2 rounded">{{ $dispositivo->placa }}</span>
                         | S/N: {{ $dispositivo->serial }}
+                        @if($dispositivo->hostname)
+                            | <i class="fas fa-desktop text-sm opacity-70"></i> {{ $dispositivo->hostname }}
+                        @endif
                     </p>
                 </div>
                 <div class="mt-4 md:mt-0 flex flex-col items-end">

@@ -249,10 +249,15 @@
                         @endphp
                         <tr class="hover:bg-gray-50/70 transition">
 
-                            {{-- Placa / Serial --}}
+                            {{-- Placa / Serial / Hostname --}}
                             <td class="px-5 py-4">
                                 <div class="font-black text-gray-800 text-sm">{{ $d->placa }}</div>
                                 <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ $d->serial }}</div>
+                                @if($d->hostname)
+                                <div class="text-[9px] text-indigo-400 font-mono mt-0.5 flex items-center gap-1">
+                                    <i class="fas fa-desktop" style="font-size:7px;"></i>{{ $d->hostname }}
+                                </div>
+                                @endif
                             </td>
 
                             {{-- Equipo --}}

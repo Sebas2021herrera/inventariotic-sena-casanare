@@ -143,6 +143,7 @@ public function store(Request $request)
             $dispositivo = Dispositivo::create([
                 'placa' => $request->placa,
                 'serial' => $request->serial,
+                'hostname' => $request->hostname ?: null,
                 'marca' => $request->marca ?? 'Genérico',
                 'modelo' => $request->modelo ?? 'Genérico',
                 'categoria' => $request->categoria ?? 'computo',
@@ -285,6 +286,7 @@ public function update(Request $request, Dispositivo $dispositivo)
         $dispositivo->update([
             'placa' => $request->placa,
             'serial' => $request->serial,
+            'hostname' => $request->hostname ?: null,
             'marca' => $request->marca,
             'modelo' => $request->modelo,
             'categoria' => $request->categoria,

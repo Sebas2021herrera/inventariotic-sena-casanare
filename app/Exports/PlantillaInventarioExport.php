@@ -14,7 +14,7 @@ class PlantillaInventarioExport implements WithHeadings, ShouldAutoSize, WithEve
     {
         return [
             // Identificación y Clasificación
-            'placa', 'serial', 'marca', 'modelo',
+            'placa', 'serial', 'hostname', 'marca', 'modelo',
             'propietario', 'funcion', 'en_intune',
             
             // Responsable
@@ -48,21 +48,20 @@ class PlantillaInventarioExport implements WithHeadings, ShouldAutoSize, WithEve
 
                 // NUEVO MAPEO DE COLUMNAS (Letras actualizadas por desplazamiento)
                 
-                // Propietario (E), Función (F), Intune (G)
-                $this->crearValidacion($sheet, 'E', '"SENA,TELEFONICA,OTRO"');
-                $this->crearValidacion($sheet, 'F', '"FORMACION,ADMINISTRATIVO"');
-                $this->crearValidacion($sheet, 'G', '"SI,NO"');
-                
-                // Tipo Funcionario (N)
-                $this->crearValidacion($sheet, 'N', '"Contratista,Planta,Aprendiz"');
-                
-                // Sede (O)
-                $this->crearValidacion($sheet, 'O', '"YOPAL,PAZ DE ARIPORO,MONTERREY,AGUAZUL,VILLANUEVA"');
+                // Propietario (F), Función (G), Intune (H) — desplazado +1 por columna hostname en C
+                $this->crearValidacion($sheet, 'F', '"SENA,TELEFONICA,OTRO"');
+                $this->crearValidacion($sheet, 'G', '"FORMACION,ADMINISTRATIVO"');
+                $this->crearValidacion($sheet, 'H', '"SI,NO"');
 
-                // Estado Físico (AN) y Estado Lógico (AO)
-                // Al agregar 16 columnas de periféricos, el estado pasó de la X a la AN
-                $this->crearValidacion($sheet, 'AN', '"BUENO,REGULAR,MALO"');
+                // Tipo Funcionario (O)
+                $this->crearValidacion($sheet, 'O', '"Contratista,Planta,Aprendiz"');
+
+                // Sede (P)
+                $this->crearValidacion($sheet, 'P', '"YOPAL,PAZ DE ARIPORO,MONTERREY,AGUAZUL,VILLANUEVA"');
+
+                // Estado Físico (AO) y Estado Lógico (AP)
                 $this->crearValidacion($sheet, 'AO', '"BUENO,REGULAR,MALO"');
+                $this->crearValidacion($sheet, 'AP', '"BUENO,REGULAR,MALO"');
             },
         ];
     }
