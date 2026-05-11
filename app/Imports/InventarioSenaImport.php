@@ -47,14 +47,14 @@ class InventarioSenaImport implements ToModel, WithHeadingRow, WithChunkReading
                     ]
                 );
 
-                // 3. SEDE + UBICACIÓN
-                $nombreSede = trim($row['sede_de_ubicacion_del_equipo'] ?? 'Yopal');
+                // 3. SEDE + UBICACIÓN (normalizado)
+                $nombreSede = ucwords(mb_strtolower(trim($row['sede_de_ubicacion_del_equipo'] ?? 'Yopal')));
                 $sede = Sede::firstOrCreate(['nombre' => $nombreSede]);
 
                 $ubicacion = Ubicacion::firstOrCreate([
                     'sede_id'  => $sede->id,
-                    'bloque'   => trim($row['bloque'] ?? 'N/A'),
-                    'ambiente' => trim($row['ambiente_de_formacion'] ?? 'N/A'),
+                    'bloque'   => mb_strtoupper(trim($row['bloque'] ?? '')),
+                    'ambiente' => mb_strtoupper(trim($row['ambiente_de_formacion'] ?? '')),
                 ]);
 
                 // 4. TRATAMIENTO DE SERIALES DUPLICADOS (Ej: Xxx, Pendiente, N/A)

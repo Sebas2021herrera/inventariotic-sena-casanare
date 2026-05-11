@@ -44,11 +44,16 @@
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cédula / ID *</label>
                         <div class="flex gap-2">
                             <input type="text" id="cedula" name="cedula" value="{{ old('cedula') }}" class="flex-1 bg-gray-50 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-green-500 transition" required>
-                            <button type="button" onclick="buscarResponsable()" class="bg-blue-600 text-white px-4 rounded-xl hover:bg-blue-700 transition">
+                            <button type="button" onclick="buscarResponsable()" title="Buscar por cédula"
+                                    class="bg-blue-600 text-white px-4 rounded-xl hover:bg-blue-700 transition">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
-                        <p id="msj-responsable" class="text-[10px] font-bold mt-2 hidden italic uppercase tracking-tighter"></p>
+                        <button type="button" onclick="abrirModalResponsable()"
+                                class="mt-2 text-[10px] font-bold text-[#39A900] hover:underline flex items-center gap-1 transition">
+                            <i class="fas fa-users text-[9px]"></i> ¿No conoces la cédula? Busca por nombre
+                        </button>
+                        <p id="msj-responsable" class="text-[10px] font-bold mt-1 hidden italic uppercase tracking-tighter"></p>
                     </div>
                     
                     <div>
@@ -91,15 +96,30 @@
                         <i class="fas fa-map-marker-alt mr-2"></i> Ubicación Física
                     </div>
                     <div class="space-y-4">
-                        <input type="text" name="sede" list="listado-sedes" placeholder="Sede" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
+                        <input type="text" name="sede" list="listado-sedes"
+                               placeholder="Sede" required
+                               oninput="normalizarTitleCase(this)"
+                               class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
                         <datalist id="listado-sedes">
                             @foreach($sedes as $s)
                                 <option value="{{ $s }}">
                             @endforeach
                         </datalist>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="text" name="bloque" placeholder="Bloque" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                            <input type="text" name="ambiente" placeholder="Ambiente" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
+                            <div>
+                                <input type="text" name="bloque" placeholder="Ej: A, B, CUARTO"
+                                       oninput="normalizarMayusculas(this)"
+                                       style="text-transform:uppercase;"
+                                       class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                <p class="text-[9px] text-gray-400 mt-0.5 ml-1">Se guarda en MAYÚSCULAS</p>
+                            </div>
+                            <div>
+                                <input type="text" name="ambiente" placeholder="Ej: 101, ADMIN" required
+                                       oninput="normalizarMayusculas(this)"
+                                       style="text-transform:uppercase;"
+                                       class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                <p class="text-[9px] text-gray-400 mt-0.5 ml-1">Se guarda en MAYÚSCULAS</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -453,5 +473,22 @@
             })
             .catch(err => console.error("Error de conexión:", err));
     }
+</script>
+
+@include('partials.modal-buscar-responsable')
+
+<script>
+window.seleccionarDesdeModal = function(resp) {
+    document.getElementById('cedula').value              = resp.cedula            || '';
+    document.getElementById('nombre_responsable').value  = resp.nombre            || '';
+    document.getElementById('numero_de_celular').value   = resp.numero_de_celular || '';
+    document.getElementById('tipo_funcionario').value    = resp.tipo_funcionario  || 'Contratista';
+    document.getElementById('dependencia').value         = resp.dependencia       || '';
+    document.getElementById('cargo').value               = resp.cargo             || '';
+
+    const msj = document.getElementById('msj-responsable');
+    msj.innerText   = '✓ Responsable seleccionado: ' + resp.nombre;
+    msj.className   = 'text-[10px] font-bold mt-1 text-green-600 block italic';
+};
 </script>
 @endsection

@@ -43,14 +43,19 @@
                             <i class="fas fa-user-tie mr-2"></i> Datos del Responsable
                         </div>
                         <div class="flex gap-2">
-                            <button type="button" onclick="habilitarEdicionActual()" id="btn-editar-actual" 
+                            <button type="button" onclick="habilitarEdicionActual()" id="btn-editar-actual"
                                     class="text-[10px] font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-200 transition">
-                                <i class="fas fa-user-edit mr-1"></i> ACTUALIZAR    
+                                <i class="fas fa-user-edit mr-1"></i> ACTUALIZAR
                             </button>
 
-                            <button type="button" onclick="habilitarCambioResponsable()" id="btn-cambiar" 
+                            <button type="button" onclick="habilitarCambioResponsable()" id="btn-cambiar"
                                     class="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-1 rounded-lg hover:bg-orange-200 transition">
                                 <i class="fas fa-exchange-alt mr-1"></i> CAMBIAR
+                            </button>
+
+                            <button type="button" onclick="abrirModalResponsable()" id="btn-buscar-nombre"
+                                    class="text-[10px] font-bold bg-green-100 text-[#39A900] px-2 py-1 rounded-lg hover:bg-green-200 transition">
+                                <i class="fas fa-users mr-1"></i> BUSCAR
                             </button>
                         </div>
                     </div>
@@ -108,15 +113,34 @@
                         <i class="fas fa-map-marker-alt mr-2"></i> Ubicación Física
                     </div>
                     <div class="space-y-4">
-                        <input type="text" name="sede" list="listado-sedes" value="{{ old('sede', $dispositivo->ubicacion->sede->nombre) }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
+                        <input type="text" name="sede" list="listado-sedes"
+                               value="{{ old('sede', $dispositivo->ubicacion->sede->nombre) }}" required
+                               oninput="normalizarTitleCase(this)"
+                               class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
                         <datalist id="listado-sedes">
                             @foreach($sedes as $s)
                                 <option value="{{ $s }}">
                             @endforeach
                         </datalist>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="text" name="bloque" value="{{ old('bloque', $dispositivo->ubicacion->bloque) }}" placeholder="Bloque" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                            <input type="text" name="ambiente" value="{{ old('ambiente', $dispositivo->ubicacion->ambiente) }}" placeholder="Ambiente" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3" required>
+                            <div>
+                                <input type="text" name="bloque"
+                                       value="{{ old('bloque', $dispositivo->ubicacion->bloque) }}"
+                                       placeholder="Ej: A, B, CUARTO"
+                                       oninput="normalizarMayusculas(this)"
+                                       style="text-transform:uppercase;"
+                                       class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                <p class="text-[9px] text-gray-400 mt-0.5 ml-1">Se guarda en MAYÚSCULAS</p>
+                            </div>
+                            <div>
+                                <input type="text" name="ambiente"
+                                       value="{{ old('ambiente', $dispositivo->ubicacion->ambiente) }}"
+                                       placeholder="Ej: 101, ADMIN" required
+                                       oninput="normalizarMayusculas(this)"
+                                       style="text-transform:uppercase;"
+                                       class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                <p class="text-[9px] text-gray-400 mt-0.5 ml-1">Se guarda en MAYÚSCULAS</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -458,5 +482,41 @@
         
         document.getElementById('cedula').focus();
     }
+</script>
+
+@include('partials.modal-buscar-responsable')
+
+<script>
+window.seleccionarDesdeModal = function(resp) {
+    // Desbloquea todos los campos (mismo efecto que CAMBIAR, sin confirm)
+    const campos = ['cedula','nombre_responsable','numero_de_celular','dependencia','cargo'];
+    campos.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.readOnly = false;
+        el.classList.remove('bg-gray-100','text-gray-500','cursor-not-allowed',
+                            'border-orange-300','ring-orange-100');
+        el.classList.add('bg-white','border-green-300','ring-1','ring-green-100');
+    });
+
+    document.getElementById('tipo_funcionario_display')?.classList.add('hidden');
+    document.getElementById('tipo_funcionario')?.classList.remove('hidden');
+    document.getElementById('btn-cambiar')?.classList.add('hidden');
+    document.getElementById('btn-editar-actual')?.classList.add('hidden');
+    document.getElementById('btn-buscar-nombre')?.classList.add('hidden');
+
+    // Rellena los campos
+    document.getElementById('cedula').value              = resp.cedula            || '';
+    document.getElementById('nombre_responsable').value  = resp.nombre            || '';
+    document.getElementById('numero_de_celular').value   = resp.numero_de_celular || '';
+    document.getElementById('tipo_funcionario').value    = resp.tipo_funcionario  || 'Contratista';
+    document.getElementById('dependencia').value         = resp.dependencia       || '';
+    document.getElementById('cargo').value               = resp.cargo             || '';
+
+    const msj = document.getElementById('msj-responsable');
+    msj.classList.remove('hidden');
+    msj.innerText = '✓ Responsable cambiado: ' + resp.nombre;
+    msj.className = 'text-[10px] font-bold mt-2 text-green-600 block italic uppercase';
+};
 </script>
 @endsection

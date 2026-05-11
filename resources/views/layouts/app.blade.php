@@ -18,6 +18,69 @@
         /* Clase para resaltar el link activo */
         .nav-active { background-color: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.3); }
     </style>
+<script>
+/**
+ * Normalización de campos en el front-end.
+ * Complementa los mutators del modelo — primera línea de defensa.
+ */
+
+// MAYÚSCULAS: bloque, ambiente
+function normalizarMayusculas(input) {
+    const pos = input.selectionStart;
+    input.value = input.value.toUpperCase();
+    input.setSelectionRange(pos, pos);
+}
+
+// Title Case: sede (Yopal, Paz De Ariporo)
+function normalizarTitleCase(input) {
+    const pos = input.selectionStart;
+    input.value = input.value
+        .toLowerCase()
+        .replace(/(?:^|\s)\S/g, c => c.toUpperCase());
+    input.setSelectionRange(pos, pos);
+}
+
+// Tarjetas de nivel SENA (radio cards) — actualiza estilos al cambiar selección
+function actualizarNivelSena(radio) {
+    const grupo = radio.closest('#grupo-nivel-sena');
+    if (!grupo) return;
+
+    const colores = { red:'red', orange:'orange', blue:'blue', gray:'gray' };
+    const activoClases   = (c) => [`border-${c}-400`, `bg-${c}-50`];
+    const inactivoClases = ['border-gray-200', 'bg-white', 'hover:border-gray-300'];
+
+    grupo.querySelectorAll('.nivel-card').forEach(function (card) {
+        const c = card.dataset.color || 'gray';
+        // Quita clases activas anteriores
+        activoClases(c).forEach(cls => card.classList.remove(cls));
+        inactivoClases.forEach(cls => card.classList.remove(cls));
+        inactivoClases.forEach(cls => card.classList.add(cls));
+    });
+
+    // Activa la tarjeta seleccionada
+    const cardActiva = radio.closest('.nivel-card');
+    if (cardActiva) {
+        const c = cardActiva.dataset.color || 'gray';
+        inactivoClases.forEach(cls => cardActiva.classList.remove(cls));
+        activoClases(c).forEach(cls => cardActiva.classList.add(cls));
+    }
+}
+
+// Normaliza todos los campos marcados antes de enviar cualquier form
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('form').forEach(function (form) {
+        form.addEventListener('submit', function () {
+            form.querySelectorAll('[data-normalize="upper"]').forEach(function (el) {
+                el.value = el.value.toUpperCase().trim();
+            });
+            form.querySelectorAll('[data-normalize="title"]').forEach(function (el) {
+                el.value = el.value.toLowerCase()
+                    .replace(/(?:^|\s)\S/g, c => c.toUpperCase()).trim();
+            });
+        });
+    });
+});
+</script>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
@@ -42,6 +105,10 @@
 
                     <a href="{{ route('reportes.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('reportes.*') ? 'nav-active' : '' }}">
                         <i class="fas fa-chart-pie mr-2"></i> Reportes
+                    </a>
+
+                    <a href="{{ route('areas-seguras.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('areas-seguras.*') ? 'nav-active' : '' }}">
+                        <i class="fas fa-shield-alt mr-2"></i> ISO 27001
                     </a>
 
                     @if(Auth::user()->role === 'admin')

@@ -22,6 +22,10 @@
             </h1>
             <p class="text-gray-500 font-bold italic text-sm">Gestión de Infraestructura TIC — Regional Casanare</p>
         </div>
+        <button onclick="abrirSelectorResponsable()"
+           class="bg-[#00324D] text-white px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-slate-700 transition flex items-center gap-2">
+            <i class="fas fa-file-pdf text-base"></i> Reporte por Responsable
+        </button>
         @if(Auth::user()->role === 'admin')
         <a href="{{ route('reportes.exportar') }}"
            class="bg-[#39A900] text-white px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-green-700 transition flex items-center gap-2">
@@ -675,5 +679,127 @@ async function cargarGraficaUbicacion() {
 
 // Carga inicial sin filtros
 cargarGraficaUbicacion();
+</script>
+
+{{-- ── Modal: Seleccionar responsable para PDF ─────────────────────────────── --}}
+<div id="modal-selector-resp"
+     class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4"
+     onclick="if(event.target===this)cerrarSelectorResponsable()">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col" style="max-height:90vh;">
+
+        <div class="sena-bg px-6 py-4 rounded-t-3xl flex justify-between items-center flex-shrink-0">
+            <div>
+                <h2 class="text-white font-black text-base uppercase tracking-tight flex items-center gap-2">
+                    <i class="fas fa-file-pdf opacity-80"></i> Reporte por Responsable
+                </h2>
+                <p class="text-white/70 text-[10px] font-bold mt-0.5">Busca la persona y descarga su acta de equipos</p>
+            </div>
+            <button type="button" onclick="cerrarSelectorResponsable()" class="text-white/60 hover:text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="px-5 py-4 border-b border-gray-100 flex-shrink-0">
+            <div class="relative">
+                <i class="fas fa-search absolute left-3 top-3.5 text-gray-300 text-sm"></i>
+                <input type="text" id="selector-input"
+                       placeholder="Nombre o cédula del responsable..."
+                       oninput="debounceSelector(this.value)"
+                       autocomplete="off"
+                       class="w-full bg-gray-50 rounded-2xl py-3 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#39A900] transition">
+            </div>
+        </div>
+
+        <div class="overflow-y-auto flex-1">
+            <div id="sel-inicial" class="py-10 text-center text-gray-400">
+                <i class="fas fa-users text-3xl mb-3 block opacity-20"></i>
+                <p class="text-xs font-bold uppercase tracking-widest">Escribe al menos 2 caracteres</p>
+            </div>
+            <div id="sel-spinner" class="hidden py-8 flex items-center justify-center gap-2">
+                <div class="w-5 h-5 border-2 border-[#39A900] border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-xs font-bold text-gray-400 uppercase">Buscando...</span>
+            </div>
+            <div id="sel-vacio" class="hidden py-10 text-center text-gray-400">
+                <i class="fas fa-user-slash text-3xl mb-3 block opacity-20"></i>
+                <p class="text-xs font-bold uppercase tracking-widest">Sin coincidencias</p>
+            </div>
+            <ul id="sel-lista" class="divide-y divide-gray-50"></ul>
+        </div>
+
+        <div class="px-5 py-3 bg-gray-50 rounded-b-3xl flex-shrink-0 border-t border-gray-100">
+            <p class="text-[10px] text-gray-400 font-bold">
+                <i class="fas fa-info-circle mr-1"></i>
+                El PDF se descarga automáticamente al seleccionar el responsable
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+const _urlBuscarNombreRep = "{{ route('responsables.buscar-nombre') }}";
+const _urlReportePDF = "{{ url('/responsables') }}/";
+let _selTimer = null;
+
+function abrirSelectorResponsable() {
+    const m = document.getElementById('modal-selector-resp');
+    m.classList.remove('hidden'); m.classList.add('flex');
+    setTimeout(() => document.getElementById('selector-input').focus(), 80);
+    _resetSelector();
+}
+function cerrarSelectorResponsable() {
+    const m = document.getElementById('modal-selector-resp');
+    m.classList.add('hidden'); m.classList.remove('flex');
+    document.getElementById('selector-input').value = '';
+    _resetSelector();
+}
+function _resetSelector() {
+    ['sel-inicial','sel-spinner','sel-vacio','sel-lista'].forEach(id => {
+        document.getElementById(id)?.classList.add('hidden');
+    });
+    document.getElementById('sel-inicial')?.classList.remove('hidden');
+    document.getElementById('sel-lista').innerHTML = '';
+}
+function _mostrarSel(estado) {
+    ['sel-inicial','sel-spinner','sel-vacio','sel-lista'].forEach(id =>
+        document.getElementById(id)?.classList.add('hidden'));
+    document.getElementById('sel-' + estado)?.classList.remove('hidden');
+}
+function debounceSelector(q) {
+    clearTimeout(_selTimer);
+    if (q.trim().length < 2) { _resetSelector(); return; }
+    _mostrarSel('spinner');
+    _selTimer = setTimeout(() => _buscarParaSelector(q.trim()), 300);
+}
+function _buscarParaSelector(q) {
+    fetch(`${_urlBuscarNombreRep}?q=${encodeURIComponent(q)}`)
+        .then(r => r.json())
+        .then(data => {
+            const lista = document.getElementById('sel-lista');
+            lista.innerHTML = '';
+            if (!data.length) { _mostrarSel('vacio'); return; }
+
+            data.forEach(r => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <a href="${_urlReportePDF}${r.id}/reporte-pdf" target="_blank"
+                       onclick="cerrarSelectorResponsable()"
+                       class="flex items-center justify-between px-5 py-3 hover:bg-green-50 transition group">
+                        <div>
+                            <div class="font-black text-gray-800 text-sm group-hover:text-[#39A900] transition">${r.nombre}</div>
+                            <div class="text-[10px] font-mono text-gray-400 mt-0.5">
+                                CC ${r.cedula}
+                                ${r.cargo ? `<span class="text-gray-300 mx-1">·</span>${r.cargo}` : ''}
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-black text-[#39A900] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                            <i class="fas fa-file-pdf"></i> Descargar
+                        </span>
+                    </a>`;
+                lista.appendChild(li);
+            });
+            _mostrarSel('lista');
+        })
+        .catch(() => _mostrarSel('vacio'));
+}
 </script>
 @endsection

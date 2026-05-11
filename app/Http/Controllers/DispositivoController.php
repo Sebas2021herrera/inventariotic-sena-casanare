@@ -131,12 +131,15 @@ public function store(Request $request)
                 ]
             );
 
-            // 3. SEDE + UBICACIÓN
-            $sede = Sede::firstOrCreate(['nombre' => $request->sede]);
+            // 3. SEDE + UBICACIÓN (normalizado para evitar duplicados por casing)
+            $nombreSede = ucwords(mb_strtolower(trim($request->sede)));
+            $bloque     = mb_strtoupper(trim($request->bloque ?? ''));
+            $ambiente   = mb_strtoupper(trim($request->ambiente));
+            $sede = Sede::firstOrCreate(['nombre' => $nombreSede]);
             $ubicacion = Ubicacion::firstOrCreate([
                 'sede_id' => $sede->id,
-                'bloque'  => $request->bloque ?? 'N/A',
-                'ambiente'=> $request->ambiente,
+                'bloque'  => $bloque,
+                'ambiente'=> $ambiente,
             ]);
 
             // 4. DISPOSITIVO: Incluyendo Propietario, Función e Intune
@@ -274,12 +277,15 @@ public function update(Request $request, Dispositivo $dispositivo)
             ]
         );
 
-        // 3. ACTUALIZAR SEDE + UBICACIÓN
-        $sede = Sede::firstOrCreate(['nombre' => $request->sede]);
+        // 3. ACTUALIZAR SEDE + UBICACIÓN (normalizado)
+        $nombreSede = ucwords(mb_strtolower(trim($request->sede)));
+        $bloque     = mb_strtoupper(trim($request->bloque ?? ''));
+        $ambiente   = mb_strtoupper(trim($request->ambiente));
+        $sede = Sede::firstOrCreate(['nombre' => $nombreSede]);
         $ubicacion = Ubicacion::firstOrCreate([
             'sede_id' => $sede->id,
-            'bloque'  => $request->bloque ?? 'N/A',
-            'ambiente'=> $request->ambiente,
+            'bloque'  => $bloque,
+            'ambiente'=> $ambiente,
         ]);
 
         // 4. ACTUALIZAR DATOS BÁSICOS DEL DISPOSITIVO

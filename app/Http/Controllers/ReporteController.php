@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Dispositivo;
 use App\Models\Mantenimiento;
+use App\Models\Responsable;
 use App\Models\Ubicacion;
 use App\Models\Sede;
 use Illuminate\Http\Request;
@@ -159,5 +160,53 @@ class ReporteController extends Controller
     public function exportar()
     {
         return Excel::download(new InventarioGeneralExport, 'Inventario_GITIC_Casanare.xlsx');
+    }
+
+    public function responsablesPDF()
+    {
+        ini_set('max_execution_time', 120);
+
+        $totalDispositivos  = Dispositivo::count();
+        $totalResponsables  = Responsable::whereHas('dispositivos')->count();
+        $totalSedes         = Sede::count();
+        $totalUbicaciones   = Ubicacion::count();
+
+        $porSede = DB::table('sedes')
+            ->join('ubicaciones', 'sedes.id', '=', 'ubicaciones.sede_id')
+            ->join('dispositivos', 'ubicaciones.id', '=', 'dispositivos.ubicacion_id')
+            ->select('sedes.nombre', DB::raw('count(dispositivos.id) as total'))
+            ->groupBy('sedes.id', 'sedes.nombre')
+            ->orderByDesc('total')
+            ->get();
+
+        $porEstado = Dispositivo::select('estado_fisico', DB::raw('count(*) as total'))
+            ->whereNotNull('estado_fisico')
+            ->groupBy('estado_fisico')
+            ->orderByDesc('total')
+            ->get();
+
+        $porCategoria = Dispositivo::select('categoria', DB::raw('count(*) as total'))
+            ->whereNotNull('categoria')
+            ->groupBy('categoria')
+            ->orderByDesc('total')
+            ->get();
+
+        $responsables = Responsable::whereHas('dispositivos')
+            ->with(['dispositivos' => function ($q) {
+                $q->with('ubicacion.sede')
+                  ->select('id', 'responsable_id', 'placa', 'hostname', 'marca', 'modelo',
+                            'categoria', 'estado_fisico', 'en_intune', 'ubicacion_id')
+                  ->orderBy('placa');
+            }])
+            ->orderBy('nombre')
+            ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reportes.responsables_pdf', compact(
+            'totalDispositivos', 'totalResponsables', 'totalSedes', 'totalUbicaciones',
+            'porSede', 'porEstado', 'porCategoria', 'responsables'
+        ));
+        $pdf->setPaper('letter', 'landscape');
+
+        return $pdf->download('Reporte_Equipos_por_Responsable_' . now()->format('Ymd_His') . '.pdf');
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\MantenimientoController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ConceptoTecnicoController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\AreaSeguraController;
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
     return auth()->check() 
@@ -23,20 +24,22 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 // 3. RUTAS PROTEGIDAS
 Route::middleware(['auth'])->group(function () {
     
+    // Rutas estáticas ANTES de los resources (evitan que los wildcards las capturen)
+    Route::get('/responsables/buscar-nombre', [ResponsableController::class, 'buscarPorNombre'])->name('responsables.buscar-nombre');
+    Route::get('/responsables/buscar/{cedula}', [ResponsableController::class, 'buscar'])->name('responsables.buscar');
+    Route::get('/responsables/{responsable}/reporte-pdf', [ResponsableController::class, 'reportePDF'])->name('responsables.reporte-pdf');
+    Route::get('/dispositivos/verificar-placa/{placa}', [DispositivoController::class, 'verificarPlaca'])->name('dispositivos.verificar');
+
     // Recursos principales
     Route::resource('dispositivos', DispositivoController::class);
     Route::resource('responsables', ResponsableController::class);
 
     Route::resource('mantenimientos', MantenimientoController::class);
     Route::get('/mantenimientos/{mantenimiento}/pdf', [MantenimientoController::class, 'exportarPDF'])->name('mantenimientos.pdf');
-    
+
     // Funcionalidades de Inventario SENA
     Route::post('importar-inventario', [DispositivoController::class, 'importar'])->name('dispositivos.importar');
     Route::get('descargar-plantilla', [DispositivoController::class, 'descargarPlantilla'])->name('dispositivos.plantilla');
-
-    // Búsquedas dinámicas
-    Route::get('/responsables/buscar/{cedula}', [ResponsableController::class, 'buscar'])->name('responsables.buscar');
-    Route::get('/dispositivos/verificar-placa/{placa}', [DispositivoController::class, 'verificarPlaca'])->name('dispositivos.verificar');
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
     Route::get('/reportes/ubicacion-stats', [ReporteController::class, 'ubicacionStats'])->name('reportes.ubicacion-stats');
     Route::get('/reportes/exportar', [ReporteController::class, 'exportar'])->name('reportes.exportar')->middleware('admin');
@@ -50,6 +53,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/perfil/cambiar-clave', [AuthController::class, 'showCambiarClave'])->name('perfil.cambiar-clave');
     Route::post('/perfil/cambiar-clave', [AuthController::class, 'cambiarClave']);
+
+    // Áreas Seguras — ISO 27001:2022
+    Route::resource('areas-seguras', AreaSeguraController::class);
+    Route::get('areas-seguras/{areasSegura}/verificacion', [AreaSeguraController::class, 'crearVerificacion'])->name('areas-seguras.verificacion.create');
+    Route::post('areas-seguras/{areasSegura}/verificacion', [AreaSeguraController::class, 'guardarVerificacion'])->name('areas-seguras.verificacion.store');
 
     // Solo admin
     Route::middleware('admin')->group(function () {
