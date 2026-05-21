@@ -107,6 +107,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         <i class="fas fa-chart-pie mr-2"></i> Reportes
                     </a>
 
+                    <a href="{{ route('equipos-energia.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('equipos-energia.*') ? 'nav-active' : '' }}">
+                        <i class="fas fa-bolt mr-2"></i> Energía
+                    </a>
                     <a href="{{ route('areas-seguras.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('areas-seguras.*') ? 'nav-active' : '' }}">
                         <i class="fas fa-shield-alt mr-2"></i> ISO 27001
                     </a>

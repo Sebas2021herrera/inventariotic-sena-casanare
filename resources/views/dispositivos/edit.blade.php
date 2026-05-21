@@ -112,33 +112,37 @@
                     <div class="flex items-center mb-6 text-[#39A900] font-black uppercase text-xs tracking-widest border-b pb-2">
                         <i class="fas fa-map-marker-alt mr-2"></i> Ubicación Física
                     </div>
+                    @php $sedeActual = old('sede', $dispositivo->ubicacion->sede->nombre ?? ''); @endphp
                     <div class="space-y-4">
-                        <input type="text" name="sede" list="listado-sedes"
-                               value="{{ old('sede', $dispositivo->ubicacion->sede->nombre) }}" required
-                               oninput="normalizarTitleCase(this)"
-                               class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                        <datalist id="listado-sedes">
-                            @foreach($sedes as $s)
-                                <option value="{{ $s }}">
-                            @endforeach
-                        </datalist>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Sede *</label>
+                            <select name="sede" id="select-sede" required
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#39A900] transition appearance-none">
+                                <option value="">— Selecciona la sede —</option>
+                                @foreach($sedes as $s)
+                                    <option value="{{ $s }}" {{ $sedeActual === $s ? 'selected' : '' }}>{{ $s }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Bloque</label>
                                 <input type="text" name="bloque"
                                        value="{{ old('bloque', $dispositivo->ubicacion->bloque) }}"
                                        placeholder="Ej: A, B, CUARTO"
                                        oninput="normalizarMayusculas(this)"
                                        style="text-transform:uppercase;"
-                                       class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                       class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 font-mono text-sm outline-none focus:ring-2 focus:ring-[#39A900] transition">
                                 <p class="text-[9px] text-gray-400 mt-0.5 ml-1">Se guarda en MAYÚSCULAS</p>
                             </div>
                             <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ambiente *</label>
                                 <input type="text" name="ambiente"
                                        value="{{ old('ambiente', $dispositivo->ubicacion->ambiente) }}"
                                        placeholder="Ej: 101, ADMIN" required
                                        oninput="normalizarMayusculas(this)"
                                        style="text-transform:uppercase;"
-                                       class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                       class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 font-mono text-sm outline-none focus:ring-2 focus:ring-[#39A900] transition">
                                 <p class="text-[9px] text-gray-400 mt-0.5 ml-1">Se guarda en MAYÚSCULAS</p>
                             </div>
                         </div>
@@ -153,77 +157,132 @@
                         <i class="fas fa-desktop mr-2"></i> Identificación del Bien
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div>
+                    @php
+                        $ef   = old('estado_fisico', $dispositivo->estado_fisico);
+                        $el   = old('estado_logico',  $dispositivo->estado_logico ?? 'Bueno');
+                        $prop = old('propietario', $dispositivo->propietario);
+                        $func = old('funcion', $dispositivo->funcion);
+                        $int  = old('en_intune', $dispositivo->en_intune);
+                    @endphp
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                        {{-- Fila 1: Placa (readonly) + Serial --}}
+                        <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">
                                 Placa SENA <i class="fas fa-lock ml-1 text-gray-300"></i>
                             </label>
-                            <input type="text" 
-                                name="placa" 
-                                value="{{ $dispositivo->placa }}" 
-                                class="w-full bg-gray-100 border-gray-300 border-2 rounded-xl p-3 font-black text-xl text-gray-500 shadow-inner cursor-not-allowed" 
-                                readonly>
+                            <input type="text" name="placa" value="{{ $dispositivo->placa }}"
+                                class="w-full bg-gray-100 border-gray-300 border-2 rounded-xl p-3 font-black text-xl text-gray-500 shadow-inner cursor-not-allowed" readonly>
                             <p class="text-[9px] text-gray-400 mt-1 italic">* La placa no se puede modificar una vez registrada.</p>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Serial de Fábrica *</label>
-                            <input type="text" name="serial" value="{{ old('serial', $dispositivo->serial) }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase" required>
+                            <input type="text" name="serial" value="{{ old('serial', $dispositivo->serial) }}"
+                                class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase" required>
                         </div>
 
-                        <div class="md:col-span-2">
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Hostname / Nombre del Equipo</label>
-                            <input type="text" name="hostname" value="{{ old('hostname', $dispositivo->hostname) }}"
-                                class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono outline-none focus:bg-white transition"
-                                placeholder="Ej: PC-AULA101, LAPTOP-ADMIN-01"
-                                pattern="[a-zA-Z0-9\-_\.]+"
-                                title="Solo letras, números, guiones, guión bajo y puntos. Sin espacios ni caracteres especiales.">
-                            <p class="text-[10px] text-gray-400 mt-1">Opcional · sin espacios ni caracteres especiales</p>
+                        {{-- Fila 2: Categoría + Tipo Equipo --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría *</label>
+                            <select name="categoria" id="categoria-select" onchange="toggleSecciones()"
+                                    class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold text-[#39A900] outline-none focus:bg-white transition">
+                                @foreach(['computo'=>'Computadores','conectividad'=>'Redes / Conectividad','impresoras'=>'Impresoras / Escáner'] as $val => $lbl)
+                                    <option value="{{ $val }}" {{ old('categoria',$dispositivo->categoria) === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                                @endforeach
+                            </select>
                         </div>
+                        @if($dispositivo->categoria === 'computo')
+                        <div id="div-tipo-equipo">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo de Equipo</label>
+                            <select name="tipo_equipo" id="tipo-equipo"
+                                    class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold outline-none focus:bg-white transition">
+                                <option value="">— Selecciona —</option>
+                                @foreach(['Portátil','Escritorio','Workstation'] as $te)
+                                    <option value="{{ $te }}" {{ old('tipo_equipo',$dispositivo->tipo_equipo) === $te ? 'selected' : '' }}>{{ $te }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @else
+                        <div></div>
+                        <input type="hidden" name="tipo_equipo" value="{{ old('tipo_equipo',$dispositivo->tipo_equipo) }}">
+                        @endif
 
-                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        {{-- Fila 3: Propietario + Función + Intune --}}
+                        <div class="md:col-span-2 grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Propietario</label>
-                                @php $prop = old('propietario', $dispositivo->propietario); @endphp
                                 <select name="propietario" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold">
-                                    <option value="SENA" {{ $prop == 'SENA' ? 'selected' : '' }}>SENA</option>
-                                    <option value="TELEFONICA" {{ $prop == 'TELEFONICA' ? 'selected' : '' }}>TELEFÓNICA</option>
-                                    <option value="OTRO" {{ $prop == 'OTRO' ? 'selected' : '' }}>OTRO</option>
+                                    @foreach(['SENA','TELEFONICA'=>'TELEFÓNICA','OTRO'] as $k => $v)
+                                    @php $val = is_int($k) ? $v : $k; $lbl = is_int($k) ? $v : $v; @endphp
+                                    <option value="{{ $val }}" {{ $prop === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Función</label>
-                                @php $func = old('funcion', $dispositivo->funcion); @endphp
                                 <select name="funcion" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold">
-                                    <option value="FORMACION" {{ $func == 'FORMACION' ? 'selected' : '' }}>FORMACIÓN</option>
-                                    <option value="ADMINISTRATIVO" {{ $func == 'ADMINISTRATIVO' ? 'selected' : '' }}>ADMINISTRATIVO</option>
+                                    <option value="FORMACION"    {{ $func === 'FORMACION'    ? 'selected' : '' }}>APRENDIZ / FORMACIÓN</option>
+                                    <option value="ADMINISTRATIVO" {{ $func === 'ADMINISTRATIVO' ? 'selected' : '' }}>ADMINISTRATIVO</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">¿INTUNE?</label>
-                                @php $intune = old('en_intune', $dispositivo->en_intune); @endphp
                                 <select name="en_intune" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold">
-                                    <option value="NO" {{ $intune == 'NO' ? 'selected' : '' }}>NO</option>
-                                    <option value="SI" {{ $intune == 'SI' ? 'selected' : '' }}>SI</option>
+                                    <option value="NO" {{ $int === 'NO' ? 'selected' : '' }}>NO</option>
+                                    <option value="SI" {{ $int === 'SI' ? 'selected' : '' }}>SI</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="text" name="marca" value="{{ old('marca', $dispositivo->marca) }}" placeholder="Marca" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                            <input type="text" name="modelo" value="{{ old('modelo', $dispositivo->modelo) }}" placeholder="Modelo" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                        {{-- Fila 4: Marca + Modelo --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Marca</label>
+                            <input type="text" name="marca" value="{{ old('marca',$dispositivo->marca) }}" placeholder="Marca" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <select name="categoria" id="categoria-select" onchange="toggleSecciones()" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold text-[#39A900]">
-                                <option value="computo" {{ $dispositivo->categoria == 'computo' ? 'selected' : '' }}>Computadores</option>
-                                <option value="conectividad" {{ $dispositivo->categoria == 'conectividad' ? 'selected' : '' }}>Redes / Conectividad</option>
-                                <option value="impresoras" {{ $dispositivo->categoria == 'impresoras' ? 'selected' : '' }}>Impresoras</option>
-                            </select>
-                            <select name="estado_fisico" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold">
-                                <option value="Bueno" {{ $dispositivo->estado_fisico == 'Bueno' ? 'selected' : '' }}>Bueno</option>
-                                <option value="Regular" {{ $dispositivo->estado_fisico == 'Regular' ? 'selected' : '' }}>Regular</option>
-                                <option value="Malo" {{ $dispositivo->estado_fisico == 'Malo' ? 'selected' : '' }}>Malo</option>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Modelo</label>
+                            <input type="text" name="modelo" value="{{ old('modelo',$dispositivo->modelo) }}" placeholder="Modelo" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                        </div>
+
+                        {{-- Fila 5: Estado Físico + Estado Lógico --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Estado Físico</label>
+                            <select name="estado_fisico" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold outline-none focus:bg-white transition">
+                                @foreach(['Bueno','Regular','Malo','En Reparación'] as $est)
+                                    <option value="{{ $est }}" {{ $ef === $est ? 'selected' : '' }}>{{ $est }}</option>
+                                @endforeach
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Estado Lógico</label>
+                            <select name="estado_logico" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold outline-none focus:bg-white transition">
+                                @foreach(['Bueno','Regular','Malo'] as $est)
+                                    <option value="{{ $est }}" {{ $el === $est ? 'selected' : '' }}>{{ $est }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Fila 6: Hostname (al final) --}}
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Hostname / Nombre del Equipo</label>
+                            <div class="flex gap-2">
+                                <input type="text" name="hostname" id="input-hostname"
+                                    value="{{ old('hostname',$dispositivo->hostname) }}"
+                                    class="flex-1 bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase outline-none focus:bg-white transition"
+                                    placeholder="Ej: YOPADRCNCSD001"
+                                    pattern="[a-zA-Z0-9\-_\.]+"
+                                    oninput="this.value=this.value.toUpperCase()"
+                                    title="Solo letras, números, guiones y puntos.">
+                                @if($dispositivo->categoria === 'computo')
+                                <button type="button" onclick="generarHostnameAuto()"
+                                        class="px-4 py-3 bg-[#39A900] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-green-700 transition whitespace-nowrap flex-shrink-0">
+                                    <i class="fas fa-magic mr-1"></i> Generar
+                                </button>
+                                @endif
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-1">Sin espacios ni caracteres especiales</p>
+                        </div>
+
                     </div>
                 </div>
 
@@ -487,6 +546,26 @@
 @include('partials.modal-buscar-responsable')
 
 <script>
+const _urlGenerarHostname = "{{ route('dispositivos.generar-hostname') }}";
+
+async function generarHostnameAuto() {
+    const sede       = document.getElementById('select-sede')?.value?.trim();
+    const funcion    = document.querySelector('[name="funcion"], [name="funcion"] option:checked')?.value?.trim()
+                    || '{{ $dispositivo->funcion }}';
+    const tipoEquipo = document.getElementById('tipo-equipo')?.value;
+
+    if (!sede || !tipoEquipo) {
+        alert('Completa sede y tipo de equipo para generar el hostname.');
+        return;
+    }
+    try {
+        const params = new URLSearchParams({ sede, funcion, tipo_equipo: tipoEquipo });
+        const res  = await fetch(`${_urlGenerarHostname}?${params}`);
+        const data = await res.json();
+        if (data.hostname) document.getElementById('input-hostname').value = data.hostname;
+    } catch(e) { alert('Error al generar hostname.'); }
+}
+
 window.seleccionarDesdeModal = function(resp) {
     // Desbloquea todos los campos (mismo efecto que CAMBIAR, sin confirm)
     const campos = ['cedula','nombre_responsable','numero_de_celular','dependencia','cargo'];

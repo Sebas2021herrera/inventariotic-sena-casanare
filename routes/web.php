@@ -9,6 +9,7 @@ use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ConceptoTecnicoController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AreaSeguraController;
+use App\Http\Controllers\EquipoEnergiaController;
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
     return auth()->check() 
@@ -25,6 +26,7 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     
     // Rutas estáticas ANTES de los resources (evitan que los wildcards las capturen)
+    Route::get('/dispositivos/generar-hostname', [DispositivoController::class, 'generarHostname'])->name('dispositivos.generar-hostname');
     Route::get('/responsables/buscar-nombre', [ResponsableController::class, 'buscarPorNombre'])->name('responsables.buscar-nombre');
     Route::get('/responsables/buscar/{cedula}', [ResponsableController::class, 'buscar'])->name('responsables.buscar');
     Route::get('/responsables/{responsable}/reporte-pdf', [ResponsableController::class, 'reportePDF'])->name('responsables.reporte-pdf');
@@ -53,6 +55,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/perfil/cambiar-clave', [AuthController::class, 'showCambiarClave'])->name('perfil.cambiar-clave');
     Route::post('/perfil/cambiar-clave', [AuthController::class, 'cambiarClave']);
+
+    // Energía Regulada
+    Route::resource('equipos-energia', EquipoEnergiaController::class);
 
     // Áreas Seguras — ISO 27001:2022
     Route::resource('areas-seguras', AreaSeguraController::class);

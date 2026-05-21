@@ -96,28 +96,34 @@
                         <i class="fas fa-map-marker-alt mr-2"></i> Ubicación Física
                     </div>
                     <div class="space-y-4">
-                        <input type="text" name="sede" list="listado-sedes"
-                               placeholder="Sede" required
-                               oninput="normalizarTitleCase(this)"
-                               class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
-                        <datalist id="listado-sedes">
-                            @foreach($sedes as $s)
-                                <option value="{{ $s }}">
-                            @endforeach
-                        </datalist>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Sede *</label>
+                            <select name="sede" id="select-sede" required
+                                    onchange="sugerirHostname()"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#39A900] transition appearance-none">
+                                <option value="">— Selecciona la sede —</option>
+                                @foreach($sedes as $s)
+                                    <option value="{{ $s }}" {{ old('sede') === $s ? 'selected' : '' }}>{{ $s }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <input type="text" name="bloque" placeholder="Ej: A, B, CUARTO"
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Bloque</label>
+                                <input type="text" name="bloque" value="{{ old('bloque') }}"
+                                       placeholder="Ej: A, B, CUARTO"
                                        oninput="normalizarMayusculas(this)"
                                        style="text-transform:uppercase;"
-                                       class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                       class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 font-mono text-sm outline-none focus:ring-2 focus:ring-[#39A900] transition">
                                 <p class="text-[9px] text-gray-400 mt-0.5 ml-1">Se guarda en MAYÚSCULAS</p>
                             </div>
                             <div>
-                                <input type="text" name="ambiente" placeholder="Ej: 101, ADMIN" required
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ambiente *</label>
+                                <input type="text" name="ambiente" value="{{ old('ambiente') }}"
+                                       placeholder="Ej: 101, ADMIN" required
                                        oninput="normalizarMayusculas(this)"
                                        style="text-transform:uppercase;"
-                                       class="w-full bg-gray-50 border-gray-200 rounded-xl p-3">
+                                       class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 font-mono text-sm outline-none focus:ring-2 focus:ring-[#39A900] transition">
                                 <p class="text-[9px] text-gray-400 mt-0.5 ml-1">Se guarda en MAYÚSCULAS</p>
                             </div>
                         </div>
@@ -132,12 +138,14 @@
                         <i class="fas fa-desktop mr-2"></i> Identificación y Clasificación
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                        {{-- Fila 1: Placa + Serial --}}
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Placa SENA *</label>
-                            <input type="text" id="input-placa" name="placa" value="{{ old('placa') }}" 
-                                oninput="verificarPlacaRealTime()" 
-                               class="w-full bg-white border-[#39A900] border rounded-xl p-3 font-bold text-[#39A900] outline-none transition-all"  placeholder="Ej: 95191020321" required>
+                            <input type="text" id="input-placa" name="placa" value="{{ old('placa') }}"
+                                oninput="verificarPlacaRealTime()"
+                                class="w-full bg-white border-[#39A900] border rounded-xl p-3 font-bold text-[#39A900] outline-none transition-all" placeholder="Ej: 95191020321" required>
                             <p id="msj-placa" class="text-[10px] font-bold mt-2 hidden italic uppercase tracking-tighter"></p>
                         </div>
                         <div>
@@ -145,17 +153,32 @@
                             <input type="text" name="serial" value="{{ old('serial') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase outline-none focus:bg-white transition" required>
                         </div>
 
-                        <div class="md:col-span-2">
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Hostname / Nombre del Equipo</label>
-                            <input type="text" name="hostname" value="{{ old('hostname') }}"
-                                class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono outline-none focus:bg-white transition"
-                                placeholder="Ej: YOPAPRCNCSD001, LAPTOP-ADMIN-01"
-                                pattern="[a-zA-Z0-9\-_\.]+"
-                                title="Solo letras, números, guiones, guión bajo y puntos. Sin espacios ni caracteres especiales.">
-                            <p class="text-[10px] text-gray-400 mt-1"> sin espacios ni caracteres especiales</p>
+                        {{-- Fila 2: Categoría + Tipo Equipo (al lado) --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría *</label>
+                            <select name="categoria" id="categoria-select" onchange="toggleSecciones()"
+                                    class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold text-[#39A900] outline-none focus:bg-white transition">
+                                <option value="computo">Computadores</option>
+                                <option value="conectividad">Redes / Conectividad</option>
+                                <option value="impresoras">Impresoras / Escáner</option>
+                            </select>
                         </div>
+                        <div id="div-tipo-equipo" class="hidden">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo de Equipo</label>
+                            <select name="tipo_equipo" id="tipo-equipo"
+                                    class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold outline-none focus:bg-white transition"
+                                    onchange="sugerirHostname()">
+                                <option value="">— Selecciona —</option>
+                                <option value="Portátil"    {{ old('tipo_equipo') === 'Portátil'    ? 'selected' : '' }}>Portátil</option>
+                                <option value="Escritorio"  {{ old('tipo_equipo') === 'Escritorio'  ? 'selected' : '' }}>Escritorio</option>
+                                <option value="Workstation" {{ old('tipo_equipo') === 'Workstation' ? 'selected' : '' }}>Workstation</option>
+                            </select>
+                        </div>
+                        {{-- Placeholder cuando no es computo --}}
+                        <div id="div-tipo-equipo-vacio" class="hidden"></div>
 
-                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        {{-- Fila 3: Propietario + Función + Intune --}}
+                        <div class="md:col-span-2 grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Propietario</label>
                                 <select name="propietario" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold outline-none">
@@ -166,8 +189,8 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Función</label>
-                                <select name="funcion" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold outline-none">
-                                    <option value="FORMACION">FORMACIÓN</option>
+                                <select name="funcion" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold outline-none" onchange="sugerirHostname()">
+                                    <option value="FORMACION">APRENDIZ / FORMACIÓN</option>
                                     <option value="ADMINISTRATIVO">ADMINISTRATIVO</option>
                                 </select>
                             </div>
@@ -180,35 +203,56 @@
                             </div>
                         </div>
 
-                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Marca</label>
-                                <input type="text" name="marca" value="{{ old('marca') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 outline-none focus:bg-white transition">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Modelo</label>
-                                <input type="text" name="modelo" value="{{ old('modelo') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 outline-none focus:bg-white transition">
-                            </div>
+                        {{-- Fila 4: Marca + Modelo --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Marca</label>
+                            <input type="text" name="marca" value="{{ old('marca') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 outline-none focus:bg-white transition" placeholder="ASUS, HP, Dell...">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Modelo</label>
+                            <input type="text" name="modelo" value="{{ old('modelo') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 outline-none focus:bg-white transition" placeholder="ExpertBook B1400...">
                         </div>
 
-                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría</label>
-                                <select name="categoria" id="categoria-select" onchange="toggleSecciones()" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold text-[#39A900] outline-none">
-                                    <option value="computo">Computadores</option>
-                                    <option value="conectividad">Redes / Conectividad</option>
-                                    <option value="impresoras">Impresoras / Escáner</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Estado Físico</label>
-                                <select name="estado_fisico" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold outline-none">
-                                    <option value="Bueno" class="text-green-600">Bueno</option>
-                                    <option value="Regular" class="text-yellow-600">Regular</option>
-                                    <option value="Malo" class="text-red-600">Malo</option>
-                                </select>
-                            </div>
+                        {{-- Fila 5: Estado Físico + Estado Lógico --}}
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Estado Físico</label>
+                            <select name="estado_fisico" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold outline-none focus:bg-white transition">
+                                @foreach(['Bueno','Regular','Malo','En Reparación'] as $ef)
+                                    <option value="{{ $ef }}" {{ old('estado_fisico','Bueno') === $ef ? 'selected' : '' }}>{{ $ef }}</option>
+                                @endforeach
+                            </select>
                         </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Estado Lógico</label>
+                            <select name="estado_logico" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-bold outline-none focus:bg-white transition">
+                                @foreach(['Bueno','Regular','Malo'] as $el)
+                                    <option value="{{ $el }}" {{ old('estado_logico','Bueno') === $el ? 'selected' : '' }}>{{ $el }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Fila 6: Hostname (al final, con botón generar) --}}
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                Hostname / Nombre del Equipo
+                                <span class="text-gray-300 font-normal normal-case ml-1" id="hint-hostname">— selecciona categoría, función y tipo para generar automáticamente</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <input type="text" name="hostname" id="input-hostname" value="{{ old('hostname') }}"
+                                    class="flex-1 bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase outline-none focus:bg-white transition"
+                                    placeholder="Ej: YOPADRCNCSD001"
+                                    pattern="[a-zA-Z0-9\-_\.]+"
+                                    oninput="this.value=this.value.toUpperCase(); this.dataset.generado='false';"
+                                    title="Solo letras, números, guiones, guión bajo y puntos.">
+                                <button type="button" id="btn-generar-hostname"
+                                        onclick="generarHostnameAuto()"
+                                        class="hidden px-4 py-3 bg-[#39A900] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-green-700 transition whitespace-nowrap flex-shrink-0">
+                                    <i class="fas fa-magic mr-1"></i> Generar
+                                </button>
+                            </div>
+                            <div id="msj-hostname" class="text-[10px] mt-1 text-gray-400">Sin espacios ni caracteres especiales</div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -357,11 +401,19 @@
         const sComputo = document.getElementById('seccion-computo');
         const sRedes = document.getElementById('seccion-redes');
         const sPerifericos = document.getElementById('seccion-perifericos');
+        const divTipoEquipo = document.getElementById('div-tipo-equipo');
+        const btnGenerar = document.getElementById('btn-generar-hostname');
+        const esComputo = cat === 'computo';
+
+        // Mostrar/ocultar tipo_equipo y placeholder + botón hostname
+        divTipoEquipo?.classList.toggle('hidden', !esComputo);
+        btnGenerar?.classList.toggle('hidden', !esComputo);
+        document.getElementById('div-tipo-equipo-vacio')?.classList.toggle('hidden', esComputo);
 
         if (cat === 'conectividad') {
             sRedes?.classList.remove('hidden');
             sComputo?.classList.add('hidden');
-            sPerifericos?.classList.add('hidden'); 
+            sPerifericos?.classList.add('hidden');
         } else {
             sRedes?.classList.add('hidden');
             sComputo?.classList.remove('hidden');
@@ -478,6 +530,60 @@
 @include('partials.modal-buscar-responsable')
 
 <script>
+/**
+ * Genera el hostname según nomenclatura SENA:
+ * [SEDE 4][DR|PR][CNCS][P|D|W][001]
+ * Llama al backend para obtener el siguiente consecutivo disponible.
+ */
+const _urlGenerarHostname = "{{ route('dispositivos.generar-hostname') }}";
+
+function sugerirHostname() {
+    // Si ya hay un hostname escrito manualmente, no sobreescribir
+    const hostnameInput = document.getElementById('input-hostname');
+    if (hostnameInput?.value && hostnameInput.dataset.generado !== 'true') return;
+    generarHostnameAuto();
+}
+
+async function generarHostnameAuto() {
+    const sede       = document.getElementById('select-sede')?.value?.trim();
+    const funcion    = document.querySelector('[name="funcion"]')?.value?.trim();
+    const tipoEquipo = document.getElementById('tipo-equipo')?.value;
+    const msj        = document.getElementById('msj-hostname');
+    const input      = document.getElementById('input-hostname');
+
+    if (!sede || !tipoEquipo) {
+        if (msj) {
+            msj.textContent = '⚠ Completa sede, función y tipo de equipo para generar.';
+            msj.className = 'text-[10px] mt-1 text-orange-500';
+        }
+        return;
+    }
+
+    if (msj) { msj.textContent = 'Generando...'; msj.className = 'text-[10px] mt-1 text-blue-500'; }
+
+    try {
+        const params = new URLSearchParams({ sede, funcion, tipo_equipo: tipoEquipo });
+        const res = await fetch(`${_urlGenerarHostname}?${params}`);
+        const data = await res.json();
+
+        if (data.hostname) {
+            input.value = data.hostname;
+            input.dataset.generado = 'true';
+            if (msj) {
+                msj.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-1"></i>Hostname generado: <strong>${data.hostname}</strong> · Puedes editarlo si lo necesitas`;
+                msj.className = 'text-[10px] mt-1 text-green-600';
+            }
+        }
+    } catch (e) {
+        if (msj) { msj.textContent = '⚠ Error al generar hostname.'; msj.className = 'text-[10px] mt-1 text-red-500'; }
+    }
+}
+
+// Limpiar flag de "generado" si el usuario edita manualmente
+document.getElementById('input-hostname')?.addEventListener('input', function () {
+    this.dataset.generado = 'false';
+});
+
 window.seleccionarDesdeModal = function(resp) {
     document.getElementById('cedula').value              = resp.cedula            || '';
     document.getElementById('nombre_responsable').value  = resp.nombre            || '';

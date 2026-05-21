@@ -146,7 +146,8 @@ public function store(Request $request)
             $dispositivo = Dispositivo::create([
                 'placa' => $request->placa,
                 'serial' => $request->serial,
-                'hostname' => $request->hostname ?: null,
+                'hostname'    => $request->hostname ?: null,
+                'tipo_equipo' => $request->tipo_equipo ?: null,
                 'marca' => $request->marca ?? 'Genérico',
                 'modelo' => $request->modelo ?? 'Genérico',
                 'categoria' => $request->categoria ?? 'computo',
@@ -292,7 +293,8 @@ public function update(Request $request, Dispositivo $dispositivo)
         $dispositivo->update([
             'placa' => $request->placa,
             'serial' => $request->serial,
-            'hostname' => $request->hostname ?: null,
+            'hostname'    => $request->hostname ?: null,
+            'tipo_equipo' => $request->tipo_equipo ?: null,
             'marca' => $request->marca,
             'modelo' => $request->modelo,
             'categoria' => $request->categoria,
@@ -366,6 +368,77 @@ public function hojaVidaPDF(Dispositivo $dispositivo)
     $pdf->setPaper('letter', 'portrait');
 
     return $pdf->download('HojaVida_Placa_' . $dispositivo->placa . '.pdf');
+}
+
+/**
+ * GET /dispositivos/generar-hostname
+ *
+ * Nomenclatura SENA — Regional Casanare:
+ *   [CIUDAD 3] [DEPENDENCIA 2] [CENTRO 3] [POMAR 1] [EQUIPO 2] [CONSECUTIVO 3]
+ *
+ *   CIUDAD:      YOP=Yopal MON=Monterrey AGU=Aguazul PAZ=Paz De Ariporo VIL=Villanueva
+ *   DEPENDENCIA: AP=Aprendiz/Formación  AD=Administrativo
+ *   CENTRO:      RCN (Regional Casanare — fijo)
+ *   POMAR:       C=Central (tipo de sede — fijo para el centro principal)
+ *   EQUIPO:      SP=SENA Portátil  SD=SENA Desktop  SW=SENA Workstation
+ *
+ *   Ejemplos:
+ *     YOPADRCNCSP001  →  Yopal · Admin · RCN · Central · Portátil #001
+ *     YOPAPRCNCSD001  →  Yopal · Aprendiz · RCN · Central · Desktop #001
+ */
+public function generarHostname(Request $request)
+{
+    $sede       = trim($request->sede ?? '');
+    $funcion    = strtoupper(trim($request->funcion ?? ''));
+    $tipoEquipo = $request->tipo_equipo ?? '';
+
+    if (!$sede || !$tipoEquipo) {
+        return response()->json(['hostname' => null, 'error' => 'Faltan sede y tipo de equipo.'], 422);
+    }
+
+    // ── Ciudad (3 letras) ────────────────────────────────────────────────────
+    $ciudadMap = [
+        'Yopal'          => 'YOP',
+        'Monterrey'      => 'TUA',
+        'Aguazul'        => 'AGU',
+        'Paz De Ariporo' => 'PZA',
+        'Villanueva'     => 'VIL',
+    ];
+    $ciudadCodigo = $ciudadMap[$sede]
+        ?? strtoupper(substr(preg_replace('/[^A-Za-z]/', '', iconv('UTF-8','ASCII//TRANSLIT',$sede)), 0, 3));
+
+    // ── Dependencia (2 letras) ───────────────────────────────────────────────
+    // FORMACION / APRENDIZ → AP   |   ADMINISTRATIVO → AD
+    $dependenciaCodigo = str_contains($funcion, 'ADMIN') ? 'AD' : 'AP';
+
+    // ── Centro + POMAR (fijos para Regional Casanare Central) ───────────────
+    $centroCodigo = 'RCN';   // Regional Casanare
+    $pomarCodigo  = 'C';     // Central
+
+    // ── Tipo de equipo (2 letras) ────────────────────────────────────────────
+    $equipoCodigo = match(true) {
+        in_array($tipoEquipo, ['Portátil','Portatil']) => 'SP',
+        $tipoEquipo === 'Workstation'                   => 'SW',
+        default                                         => 'SD', // Escritorio / Desktop
+    };
+
+    $prefijo   = "{$ciudadCodigo}{$dependenciaCodigo}{$centroCodigo}{$pomarCodigo}{$equipoCodigo}";
+    $longTotal = strlen($prefijo) + 3; // prefijo + 3 dígitos
+
+    // ── Siguiente consecutivo sin saltos ─────────────────────────────────────
+    $ultimo = Dispositivo::where('hostname', 'LIKE', "{$prefijo}%")
+        ->whereRaw('LENGTH(hostname) = ?', [$longTotal])
+        ->orderByRaw("CAST(RIGHT(hostname, 3) AS INTEGER) DESC")
+        ->value('hostname');
+
+    $siguiente = $ultimo ? ((int) substr($ultimo, -3)) + 1 : 1;
+    $hostname  = $prefijo . str_pad($siguiente, 3, '0', STR_PAD_LEFT);
+
+    return response()->json([
+        'hostname'  => $hostname,
+        'prefijo'   => $prefijo,
+        'siguiente' => $siguiente,
+    ]);
 }
 
 public function verificarPlaca($placa)
