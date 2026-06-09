@@ -48,6 +48,43 @@ class UsuarioController extends Controller
             ->with('success', "Usuario {$request->name} creado correctamente.");
     }
 
+    public function edit(User $usuario)
+    {
+        return view('usuarios.edit', compact('usuario'));
+    }
+
+    public function update(Request $request, User $usuario)
+    {
+        $request->validate([
+            'name'     => ['required', 'string', 'max:100'],
+            'email'    => ['required', 'email', 'unique:users,email,' . $usuario->id],
+            'role'     => ['required', 'in:admin,tecnico'],
+            'password' => ['nullable', 'confirmed', Password::min(8)],
+        ], [
+            'name.required'     => 'El nombre es obligatorio.',
+            'email.required'    => 'El correo es obligatorio.',
+            'email.unique'      => 'Ya existe un usuario con ese correo.',
+            'role.required'     => 'Debes seleccionar un rol.',
+            'password.confirmed'=> 'La confirmación no coincide.',
+            'password.min'      => 'La contraseña debe tener al menos 8 caracteres.',
+        ]);
+
+        $datos = [
+            'name'  => $request->name,
+            'email' => $request->email,
+            'role'  => $request->role,
+        ];
+
+        if ($request->filled('password')) {
+            $datos['password'] = $request->password;
+        }
+
+        $usuario->update($datos);
+
+        return redirect()->route('usuarios.index')
+            ->with('success', "Usuario {$request->name} actualizado correctamente.");
+    }
+
     public function destroy(User $usuario)
     {
         if ($usuario->id === Auth::id()) {

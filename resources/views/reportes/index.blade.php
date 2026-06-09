@@ -292,61 +292,194 @@
         </div>
     </div>
 
-    {{-- FILA 6: Últimos Mantenimientos --}}
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-8 py-6 border-b border-gray-100">
-            <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                <i class="fas fa-history mr-2 text-gray-300"></i>Últimos Mantenimientos Registrados
-            </h3>
+    {{-- FILA 5.5: Propietario + Técnico (con filtros) --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {{-- Gráfica: Equipos por Propietario --}}
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                    <i class="fas fa-building mr-2 text-[#39A900]"></i>Equipos por Propietario
+                </h3>
+            </div>
+            {{-- Filtros propietario --}}
+            <div class="px-6 pt-4 grid grid-cols-3 gap-2">
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Sede</label>
+                    <select id="fp-sede" onchange="cargarPropietario()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none">
+                        <option value="">Todas</option>
+                        @foreach($filtroOpciones['sedes'] as $s)
+                            <option value="{{ $s }}">{{ $s }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Categoría</label>
+                    <select id="fp-categoria" onchange="cargarPropietario()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none">
+                        <option value="">Todas</option>
+                        @foreach($filtroOpciones['categorias'] as $c)
+                            <option value="{{ $c }}">{{ ucfirst($c) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Tipo equipo</label>
+                    <select id="fp-tipo" onchange="cargarPropietario()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none">
+                        <option value="">Todos</option>
+                        <option value="Portátil">Portátil</option>
+                        <option value="Escritorio">Escritorio</option>
+                        <option value="Workstation">Workstation</option>
+                    </select>
+                </div>
+            </div>
+            <div class="p-6">
+                <div id="prop-loading" class="hidden py-8 flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-[#39A900] border-t-transparent rounded-full animate-spin"></div>
+                    <span class="text-xs text-gray-400 font-bold uppercase">Cargando...</span>
+                </div>
+                <div id="prop-empty" class="hidden py-8 text-center text-gray-400 text-xs font-bold uppercase">Sin datos</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                    <div style="position:relative; height:200px;">
+                        <canvas id="chartPropietarioFiltro"></canvas>
+                    </div>
+                    <ul id="prop-leyenda" class="space-y-2"></ul>
+                </div>
+            </div>
         </div>
+
+        {{-- Gráfica: Equipos registrados por Técnico --}}
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                    <i class="fas fa-user-cog mr-2 text-blue-500"></i>Equipos Registrados por Técnico
+                </h3>
+            </div>
+            {{-- Filtros técnico --}}
+            <div class="px-6 pt-4 grid grid-cols-3 gap-2">
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Sede</label>
+                    <select id="ft-sede" onchange="cargarTecnicos()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none">
+                        <option value="">Todas</option>
+                        @foreach($filtroOpciones['sedes'] as $s)
+                            <option value="{{ $s }}">{{ $s }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Desde</label>
+                    <input type="date" id="ft-desde" onchange="cargarTecnicos()"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Hasta</label>
+                    <input type="date" id="ft-hasta" onchange="cargarTecnicos()"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none">
+                </div>
+            </div>
+            <div class="p-6">
+                <div id="tec-loading" class="hidden py-8 flex items-center justify-center gap-2">
+                    <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span class="text-xs text-gray-400 font-bold uppercase">Cargando...</span>
+                </div>
+                <div id="tec-empty" class="hidden py-8 text-center text-gray-400 text-xs font-bold uppercase">Sin datos</div>
+                <div style="position:relative; height:200px;">
+                    <canvas id="chartTecnicos"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- FILA 6: Mantenimientos con filtros --}}
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+
+        {{-- Cabecera + filtros --}}
+        <div class="px-6 py-5 border-b border-gray-100">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center">
+                        <i class="fas fa-history mr-2 text-gray-300"></i>Historial de Mantenimientos
+                    </h3>
+                    <p id="mant-contador" class="text-xs font-bold text-gray-500 mt-1">Cargando...</p>
+                </div>
+                <a href="{{ route('mantenimientos.index') }}"
+                   class="text-[10px] font-black text-[#39A900] hover:underline flex items-center gap-1 flex-shrink-0">
+                    <i class="fas fa-external-link-alt text-[9px]"></i> Ver módulo completo
+                </a>
+            </div>
+
+            {{-- Filtros --}}
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Desde</label>
+                    <input type="date" id="mant-desde" onchange="cargarMantenimientos(1)"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#39A900]">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Hasta</label>
+                    <input type="date" id="mant-hasta" onchange="cargarMantenimientos(1)"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#39A900]">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Tipo</label>
+                    <select id="mant-tipo" onchange="cargarMantenimientos(1)"
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none">
+                        <option value="">Todos</option>
+                        <option value="Preventivo">Preventivo</option>
+                        <option value="Correctivo">Correctivo</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Técnico</label>
+                    <input type="text" id="mant-tecnico" placeholder="Nombre..."
+                           oninput="debounceMantenimientos()"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#39A900]">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase mb-1 block">Placa</label>
+                    <input type="text" id="mant-placa" placeholder="Ej: 951910..."
+                           oninput="debounceMantenimientos()"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-mono text-gray-700 outline-none focus:ring-2 focus:ring-[#39A900]">
+                </div>
+            </div>
+        </div>
+
+        {{-- Tabla --}}
         <div class="overflow-x-auto">
             <table class="w-full text-xs">
                 <thead>
                     <tr class="bg-gray-50 text-gray-400 font-black uppercase tracking-widest text-[10px]">
-                        <th class="px-6 py-3 text-left">Dispositivo</th>
-                        <th class="px-6 py-3 text-left">Tipo</th>
-                        <th class="px-6 py-3 text-left">Técnico</th>
-                        <th class="px-6 py-3 text-left">Fecha</th>
-                        <th class="px-6 py-3 text-left">Descripción</th>
+                        <th class="px-5 py-3 text-left">Dispositivo</th>
+                        <th class="px-5 py-3 text-left">Sede</th>
+                        <th class="px-5 py-3 text-left">Tipo</th>
+                        <th class="px-5 py-3 text-left">Técnico</th>
+                        <th class="px-5 py-3 text-left">Fecha</th>
+                        <th class="px-5 py-3 text-left">Descripción</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50">
-                    @forelse($stats['ultimos_mantenimientos'] as $mant)
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-6 py-4">
-                            @if($mant->dispositivo)
-                                <a href="{{ route('dispositivos.show', $mant->dispositivo->id) }}"
-                                   class="font-black text-gray-700 hover:text-[#39A900] transition">
-                                    {{ $mant->dispositivo->placa }}
-                                </a>
-                                <p class="text-[10px] text-gray-400 font-bold">{{ $mant->dispositivo->marca }} {{ $mant->dispositivo->modelo }}</p>
-                            @else
-                                <span class="text-gray-400 italic">Dispositivo eliminado</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase
-                                {{ $mant->tipo === 'Correctivo' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-700' }}">
-                                {{ $mant->tipo }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 font-bold text-gray-600">{{ $mant->tecnico_encargado ?? '—' }}</td>
-                        <td class="px-6 py-4 font-bold text-gray-500">
-                            {{ \Carbon\Carbon::parse($mant->fecha)->format('d/m/Y') }}
-                        </td>
-                        <td class="px-6 py-4 text-gray-500 max-w-xs truncate">
-                            {{ Str::limit($mant->descripcion_falla ?? $mant->tareas_realizadas, 60) }}
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="px-6 py-10 text-center text-gray-400 font-bold italic text-xs">
-                            No hay mantenimientos registrados aún.
-                        </td>
-                    </tr>
-                    @endforelse
+                <tbody id="mant-tbody" class="divide-y divide-gray-50">
+                    <tr><td colspan="6" class="px-5 py-10 text-center text-gray-400 font-bold text-xs">
+                        <div class="w-5 h-5 border-2 border-[#39A900] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                        Cargando...
+                    </td></tr>
                 </tbody>
             </table>
+        </div>
+
+        {{-- Paginación --}}
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-2">
+                <label class="text-[9px] font-black text-gray-400 uppercase">Mostrar</label>
+                <select id="mant-perpage" onchange="cargarMantenimientos(1)"
+                        class="bg-white border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-gray-700 outline-none">
+                    <option value="15">15</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <span class="text-[9px] font-bold text-gray-400 uppercase">por página</span>
+            </div>
+            <div id="mant-paginacion" class="flex items-center gap-1"></div>
         </div>
     </div>
 
@@ -679,6 +812,241 @@ async function cargarGraficaUbicacion() {
 
 // Carga inicial sin filtros
 cargarGraficaUbicacion();
+
+// ── Gráfica Propietario con filtros ──────────────────────────────────────────
+const _urlPropietario = "{{ route('reportes.propietario-stats') }}";
+let chartPropFiltro   = null;
+
+async function cargarPropietario() {
+    const params = new URLSearchParams({
+        sede:        document.getElementById('fp-sede')?.value      || '',
+        categoria:   document.getElementById('fp-categoria')?.value || '',
+        tipo_equipo: document.getElementById('fp-tipo')?.value      || '',
+    });
+
+    document.getElementById('prop-loading')?.classList.remove('hidden');
+    document.getElementById('prop-empty')?.classList.add('hidden');
+
+    try {
+        const res  = await fetch(`${_urlPropietario}?${params}`);
+        const data = await res.json();
+
+        document.getElementById('prop-loading')?.classList.add('hidden');
+
+        if (!data.values?.length) {
+            document.getElementById('prop-empty')?.classList.remove('hidden');
+            return;
+        }
+
+        const bgColors = data.labels.map((_, i) => palette[i % palette.length]);
+
+        // Leyenda HTML
+        const leyenda = document.getElementById('prop-leyenda');
+        leyenda.innerHTML = data.labels.map((lbl, i) => `
+            <li class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${bgColors[i]}"></span>
+                    <span class="text-xs font-bold text-gray-600 truncate">${lbl ?? 'Sin especificar'}</span>
+                </div>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                    <span class="text-xs font-black text-gray-800">${data.values[i]}</span>
+                    <span class="text-[10px] text-gray-400">(${data.porcentajes[i]}%)</span>
+                </div>
+            </li>`).join('');
+
+        if (chartPropFiltro) {
+            chartPropFiltro.data.labels   = data.labels;
+            chartPropFiltro.data.datasets[0].data            = data.values;
+            chartPropFiltro.data.datasets[0].backgroundColor = bgColors;
+            chartPropFiltro.update();
+        } else {
+            chartPropFiltro = new Chart(document.getElementById('chartPropietarioFiltro'), {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels,
+                    datasets: [{ data: data.values, backgroundColor: bgColors, borderWidth: 2 }]
+                },
+                options: {
+                    cutout: '65%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} equipos` } }
+                    }
+                }
+            });
+        }
+    } catch(e) {
+        document.getElementById('prop-loading')?.classList.add('hidden');
+    }
+}
+
+// ── Gráfica Técnicos con filtros ─────────────────────────────────────────────
+const _urlTecnicos = "{{ route('reportes.tecnicos-stats') }}";
+let chartTecnicos   = null;
+
+async function cargarTecnicos() {
+    const params = new URLSearchParams({
+        sede:        document.getElementById('ft-sede')?.value   || '',
+        fecha_desde: document.getElementById('ft-desde')?.value  || '',
+        fecha_hasta: document.getElementById('ft-hasta')?.value  || '',
+    });
+
+    document.getElementById('tec-loading')?.classList.remove('hidden');
+    document.getElementById('tec-empty')?.classList.add('hidden');
+
+    try {
+        const res  = await fetch(`${_urlTecnicos}?${params}`);
+        const data = await res.json();
+
+        document.getElementById('tec-loading')?.classList.add('hidden');
+
+        if (!data.values?.length) {
+            document.getElementById('tec-empty')?.classList.remove('hidden');
+            return;
+        }
+
+        const bgColors = data.labels.map((_, i) => palette[i % palette.length]);
+
+        if (chartTecnicos) {
+            chartTecnicos.data.labels   = data.labels;
+            chartTecnicos.data.datasets[0].data            = data.values;
+            chartTecnicos.data.datasets[0].backgroundColor = bgColors;
+            chartTecnicos.update();
+        } else {
+            chartTecnicos = new Chart(document.getElementById('chartTecnicos'), {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Equipos registrados',
+                        data: data.values,
+                        backgroundColor: bgColors,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.x} equipo${ctx.parsed.x !== 1 ? 's' : ''} (${data.porcentajes[ctx.dataIndex]}%)`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: '#f3f4f6' } },
+                        y: { ticks: { font: { size: 10 } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+    } catch(e) {
+        document.getElementById('tec-loading')?.classList.add('hidden');
+    }
+}
+
+// Cargar ambas al iniciar
+cargarPropietario();
+cargarTecnicos();
+
+// ── Tabla de Mantenimientos con filtros ───────────────────────────────────────
+const _urlMant = "{{ route('reportes.mantenimientos-tabla') }}";
+let _mantTimer  = null;
+
+function debounceMantenimientos() {
+    clearTimeout(_mantTimer);
+    _mantTimer = setTimeout(() => cargarMantenimientos(1), 400);
+}
+
+async function cargarMantenimientos(pagina = 1) {
+    const params = new URLSearchParams({
+        desde:    document.getElementById('mant-desde')?.value   || '',
+        hasta:    document.getElementById('mant-hasta')?.value   || '',
+        tipo:     document.getElementById('mant-tipo')?.value    || '',
+        tecnico:  document.getElementById('mant-tecnico')?.value || '',
+        placa:    document.getElementById('mant-placa')?.value   || '',
+        per_page: document.getElementById('mant-perpage')?.value || '15',
+        page:     pagina,
+    });
+
+    const tbody = document.getElementById('mant-tbody');
+    tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-10 text-center text-gray-400 font-bold text-xs">
+        <div class="w-5 h-5 border-2 border-[#39A900] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+        Cargando...</td></tr>`;
+
+    try {
+        const res  = await fetch(`${_urlMant}?${params}`);
+        const data = await res.json();
+
+        document.getElementById('mant-contador').textContent =
+            `${data.total} mantenimiento${data.total !== 1 ? 's' : ''} encontrados`;
+
+        if (!data.data.length) {
+            tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-10 text-center text-gray-400 font-bold italic text-xs">
+                Sin resultados para los filtros seleccionados.</td></tr>`;
+            document.getElementById('mant-paginacion').innerHTML = '';
+            return;
+        }
+
+        tbody.innerHTML = data.data.map(m => `
+            <tr class="hover:bg-gray-50 transition">
+                <td class="px-5 py-3">
+                    ${m.dispositivo_id
+                        ? `<a href="/dispositivos/${m.dispositivo_id}" class="font-black text-gray-700 hover:text-[#39A900] transition">${m.placa ?? '—'}</a>
+                           <p class="text-[10px] text-gray-400">${m.marca_modelo}</p>`
+                        : `<span class="text-gray-400 italic">Eliminado</span>`
+                    }
+                </td>
+                <td class="px-5 py-3 text-[10px] text-gray-500 font-bold">${m.sede ?? '—'}</td>
+                <td class="px-5 py-3">
+                    <span class="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase
+                        ${m.tipo === 'Correctivo' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-700'}">
+                        ${m.tipo}
+                    </span>
+                    ${m.finalizado ? '' : '<span class="ml-1 text-[9px] px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded font-black">EN PROCESO</span>'}
+                </td>
+                <td class="px-5 py-3 font-bold text-gray-600 text-[11px]">${m.tecnico ?? '—'}</td>
+                <td class="px-5 py-3 font-bold text-gray-500 whitespace-nowrap">${m.fecha}</td>
+                <td class="px-5 py-3 text-gray-500 max-w-xs truncate">${m.descripcion ?? ''}</td>
+            </tr>`).join('');
+
+        // Paginación
+        renderPaginacionMant(data.current_page, data.last_page);
+
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-red-400 font-bold text-xs">Error al cargar los datos.</td></tr>`;
+    }
+}
+
+function renderPaginacionMant(actual, total) {
+    const el = document.getElementById('mant-paginacion');
+    if (total <= 1) { el.innerHTML = ''; return; }
+
+    let html = '';
+    const btn = (p, lbl, activo, disabled) =>
+        `<button onclick="cargarMantenimientos(${p})" ${disabled ? 'disabled' : ''}
+            class="px-2.5 py-1 rounded-lg text-[10px] font-black transition
+            ${activo ? 'bg-[#39A900] text-white' : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'} ${disabled ? 'opacity-40 cursor-not-allowed' : ''}"
+        >${lbl}</button>`;
+
+    html += btn(actual - 1, '‹', false, actual === 1);
+
+    // Páginas cercanas
+    const start = Math.max(1, actual - 2);
+    const end   = Math.min(total, actual + 2);
+    if (start > 1)     html += btn(1, '1', false, false) + (start > 2 ? '<span class="text-gray-400 text-xs">…</span>' : '');
+    for (let p = start; p <= end; p++) html += btn(p, p, p === actual, false);
+    if (end < total)   html += (end < total - 1 ? '<span class="text-gray-400 text-xs">…</span>' : '') + btn(total, total, false, false);
+
+    html += btn(actual + 1, '›', false, actual === total);
+    el.innerHTML = html;
+}
+
+// Carga inicial
+cargarMantenimientos();
 </script>
 
 {{-- ── Modal: Seleccionar responsable para PDF ─────────────────────────────── --}}

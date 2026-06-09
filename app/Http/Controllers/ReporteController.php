@@ -100,7 +100,13 @@ class ReporteController extends Controller
                             ]),
         ];
 
-        return view('reportes.index', compact('stats', 'ubicacionOpciones'));
+        $filtroOpciones = [
+            'sedes'      => Sede::orderBy('nombre')->pluck('nombre'),
+            'categorias' => Dispositivo::distinct()->whereNotNull('categoria')->orderBy('categoria')->pluck('categoria'),
+            'estados'    => Dispositivo::distinct()->whereNotNull('estado_fisico')->orderBy('estado_fisico')->pluck('estado_fisico'),
+        ];
+
+        return view('reportes.index', compact('stats', 'ubicacionOpciones', 'filtroOpciones'));
     }
 
     public function ubicacionStats(Request $request)
@@ -160,6 +166,104 @@ class ReporteController extends Controller
     public function exportar()
     {
         return Excel::download(new InventarioGeneralExport, 'Inventario_GITIC_Casanare.xlsx');
+    }
+
+    /** GET /reportes/propietario-stats — equipos por propietario con filtros */
+    public function propietarioStats(Request $request)
+    {
+        $query = DB::table('dispositivos')
+            ->select('propietario', DB::raw('count(*) as total'))
+            ->whereNotNull('propietario');
+
+        if ($request->sede) {
+            $query->join('ubicaciones', 'dispositivos.ubicacion_id', '=', 'ubicaciones.id')
+                  ->join('sedes', 'ubicaciones.sede_id', '=', 'sedes.id')
+                  ->where('sedes.nombre', $request->sede);
+        }
+        if ($request->categoria)   $query->where('categoria',   $request->categoria);
+        if ($request->tipo_equipo) $query->where('tipo_equipo', $request->tipo_equipo);
+
+        $datos = $query->groupBy('propietario')->orderByDesc('total')->get();
+
+        $total = $datos->sum('total');
+        return response()->json([
+            'labels'     => $datos->pluck('propietario'),
+            'values'     => $datos->pluck('total'),
+            'porcentajes'=> $datos->map(fn($r) => $total > 0 ? round($r->total / $total * 100, 1) : 0),
+            'total'      => $total,
+        ]);
+    }
+
+    /** GET /reportes/mantenimientos-tabla — mantenimientos con filtros y paginación */
+    public function mantenimientosTabla(Request $request)
+    {
+        $query = Mantenimiento::with(['dispositivo.ubicacion.sede'])
+            ->orderBy('fecha', 'desc')
+            ->orderBy('id', 'desc');
+
+        if ($request->desde)   $query->whereDate('fecha', '>=', $request->desde);
+        if ($request->hasta)   $query->whereDate('fecha', '<=', $request->hasta);
+        if ($request->tipo)    $query->where('tipo', $request->tipo);
+        if ($request->tecnico) $query->where('tecnico_encargado', 'ILIKE', "%{$request->tecnico}%");
+        if ($request->placa) {
+            $query->whereHas('dispositivo', fn($q) => $q->where('placa', 'ILIKE', "%{$request->placa}%"));
+        }
+
+        $perPage = min((int)($request->per_page ?? 15), 100);
+        $paginator = $query->paginate($perPage);
+
+        $items = $paginator->map(function ($m) {
+            return [
+                'id'            => $m->id,
+                'fecha'         => \Carbon\Carbon::parse($m->fecha)->format('d/m/Y'),
+                'tipo'          => $m->tipo,
+                'finalizado'    => (bool) $m->finalizado,
+                'tecnico'       => $m->tecnico_encargado,
+                'descripcion'   => \Illuminate\Support\Str::limit($m->descripcion_falla ?? $m->tareas_realizadas, 70),
+                'placa'         => $m->dispositivo?->placa,
+                'marca_modelo'  => trim(($m->dispositivo?->marca ?? '') . ' ' . ($m->dispositivo?->modelo ?? '')),
+                'dispositivo_id'=> $m->dispositivo?->id,
+                'sede'          => $m->dispositivo?->ubicacion?->sede?->nombre,
+            ];
+        });
+
+        return response()->json([
+            'data'         => $items,
+            'total'        => $paginator->total(),
+            'current_page' => $paginator->currentPage(),
+            'last_page'    => $paginator->lastPage(),
+            'per_page'     => $perPage,
+        ]);
+    }
+
+    /** GET /reportes/tecnicos-stats — equipos registrados por técnico con filtros */
+    public function tecnicosStats(Request $request)
+    {
+        $query = DB::table('dispositivos')
+            ->leftJoin('users', 'dispositivos.created_by', '=', 'users.id')
+            ->select(
+                DB::raw("COALESCE(users.name, 'Carga Masiva / Importación') as tecnico"),
+                DB::raw('count(dispositivos.id) as total')
+            );
+
+        if ($request->sede) {
+            $query->join('ubicaciones', 'dispositivos.ubicacion_id', '=', 'ubicaciones.id')
+                  ->join('sedes', 'ubicaciones.sede_id', '=', 'sedes.id')
+                  ->where('sedes.nombre', $request->sede);
+        }
+        if ($request->fecha_desde) $query->where('dispositivos.created_at', '>=', $request->fecha_desde);
+        if ($request->fecha_hasta) $query->where('dispositivos.created_at', '<=', $request->fecha_hasta . ' 23:59:59');
+        if ($request->categoria)   $query->where('dispositivos.categoria', $request->categoria);
+
+        $datos = $query->groupBy('users.id', 'users.name')->orderByDesc('total')->get();
+
+        $total = $datos->sum('total');
+        return response()->json([
+            'labels'     => $datos->pluck('tecnico'),
+            'values'     => $datos->pluck('total'),
+            'porcentajes'=> $datos->map(fn($r) => $total > 0 ? round($r->total / $total * 100, 1) : 0),
+            'total'      => $total,
+        ]);
     }
 
     public function responsablesPDF()

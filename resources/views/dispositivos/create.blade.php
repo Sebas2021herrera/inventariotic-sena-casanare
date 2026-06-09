@@ -150,7 +150,13 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Serial de Fábrica *</label>
-                            <input type="text" name="serial" value="{{ old('serial') }}" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase outline-none focus:bg-white transition" required>
+                            <input type="text" id="input-serial" name="serial" value="{{ old('serial') }}"
+                                oninput="verificarSerialRealTime()"
+                                class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 font-mono uppercase outline-none focus:bg-white transition @error('serial') border-red-400 ring-2 ring-red-100 @enderror" required>
+                            <p id="msj-serial" class="text-[10px] font-bold mt-2 hidden italic uppercase tracking-tighter"></p>
+                            @error('serial')
+                                <p class="text-[10px] font-bold mt-1 text-red-500 italic">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         {{-- Fila 2: Categoría + Tipo Equipo (al lado) --}}
@@ -524,6 +530,42 @@
                 }
             })
             .catch(err => console.error("Error de conexión:", err));
+    }
+
+    let _serialTimer = null;
+    function verificarSerialRealTime() {
+        const input = document.getElementById('input-serial');
+        const msj   = document.getElementById('msj-serial');
+        if (!input || !msj) return;
+
+        const serial = input.value.trim();
+
+        if (serial.length < 3) {
+            msj.classList.add('hidden');
+            input.classList.remove('border-red-400', 'ring-2', 'ring-red-100', 'border-green-500', 'ring-green-100');
+            return;
+        }
+
+        clearTimeout(_serialTimer);
+        _serialTimer = setTimeout(() => {
+            fetch("{{ url('/dispositivos/verificar-serial') }}/" + encodeURIComponent(serial))
+                .then(res => res.json())
+                .then(data => {
+                    msj.classList.remove('hidden');
+                    if (data.exists) {
+                        msj.innerText = "✗ Serial ya registrado en la placa: " + data.placa;
+                        msj.className = "text-[10px] font-bold mt-2 text-red-500 block italic uppercase tracking-tighter";
+                        input.classList.add('border-red-400', 'ring-2', 'ring-red-100');
+                        input.classList.remove('border-green-500', 'ring-green-100');
+                    } else {
+                        msj.innerText = "✓ Serial disponible";
+                        msj.className = "text-[10px] font-bold mt-2 text-green-600 block italic uppercase tracking-tighter";
+                        input.classList.add('border-green-500', 'ring-2', 'ring-green-100');
+                        input.classList.remove('border-red-400', 'ring-red-100');
+                    }
+                })
+                .catch(err => console.error("Error verificando serial:", err));
+        }, 500);
     }
 </script>
 

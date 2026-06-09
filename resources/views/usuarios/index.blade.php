@@ -76,18 +76,26 @@
                         {{ $u->created_at?->format('d/m/Y') ?? '—' }}
                     </td>
                     <td class="px-6 py-4 text-right">
-                        @if($u->id !== Auth::id())
-                        <form action="{{ route('usuarios.destroy', $u) }}" method="POST"
-                              onsubmit="return confirm('¿Eliminar al usuario {{ addslashes($u->name) }}?')">
-                            @csrf @method('DELETE')
-                            <button type="submit"
-                                class="p-2 rounded-xl bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition">
-                                <i class="fas fa-trash text-xs"></i>
-                            </button>
-                        </form>
-                        @else
-                            <span class="text-[10px] text-gray-300 font-bold italic">tu cuenta</span>
-                        @endif
+                        <div class="flex items-center justify-end gap-2">
+                            <a href="{{ route('usuarios.edit', $u) }}"
+                                class="p-2 rounded-xl bg-blue-50 text-blue-400 hover:bg-blue-500 hover:text-white transition"
+                                title="Editar usuario">
+                                <i class="fas fa-pencil-alt text-xs"></i>
+                            </a>
+                            @if($u->id !== Auth::id())
+                            <form action="{{ route('usuarios.destroy', $u) }}" method="POST"
+                                  onsubmit="return confirm('¿Eliminar al usuario {{ addslashes($u->name) }}?')">
+                                @csrf @method('DELETE')
+                                <button type="submit"
+                                    class="p-2 rounded-xl bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition"
+                                    title="Eliminar usuario">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </form>
+                            @else
+                                <span class="text-[10px] text-gray-300 font-bold italic">tu cuenta</span>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

@@ -107,12 +107,14 @@ public function store(Request $request)
     {
         // 1. Validación con los nuevos campos institucionales
         $request->validate([
-            'placa' => 'required|unique:dispositivos,placa',
-            'serial' => 'required',
-            'cedula' => 'required',
+            'placa'              => 'required|unique:dispositivos,placa',
+            'serial'             => 'required|unique:dispositivos,serial',
+            'cedula'             => 'required',
             'nombre_responsable' => 'required',
-            'sede' => 'required',
-            'ambiente' => 'required',
+            'sede'               => 'required',
+            'ambiente'           => 'required',
+        ], [
+            'serial.unique' => 'El serial :input ya está registrado en el inventario.',
         ]);
 
         try {
@@ -251,8 +253,14 @@ public function edit(Dispositivo $dispositivo)
 
 public function update(Request $request, Dispositivo $dispositivo)
 {
+    $isAdmin = auth()->user()->role === 'admin';
+
+    // Si no es admin, forzar la placa actual para que no sea modificada
+    if (!$isAdmin) {
+        $request->merge(['placa' => $dispositivo->placa]);
+    }
+
     // 1. VALIDACIÓN
-    // Importante: En 'placa' permitimos que sea la misma del dispositivo actual ($dispositivo->id)
     $request->validate([
         'placa' => 'required|unique:dispositivos,placa,' . $dispositivo->id,
         'serial' => 'required',
@@ -443,11 +451,17 @@ public function generarHostname(Request $request)
 
 public function verificarPlaca($placa)
 {
-    // Buscamos si la placa ya existe en la tabla dispositivos
     $existe = \App\Models\Dispositivo::where('placa', $placa)->exists();
-    
     return response()->json(['exists' => $existe]);
+}
 
+public function verificarSerial($serial)
+{
+    $dispositivo = \App\Models\Dispositivo::where('serial', $serial)->first(['placa']);
+    return response()->json([
+        'exists' => (bool) $dispositivo,
+        'placa'  => $dispositivo?->placa,
+    ]);
 }
 
 

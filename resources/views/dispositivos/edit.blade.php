@@ -166,14 +166,25 @@
                     @endphp
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                        {{-- Fila 1: Placa (readonly) + Serial --}}
+                        {{-- Fila 1: Placa + Serial --}}
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-                                Placa SENA <i class="fas fa-lock ml-1 text-gray-300"></i>
+                                Placa SENA
+                                @if(auth()->user()->role === 'admin')
+                                    <i class="fas fa-pencil-alt ml-1 text-[#39A900]"></i>
+                                @else
+                                    <i class="fas fa-lock ml-1 text-gray-300"></i>
+                                @endif
                             </label>
-                            <input type="text" name="placa" value="{{ $dispositivo->placa }}"
-                                class="w-full bg-gray-100 border-gray-300 border-2 rounded-xl p-3 font-black text-xl text-gray-500 shadow-inner cursor-not-allowed" readonly>
-                            <p class="text-[9px] text-gray-400 mt-1 italic">* La placa no se puede modificar una vez registrada.</p>
+                            @if(auth()->user()->role === 'admin')
+                                <input type="text" name="placa" value="{{ old('placa', $dispositivo->placa) }}"
+                                    class="w-full bg-white border-[#39A900] border-2 rounded-xl p-3 font-black text-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#39A900]">
+                                <p class="text-[9px] text-[#39A900] mt-1 italic">* Solo administradores pueden modificar la placa.</p>
+                            @else
+                                <input type="text" value="{{ $dispositivo->placa }}"
+                                    class="w-full bg-gray-100 border-gray-300 border-2 rounded-xl p-3 font-black text-xl text-gray-500 shadow-inner cursor-not-allowed" readonly>
+                                <p class="text-[9px] text-gray-400 mt-1 italic">* La placa no se puede modificar una vez registrada.</p>
+                            @endif
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Serial de Fábrica *</label>

@@ -31,6 +31,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/responsables/buscar/{cedula}', [ResponsableController::class, 'buscar'])->name('responsables.buscar');
     Route::get('/responsables/{responsable}/reporte-pdf', [ResponsableController::class, 'reportePDF'])->name('responsables.reporte-pdf');
     Route::get('/dispositivos/verificar-placa/{placa}', [DispositivoController::class, 'verificarPlaca'])->name('dispositivos.verificar');
+    Route::get('/dispositivos/verificar-serial/{serial}', [DispositivoController::class, 'verificarSerial'])->name('dispositivos.verificar-serial');
 
     // Recursos principales
     Route::resource('dispositivos', DispositivoController::class);
@@ -43,7 +44,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('importar-inventario', [DispositivoController::class, 'importar'])->name('dispositivos.importar');
     Route::get('descargar-plantilla', [DispositivoController::class, 'descargarPlantilla'])->name('dispositivos.plantilla');
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
-    Route::get('/reportes/ubicacion-stats', [ReporteController::class, 'ubicacionStats'])->name('reportes.ubicacion-stats');
+    Route::get('/reportes/ubicacion-stats',   [ReporteController::class, 'ubicacionStats'])->name('reportes.ubicacion-stats');
+    Route::get('/reportes/mantenimientos-tabla', [ReporteController::class, 'mantenimientosTabla'])->name('reportes.mantenimientos-tabla');
+    Route::get('/reportes/propietario-stats', [ReporteController::class, 'propietarioStats'])->name('reportes.propietario-stats');
+    Route::get('/reportes/tecnicos-stats',    [ReporteController::class, 'tecnicosStats'])->name('reportes.tecnicos-stats');
     Route::get('/reportes/exportar', [ReporteController::class, 'exportar'])->name('reportes.exportar')->middleware('admin');
 
     Route::get('/dispositivos/{dispositivo}/concepto/nuevo', [ConceptoTecnicoController::class, 'create'])->name('conceptos.create');
@@ -66,7 +70,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Solo admin
     Route::middleware('admin')->group(function () {
-        Route::resource('usuarios', UsuarioController::class)->only(['index', 'create', 'store', 'destroy']);
+        Route::resource('usuarios', UsuarioController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
     });
 
     });
