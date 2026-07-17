@@ -99,6 +99,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <div class="flex items-center space-x-2">
                 @auth
+                    <a href="{{ route('dashboard') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('dashboard') ? 'nav-active' : '' }}">
+                        <i class="fas fa-home mr-2"></i> Inicio
+                    </a>
                     <a href="{{ route('dispositivos.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('dispositivos.*') ? 'nav-active' : '' }}">
                         <i class="fas fa-layer-group mr-2"></i> Inventario
                     </a>

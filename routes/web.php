@@ -10,14 +10,29 @@ use App\Http\Controllers\ConceptoTecnicoController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AreaSeguraController;
 use App\Http\Controllers\EquipoEnergiaController;
+use App\Http\Controllers\SgspiController;
+use App\Http\Controllers\DashboardController;
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
-    return auth()->check() 
-        ? redirect()->route('dispositivos.index') 
+    return auth()->check()
+        ? redirect()->route('dashboard')
         : redirect()->route('login');
 });
 
-// 2. RUTAS DE AUTENTICACIÓN (Sin prefijo gitic porque Apache ya lo da)
+// 2. RUTAS PÚBLICAS — SGSPI (sin autenticación)
+Route::prefix('sgspi')->name('sgspi.')->group(function () {
+    Route::get('/',                        [SgspiController::class, 'index'])->name('index');
+    Route::get('/buscaminas',              [SgspiController::class, 'buscaminas'])->name('buscaminas');
+    Route::post('/buscaminas/registrar',   [SgspiController::class, 'registrar'])->name('registrar');
+    Route::get('/jugar',                   [SgspiController::class, 'jugar'])->name('jugar');
+    Route::post('/celda/{index}',          [SgspiController::class, 'celda'])->name('celda');
+    Route::post('/responder',              [SgspiController::class, 'responder'])->name('responder');
+    Route::post('/finalizar',              [SgspiController::class, 'finalizar'])->name('finalizar');
+    Route::get('/resultado/{resultado}',   [SgspiController::class, 'resultado'])->name('resultado');
+    Route::get('/instrucciones',           [SgspiController::class, 'instrucciones'])->name('instrucciones');
+});
+
+// 3. RUTAS DE AUTENTICACIÓN (Sin prefijo gitic porque Apache ya lo da)
 Route::get('login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -25,6 +40,8 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 // 3. RUTAS PROTEGIDAS
 Route::middleware(['auth'])->group(function () {
     
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     // Rutas estáticas ANTES de los resources (evitan que los wildcards las capturen)
     Route::get('/dispositivos/generar-hostname', [DispositivoController::class, 'generarHostname'])->name('dispositivos.generar-hostname');
     Route::get('/responsables/buscar-nombre', [ResponsableController::class, 'buscarPorNombre'])->name('responsables.buscar-nombre');
@@ -71,6 +88,9 @@ Route::middleware(['auth'])->group(function () {
     // Solo admin
     Route::middleware('admin')->group(function () {
         Route::resource('usuarios', UsuarioController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+        Route::get('/sgspi/admin/resultados',       [SgspiController::class, 'adminResultados'])->name('sgspi.admin.resultados');
+        Route::get('/sgspi/admin/configuracion',    [SgspiController::class, 'adminConfig'])->name('sgspi.admin.config');
+        Route::put('/sgspi/admin/configuracion',    [SgspiController::class, 'adminConfigUpdate'])->name('sgspi.admin.config.update');
     });
 
     });

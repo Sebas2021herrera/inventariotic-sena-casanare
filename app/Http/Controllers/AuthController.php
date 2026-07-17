@@ -11,7 +11,7 @@ class AuthController extends Controller
     public function showLogin() {
         // Verifica si ya está logueado para no mostrar el login innecesariamente
         if (Auth::check()) {
-            return redirect()->route('dispositivos.index');
+            return redirect()->route('dashboard');
         }
         return view('auth.login');
     }
@@ -27,7 +27,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended(route('dispositivos.index'));
+            return redirect()->intended(route('dashboard'));
         }
 
         return back()->withErrors([
