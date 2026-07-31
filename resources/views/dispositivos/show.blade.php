@@ -39,9 +39,17 @@
                     <span class="bg-white {{ $dispositivo->categoria == 'conectividad' ? 'text-blue-700' : 'text-[#39A900]' }} px-6 py-2 rounded-2xl font-black shadow-lg text-xl uppercase">
                         {{ $dispositivo->estado_fisico }}
                     </span>
-                    @if($dispositivo->en_intune == 'SI')
-                        <span class="mt-2 text-[10px] bg-blue-400 text-white px-3 py-1 rounded-full font-bold flex items-center">
-                            <i class="fas fa-check-circle mr-1"></i> REGISTRADO EN INTUNE
+                    @if($intuneCuenta)
+                        <span class="mt-2 text-[10px] bg-blue-600 text-white px-3 py-1 rounded-full font-bold flex items-center gap-1">
+                            <i class="fab fa-microsoft text-[9px]"></i> INTUNE ACTIVO
+                        </span>
+                    @elseif($dispositivo->en_intune == 'SI')
+                        <span class="mt-2 text-[10px] bg-blue-400 text-white px-3 py-1 rounded-full font-bold flex items-center gap-1">
+                            <i class="fas fa-check-circle text-[9px]"></i> REGISTRADO EN INTUNE
+                        </span>
+                    @elseif($dispositivo->categoria == 'computo')
+                        <span class="mt-2 text-[10px] bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-bold flex items-center gap-1">
+                            <i class="fas fa-exclamation-triangle text-[9px]"></i> SIN CUENTA INTUNE
                         </span>
                     @endif
                 </div>
@@ -117,6 +125,41 @@
                         <p class="text-xs text-gray-500">Bloque: {{ $dispositivo->ubicacion->bloque }}</p>
                     </div>
                 </div>
+
+                {{-- Cuenta Intune --}}
+                @if($dispositivo->categoria == 'computo')
+                <div>
+                    <h3 class="font-black text-gray-400 uppercase text-[10px] tracking-widest mb-3 flex items-center">
+                        <i class="fab fa-microsoft mr-2 text-blue-600"></i> Cuenta Intune
+                    </h3>
+                    @if($intuneCuenta)
+                        <div class="p-4 rounded-2xl border border-blue-100 bg-blue-50 space-y-2">
+                            <p class="font-mono text-xs font-bold text-blue-800 break-all">{{ $intuneCuenta->cuenta }}</p>
+                            <div class="flex flex-wrap gap-3 text-[10px]">
+                                <span class="font-bold text-gray-500">Sede: <span class="text-gray-700">{{ $intuneCuenta->id_sede }}</span></span>
+                                <span class="font-bold text-gray-500">Estado:
+                                    @if($intuneCuenta->estado === 'activa')
+                                        <span class="text-green-600 font-black">Activa</span>
+                                    @else
+                                        <span class="text-orange-500 font-black">Pendiente</span>
+                                    @endif
+                                </span>
+                                @if($intuneCuenta->fecha_reporte)
+                                <span class="font-bold text-gray-500">Reporte: <span class="text-gray-700">{{ $intuneCuenta->fecha_reporte->format('d/m/Y') }}</span></span>
+                                @endif
+                            </div>
+                        </div>
+                    @else
+                        <div class="p-4 rounded-2xl border border-orange-100 bg-orange-50 flex items-center gap-3">
+                            <i class="fas fa-exclamation-triangle text-orange-400"></i>
+                            <div>
+                                <p class="text-xs font-black text-orange-700">Sin cuenta Intune registrada</p>
+                                <p class="text-[10px] text-orange-500 font-bold mt-0.5">Si se va a intervenir este equipo, verificar con el administrador si debe gestionarse la licencia.</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                @endif
 
                 <div>
                     <h3 class="font-black text-gray-400 uppercase text-[10px] tracking-widest mb-4 flex items-center">

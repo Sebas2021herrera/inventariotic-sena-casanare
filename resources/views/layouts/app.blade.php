@@ -117,6 +117,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         <i class="fas fa-shield-alt mr-2"></i> ISO 27001
                     </a>
 
+                    <a href="{{ route('intune.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('intune.*') ? 'nav-active' : '' }}">
+                        <i class="fab fa-microsoft mr-2"></i> Intune
+                    </a>
+
                     @if(Auth::user()->role === 'admin')
                     <a href="{{ route('usuarios.index') }}" class="nav-link px-4 py-2 rounded-xl transition text-xs font-black uppercase tracking-widest flex items-center {{ request()->routeIs('usuarios.*') ? 'nav-active' : '' }}">
                         <i class="fas fa-users-cog mr-2"></i> Usuarios

@@ -78,18 +78,18 @@ class DispositivoController extends Controller
  */
 public function show(Dispositivo $dispositivo)
 {
-    // Cargamos todas las relaciones necesarias para que la vista tenga la data de hardware, 
-    // responsables, periféricos, mantenimientos y los nuevos conceptos GTI-F-132.
     $dispositivo->load([
-        'responsable', 
-        'ubicacion', 
-        'especificaciones', 
-        'perifericos', 
-        'mantenimientos', 
-        'conceptos' // 👈 Esta es la que causaba el error
+        'responsable',
+        'ubicacion',
+        'especificaciones',
+        'perifericos',
+        'mantenimientos',
+        'conceptos',
     ]);
 
-    return view('dispositivos.show', compact('dispositivo'));
+    $intuneCuenta = \App\Models\IntuneCuenta::where('placa', $dispositivo->placa)->first();
+
+    return view('dispositivos.show', compact('dispositivo', 'intuneCuenta'));
 }
 
 public function create()
@@ -315,6 +315,13 @@ public function update(Request $request, Dispositivo $dispositivo)
             'ubicacion_id' => $ubicacion->id,
             'updated_by' => Auth::id(),
         ]);
+
+        // Sincronizar estado en intune_cuentas cuando cambia en_intune
+        if ($request->filled('en_intune')) {
+            $estadoIntune = $request->en_intune === 'SI' ? 'activa' : 'pendiente';
+            \App\Models\IntuneCuenta::where('placa', $dispositivo->placa)
+                ->update(['estado' => $estadoIntune]);
+        }
 
         // 5. ACTUALIZAR ESPECIFICACIONES (Relación hasOne)
         // Usamos updateOrCreate por si el equipo no tenía especificaciones previas

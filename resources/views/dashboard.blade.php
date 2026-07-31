@@ -125,6 +125,22 @@
                 </div>
             </a>
 
+            {{-- Intune --}}
+            <a href="{{ route('intune.index') }}"
+               class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-200 p-5 flex items-center gap-4">
+                <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600 transition-colors">
+                    <i class="fab fa-microsoft text-blue-600 text-xl group-hover:text-white transition-colors"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-black text-gray-800 text-sm uppercase tracking-tight">Cuentas Intune</p>
+                    <p class="text-gray-400 text-[11px] font-bold mt-0.5">Licencias Microsoft Intune por equipo</p>
+                </div>
+                <div class="text-right flex-shrink-0">
+                    <p class="text-2xl font-black text-gray-700">{{ $stats['intune'] }}</p>
+                    <p class="text-[10px] font-bold text-gray-400">cuentas</p>
+                </div>
+            </a>
+
         </div>
     </div>
 
@@ -134,7 +150,7 @@
         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
             <i class="fas fa-shield-alt text-[#39A900] mr-1"></i> Administración
         </p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr))">
 
             {{-- Usuarios --}}
             <a href="{{ route('usuarios.index') }}"
@@ -169,6 +185,18 @@
                 <div>
                     <p class="font-black text-gray-800 text-sm uppercase tracking-tight">SGSPI Configuración</p>
                     <p class="text-gray-400 text-[11px] font-bold mt-0.5">Celdas, preguntas y tablero</p>
+                </div>
+            </a>
+
+            {{-- Cargar Intune --}}
+            <a href="{{ route('intune.cargar') }}"
+               class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-200 p-5 flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600 transition-colors">
+                    <i class="fab fa-microsoft text-blue-600 text-lg group-hover:text-white transition-colors"></i>
+                </div>
+                <div>
+                    <p class="font-black text-gray-800 text-sm uppercase tracking-tight">Cargar Intune</p>
+                    <p class="text-gray-400 text-[11px] font-bold mt-0.5">Importar cuentas de licencias</p>
                 </div>
             </a>
 

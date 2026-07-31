@@ -12,6 +12,7 @@ use App\Http\Controllers\AreaSeguraController;
 use App\Http\Controllers\EquipoEnergiaController;
 use App\Http\Controllers\SgspiController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IntuneController;
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
     return auth()->check()
@@ -85,12 +86,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('areas-seguras/{areasSegura}/verificacion', [AreaSeguraController::class, 'crearVerificacion'])->name('areas-seguras.verificacion.create');
     Route::post('areas-seguras/{areasSegura}/verificacion', [AreaSeguraController::class, 'guardarVerificacion'])->name('areas-seguras.verificacion.store');
 
+    // Intune (todos los usuarios autenticados pueden ver; carga y borrado solo admin)
+    Route::get('/intune', [IntuneController::class, 'index'])->name('intune.index');
+    Route::get('/intune/buscar/{placa}', [IntuneController::class, 'buscarPorPlaca'])->name('intune.buscar');
+
     // Solo admin
     Route::middleware('admin')->group(function () {
         Route::resource('usuarios', UsuarioController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
         Route::get('/sgspi/admin/resultados',       [SgspiController::class, 'adminResultados'])->name('sgspi.admin.resultados');
         Route::get('/sgspi/admin/configuracion',    [SgspiController::class, 'adminConfig'])->name('sgspi.admin.config');
         Route::put('/sgspi/admin/configuracion',    [SgspiController::class, 'adminConfigUpdate'])->name('sgspi.admin.config.update');
+
+        Route::get('/intune/cargar', [IntuneController::class, 'cargar'])->name('intune.cargar');
+        Route::post('/intune/procesar', [IntuneController::class, 'procesar'])->name('intune.procesar');
+        Route::put('/intune/{intune}', [IntuneController::class, 'update'])->name('intune.update');
+        Route::delete('/intune/{intune}', [IntuneController::class, 'destroy'])->name('intune.destroy');
     });
 
     });
