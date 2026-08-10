@@ -24,7 +24,7 @@ class InventarioGeneralExport implements FromQuery, WithHeadings, WithMapping, S
     public function headings(): array
     {
         return [
-            'placa', 'serial', 'hostname', 'marca', 'modelo', 'propietario', 'funcion', 'en_intune',
+            'placa', 'serial', 'hostname', 'marca', 'modelo', 'categoria', 'tipo_equipo', 'propietario', 'funcion', 'en_intune',
             'cedula', 'nombre_del_responsable', 'numero_de_celular', 'correo_institucional', 'dependencia', 'cargo', 'tipo_de_funcionario',
             'sede_de_ubicacion_del_equipo', 'bloque', 'ambiente_de_formacion',
             'placa_monitor', 'marca_monitor', 'modelo_monitor', 'serial_monitor',
@@ -63,6 +63,8 @@ class InventarioGeneralExport implements FromQuery, WithHeadings, WithMapping, S
             $d->hostname ?? '',
             $d->marca,
             $d->modelo,
+            $d->categoria,
+            $d->tipo_equipo ?? '',
             $d->propietario,
             $d->funcion,
             $d->en_intune,

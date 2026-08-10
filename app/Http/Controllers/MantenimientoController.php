@@ -10,6 +10,44 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class MantenimientoController extends Controller
 {
+    public function index(Request $request)
+    {
+        $query = Mantenimiento::with(['dispositivo'])
+            ->orderBy('fecha', 'desc');
+
+        if ($buscar = $request->get('buscar')) {
+            $b = strtolower(trim($buscar));
+            $query->whereHas('dispositivo', fn($q) =>
+                $q->whereRaw('LOWER(placa) LIKE ?', ["%{$b}%"])
+                  ->orWhereRaw('LOWER(marca) LIKE ?', ["%{$b}%"])
+            )->orWhereRaw('LOWER(tecnico_encargado) LIKE ?', ["%{$b}%"]);
+        }
+
+        if ($tipo = $request->get('tipo')) {
+            $query->where('tipo', $tipo);
+        }
+
+        if ($request->get('pendientes')) {
+            $query->where('finalizado', false);
+        }
+
+        $mantenimientos = $query->paginate(20)->withQueryString();
+
+        $stats = [
+            'total'      => Mantenimiento::count(),
+            'pendientes' => Mantenimiento::where('finalizado', false)->count(),
+            'preventivos'=> Mantenimiento::where('tipo', 'Preventivo')->count(),
+            'correctivos'=> Mantenimiento::where('tipo', 'Correctivo')->count(),
+        ];
+
+        return view('mantenimientos.index', compact('mantenimientos', 'stats'));
+    }
+
+    public function show(Mantenimiento $mantenimiento)
+    {
+        return redirect()->route('dispositivos.show', $mantenimiento->dispositivo_id);
+    }
+
     public function create(Request $request)
     {
         $dispositivo = Dispositivo::findOrFail($request->dispositivo_id);
