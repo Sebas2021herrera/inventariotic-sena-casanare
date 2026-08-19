@@ -13,6 +13,7 @@ use App\Http\Controllers\EquipoEnergiaController;
 use App\Http\Controllers\SgspiController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IntuneController;
+use App\Http\Controllers\SoftwareController;
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
     return auth()->check()
@@ -86,9 +87,26 @@ Route::middleware(['auth'])->group(function () {
     Route::get('areas-seguras/{areasSegura}/verificacion', [AreaSeguraController::class, 'crearVerificacion'])->name('areas-seguras.verificacion.create');
     Route::post('areas-seguras/{areasSegura}/verificacion', [AreaSeguraController::class, 'guardarVerificacion'])->name('areas-seguras.verificacion.store');
 
+    // Software — AJAX autocomplete (todos los usuarios)
+    Route::get('/software/catalogo', [SoftwareController::class, 'catalogo'])->name('software.catalogo');
+
+    // Software — instalado en dispositivos
+    Route::post('/dispositivos/{dispositivo}/software', [SoftwareController::class, 'store'])->name('dispositivos.software.store');
+    Route::delete('/dispositivos/{dispositivo}/software/{instalado}', [SoftwareController::class, 'destroy'])->name('dispositivos.software.destroy');
+
+    // Software — gestión del catálogo DG (lectura: todos; escritura: admin)
+    Route::get('/software-catalogo', [SoftwareController::class, 'catalogoIndex'])->name('sw.catalogo.index');
+    Route::middleware('admin')->group(function () {
+        Route::post('/software-catalogo', [SoftwareController::class, 'catalogoStore'])->name('sw.catalogo.store');
+        Route::put('/software-catalogo/{sw}', [SoftwareController::class, 'catalogoUpdate'])->name('sw.catalogo.update');
+        Route::patch('/software-catalogo/{sw}/toggle', [SoftwareController::class, 'catalogoToggle'])->name('sw.catalogo.toggle');
+        Route::delete('/software-catalogo/{sw}', [SoftwareController::class, 'catalogoDestroy'])->name('sw.catalogo.destroy');
+    });
+
     // Intune (todos los usuarios autenticados pueden ver; carga y borrado solo admin)
     Route::get('/intune', [IntuneController::class, 'index'])->name('intune.index');
     Route::get('/intune/buscar/{placa}', [IntuneController::class, 'buscarPorPlaca'])->name('intune.buscar');
+    Route::post('/intune/administrativo', [IntuneController::class, 'registrarAdministrativo'])->name('intune.administrativo');
 
     // Solo admin
     Route::middleware('admin')->group(function () {

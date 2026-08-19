@@ -8,6 +8,7 @@
         'categoria' => request('categoria'),
         'intune'    => request('intune'),
         'sede'      => request('sede'),
+        'software'  => request('software'),
     ])->filter()->count();
 
     $estadoConfig = [
@@ -144,6 +145,7 @@
                         <input type="hidden" name="categoria" id="h_categoria" value="{{ request('categoria') }}">
                         <input type="hidden" name="intune"    id="h_intune"    value="{{ request('intune') }}">
                         <input type="hidden" name="sede"      id="h_sede"      value="{{ request('sede') }}">
+                        <input type="hidden" name="software"  id="h_software"  value="{{ request('software') }}">
                     </div>
 
                     {{-- PANEL DE FILTROS (colapsable) --}}
@@ -192,6 +194,14 @@
                             </select>
                         </div>
 
+                        <div class="col-span-2 md:col-span-4">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Software Instalado</label>
+                            <input type="text" id="sel_software"
+                                   placeholder="Buscar equipos por software..."
+                                   value="{{ request('software') }}"
+                                   oninput="aplicarFiltroTexto('h_software', this.value)"
+                                   class="w-full text-xs font-bold border border-gray-200 rounded-lg px-2 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#39A900]">
+                        </div>
                     </div>
                 </form>
 
@@ -216,6 +226,11 @@
                         @if(request('sede'))
                             <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-[10px] font-black px-2 py-1 rounded-full">
                                 Sede: {{ request('sede') }}
+                            </span>
+                        @endif
+                        @if(request('software'))
+                            <span class="inline-flex items-center gap-1 bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-1 rounded-full">
+                                <i class="fas fa-boxes text-[8px]"></i> Software: {{ request('software') }}
                             </span>
                         @endif
                         <span class="text-[10px] text-gray-400 font-bold self-center">
@@ -349,7 +364,7 @@
                                 <div class="text-gray-300 mb-3"><i class="fas fa-search text-4xl"></i></div>
                                 <p class="text-gray-500 font-black text-sm">No se encontraron equipos</p>
                                 <p class="text-gray-400 text-xs mt-1">Intenta con otros filtros o términos de búsqueda</p>
-                                @if(request()->hasAny(['search','estado','categoria','intune','sede']))
+                                @if(request()->hasAny(['search','estado','categoria','intune','sede','software']))
                                     <a href="{{ route('dispositivos.index') }}"
                                         class="mt-4 inline-block text-xs font-black text-[#39A900] hover:underline">
                                         Limpiar filtros
@@ -395,6 +410,13 @@ document.getElementById('toggleFiltros').addEventListener('click', function () {
 function aplicarFiltro(hiddenId, value) {
     document.getElementById(hiddenId).value = value;
     document.getElementById('filtroForm').submit();
+}
+
+// Filtro de texto con debounce (para el campo de software)
+let _textFiltroTimer;
+function aplicarFiltroTexto(hiddenId, value) {
+    clearTimeout(_textFiltroTimer);
+    _textFiltroTimer = setTimeout(() => aplicarFiltro(hiddenId, value), 800);
 }
 </script>
 

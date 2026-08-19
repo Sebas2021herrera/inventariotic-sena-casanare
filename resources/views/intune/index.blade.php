@@ -31,18 +31,26 @@
     @endif
 
     {{-- Stats --}}
-    <div class="grid grid-cols-3 gap-4">
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
-            <p class="text-3xl font-black text-gray-800">{{ $stats['total'] }}</p>
-            <p class="text-[10px] font-black text-gray-400 uppercase mt-1">Total Cuentas</p>
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center col-span-2 sm:col-span-1">
+            <p class="text-2xl font-black text-gray-800">{{ $stats['total'] }}</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase mt-1">Total</p>
         </div>
-        <div class="bg-white rounded-2xl border border-green-100 shadow-sm p-5 text-center">
-            <p class="text-3xl font-black text-green-600">{{ $stats['activas'] }}</p>
+        <div class="bg-white rounded-2xl border border-green-100 shadow-sm p-4 text-center">
+            <p class="text-2xl font-black text-green-600">{{ $stats['activas'] }}</p>
             <p class="text-[10px] font-black text-gray-400 uppercase mt-1">Activas</p>
         </div>
-        <div class="bg-white rounded-2xl border border-orange-100 shadow-sm p-5 text-center">
-            <p class="text-3xl font-black text-orange-500">{{ $stats['pendientes'] }}</p>
-            <p class="text-[10px] font-black text-gray-400 uppercase mt-1">Pendientes por asignar</p>
+        <div class="bg-white rounded-2xl border border-orange-100 shadow-sm p-4 text-center">
+            <p class="text-2xl font-black text-orange-500">{{ $stats['pendientes'] }}</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase mt-1">Pendientes</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-4 text-center">
+            <p class="text-2xl font-black text-blue-600">{{ $stats['dispositivos'] }}</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase mt-1">Formación</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-purple-100 shadow-sm p-4 text-center">
+            <p class="text-2xl font-black text-purple-600">{{ $stats['usuarios'] }}</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase mt-1">Administrativos</p>
         </div>
     </div>
 
@@ -52,6 +60,12 @@
         <input type="text" name="buscar" value="{{ request('buscar') }}"
                placeholder="Buscar por placa, cuenta o sede..."
                class="flex-1 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:border-blue-400">
+        <select name="tipo"
+                class="border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:border-blue-400">
+            <option value="">Todos los tipos</option>
+            <option value="dispositivo" {{ request('tipo') === 'dispositivo' ? 'selected' : '' }}>Dispositivo (Formación)</option>
+            <option value="usuario"     {{ request('tipo') === 'usuario'     ? 'selected' : '' }}>Usuario (Administrativo)</option>
+        </select>
         <select name="estado"
                 class="border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:border-blue-400">
             <option value="">Todos los estados</option>
@@ -62,7 +76,7 @@
                 class="bg-blue-600 text-white font-black px-5 py-2 rounded-xl text-sm uppercase tracking-widest hover:bg-blue-700 transition">
             <i class="fas fa-search mr-1"></i> Filtrar
         </button>
-        @if(request('buscar') || request('estado'))
+        @if(request('buscar') || request('estado') || request('tipo'))
         <a href="{{ route('intune.index') }}"
            class="bg-gray-100 text-gray-600 font-black px-4 py-2 rounded-xl text-sm uppercase tracking-widest hover:bg-gray-200 transition flex items-center gap-1">
             <i class="fas fa-times"></i>
@@ -76,8 +90,8 @@
             <thead>
                 <tr class="bg-gray-50 border-b border-gray-100">
                     <th class="px-5 py-3 text-left text-[10px] font-black text-gray-400 uppercase">Cuenta</th>
+                    <th class="px-5 py-3 text-left text-[10px] font-black text-gray-400 uppercase">Tipo</th>
                     <th class="px-5 py-3 text-left text-[10px] font-black text-gray-400 uppercase">Placa</th>
-                    <th class="px-5 py-3 text-left text-[10px] font-black text-gray-400 uppercase">Sede</th>
                     <th class="px-5 py-3 text-left text-[10px] font-black text-gray-400 uppercase">Dispositivo</th>
                     <th class="px-5 py-3 text-left text-[10px] font-black text-gray-400 uppercase">Estado</th>
                     <th class="px-5 py-3 text-left text-[10px] font-black text-gray-400 uppercase">Reporte</th>
@@ -90,7 +104,18 @@
                 @forelse($cuentas as $c)
                 @php $disp = $c->dispositivo; @endphp
                 <tr class="hover:bg-gray-50 transition">
-                    <td class="px-5 py-3 font-mono text-xs text-blue-700 font-bold">{{ $c->cuenta }}</td>
+                    <td class="px-5 py-3 font-mono text-xs text-blue-700 font-bold break-all max-w-xs">{{ $c->cuenta }}</td>
+                    <td class="px-5 py-3">
+                        @if($c->tipo === 'usuario')
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50 text-purple-700 text-[9px] font-black rounded-full uppercase whitespace-nowrap">
+                                <i class="fas fa-user text-[8px]"></i> Usuario ADM
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-[9px] font-black rounded-full uppercase whitespace-nowrap">
+                                <i class="fas fa-laptop text-[8px]"></i> Formación
+                            </span>
+                        @endif
+                    </td>
                     <td class="px-5 py-3">
                         @if($disp)
                             <a href="{{ route('dispositivos.show', $disp) }}"
@@ -101,7 +126,6 @@
                             <span class="font-bold text-gray-500">{{ $c->placa }}</span>
                         @endif
                     </td>
-                    <td class="px-5 py-3 font-bold text-gray-600">{{ $c->id_sede }}</td>
                     <td class="px-5 py-3">
                         @if($disp)
                             <div>
@@ -129,7 +153,7 @@
                     @if(Auth::user()->role === 'admin')
                     <td class="px-5 py-3 text-right">
                         <div class="flex items-center justify-end gap-2">
-                            <button onclick="abrirEditar({{ $c->id }}, '{{ $c->fecha_reporte?->format('Y-m-d') }}', {{ json_encode($c->notas) }})"
+                            <button onclick="abrirEditar({{ $c->id }}, '{{ $c->fecha_reporte?->format('Y-m-d') }}', {{ json_encode($c->notas) }}, '{{ $c->tipo }}', {{ json_encode($c->cuenta) }})"
                                     class="text-blue-400 hover:text-blue-600 transition p-1" title="Editar">
                                 <i class="fas fa-pencil-alt text-xs"></i>
                             </button>
@@ -183,7 +207,13 @@
         </div>
         <form id="form-editar" method="POST" class="p-6 space-y-4">
             @csrf @method('PUT')
-            <div>
+            <div id="edit-correo-wrap" class="hidden">
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Correo del Usuario</label>
+                <input type="email" name="cuenta" id="edit-correo"
+                       placeholder="correo@sena.edu.co"
+                       class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-blue-400">
+            </div>
+            <div id="edit-fecha-wrap">
                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Fecha del Reporte</label>
                 <input type="date" name="fecha_reporte" id="edit-fecha"
                        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-blue-400">
@@ -209,10 +239,18 @@
 </div>
 
 <script>
-function abrirEditar(id, fecha, notas) {
+function abrirEditar(id, fecha, notas, tipo, cuenta) {
     document.getElementById('form-editar').action = '/intune/' + id;
     document.getElementById('edit-fecha').value  = fecha || '';
     document.getElementById('edit-notas').value  = notas || '';
+
+    const esUsuario = tipo === 'usuario';
+    document.getElementById('edit-correo-wrap').classList.toggle('hidden', !esUsuario);
+    document.getElementById('edit-fecha-wrap').classList.toggle('hidden', esUsuario);
+    if (esUsuario) {
+        document.getElementById('edit-correo').value = cuenta || '';
+    }
+
     const modal = document.getElementById('modal-editar');
     modal.classList.remove('hidden');
     modal.classList.add('flex');

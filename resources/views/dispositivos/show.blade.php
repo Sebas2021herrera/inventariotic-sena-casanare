@@ -39,9 +39,13 @@
                     <span class="bg-white {{ $dispositivo->categoria == 'conectividad' ? 'text-blue-700' : 'text-[#39A900]' }} px-6 py-2 rounded-2xl font-black shadow-lg text-xl uppercase">
                         {{ $dispositivo->estado_fisico }}
                     </span>
-                    @if($intuneCuenta)
+                    @if($intuneCuenta && $intuneCuenta->estado === 'activa')
                         <span class="mt-2 text-[10px] bg-blue-600 text-white px-3 py-1 rounded-full font-bold flex items-center gap-1">
                             <i class="fab fa-microsoft text-[9px]"></i> INTUNE ACTIVO
+                        </span>
+                    @elseif($intuneCuenta && $intuneCuenta->estado === 'pendiente')
+                        <span class="mt-2 text-[10px] bg-orange-500 text-white px-3 py-1 rounded-full font-bold flex items-center gap-1">
+                            <i class="fab fa-microsoft text-[9px]"></i> INTUNE PENDIENTE
                         </span>
                     @elseif($dispositivo->en_intune == 'SI')
                         <span class="mt-2 text-[10px] bg-blue-400 text-white px-3 py-1 rounded-full font-bold flex items-center gap-1">
@@ -132,31 +136,96 @@
                     <h3 class="font-black text-gray-400 uppercase text-[10px] tracking-widest mb-3 flex items-center">
                         <i class="fab fa-microsoft mr-2 text-blue-600"></i> Cuenta Intune
                     </h3>
-                    @if($intuneCuenta)
-                        <div class="p-4 rounded-2xl border border-blue-100 bg-blue-50 space-y-2">
-                            <p class="font-mono text-xs font-bold text-blue-800 break-all">{{ $intuneCuenta->cuenta }}</p>
-                            <div class="flex flex-wrap gap-3 text-[10px]">
-                                <span class="font-bold text-gray-500">Sede: <span class="text-gray-700">{{ $intuneCuenta->id_sede }}</span></span>
-                                <span class="font-bold text-gray-500">Estado:
+
+                    @if($dispositivo->funcion === 'ADMINISTRATIVO')
+                        {{-- Equipo administrativo: Intune por correo de usuario --}}
+                        @if($intuneCuenta)
+                            <div class="p-4 rounded-2xl border border-blue-100 bg-blue-50 space-y-2">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div>
+                                        <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-0.5">Usuario asignado</p>
+                                        <p class="font-mono text-xs font-bold text-blue-800 break-all">{{ $intuneCuenta->cuenta }}</p>
+                                    </div>
                                     @if($intuneCuenta->estado === 'activa')
-                                        <span class="text-green-600 font-black">Activa</span>
+                                        <span class="flex-shrink-0 px-2.5 py-1 bg-green-100 text-green-700 text-[9px] font-black rounded-full uppercase">Activa</span>
                                     @else
-                                        <span class="text-orange-500 font-black">Pendiente</span>
+                                        <span class="flex-shrink-0 px-2.5 py-1 bg-orange-100 text-orange-600 text-[9px] font-black rounded-full uppercase">Pendiente</span>
                                     @endif
-                                </span>
-                                @if($intuneCuenta->fecha_reporte)
-                                <span class="font-bold text-gray-500">Reporte: <span class="text-gray-700">{{ $intuneCuenta->fecha_reporte->format('d/m/Y') }}</span></span>
+                                </div>
+                                @if($intuneCuenta->notas)
+                                    <p class="text-[10px] text-blue-600 font-bold italic">{{ $intuneCuenta->notas }}</p>
                                 @endif
+                                {{-- Formulario para actualizar --}}
+                                <details class="mt-2">
+                                    <summary class="text-[10px] font-black text-blue-500 cursor-pointer hover:text-blue-700 transition">Actualizar correo</summary>
+                                    <form method="POST" action="{{ route('intune.administrativo') }}" class="mt-2 space-y-2">
+                                        @csrf
+                                        <input type="hidden" name="placa" value="{{ $dispositivo->placa }}">
+                                        <input type="email" name="correo_usuario" value="{{ $intuneCuenta->cuenta }}"
+                                               placeholder="correo@sena.edu.co"
+                                               class="w-full border border-blue-200 rounded-lg px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-400">
+                                        <input type="text" name="notas" value="{{ $intuneCuenta->notas }}"
+                                               placeholder="Notas opcionales..."
+                                               class="w-full border border-blue-200 rounded-lg px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-400">
+                                        <button type="submit"
+                                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-2 rounded-lg text-[10px] uppercase tracking-widest transition">
+                                            Actualizar
+                                        </button>
+                                    </form>
+                                </details>
                             </div>
-                        </div>
+                        @else
+                            <div class="p-4 rounded-2xl border border-gray-200 bg-gray-50 space-y-3">
+                                <div class="flex items-center gap-2">
+                                    <i class="fab fa-microsoft text-gray-400"></i>
+                                    <p class="text-xs font-black text-gray-600">Registrar usuario de Intune</p>
+                                </div>
+                                <p class="text-[10px] text-gray-400 font-bold">Este equipo administrativo se sincroniza con el correo institucional del usuario asignado.</p>
+                                <form method="POST" action="{{ route('intune.administrativo') }}" class="space-y-2">
+                                    @csrf
+                                    <input type="hidden" name="placa" value="{{ $dispositivo->placa }}">
+                                    <input type="email" name="correo_usuario" value="{{ old('correo_usuario') }}"
+                                           placeholder="correo@sena.edu.co" required
+                                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-400">
+                                    <input type="text" name="notas" value="{{ old('notas') }}"
+                                           placeholder="Notas opcionales..."
+                                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-400">
+                                    <button type="submit"
+                                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-2 rounded-lg text-[10px] uppercase tracking-widest transition">
+                                        <i class="fas fa-save mr-1"></i> Registrar
+                                    </button>
+                                </form>
+                            </div>
+                        @endif
+
                     @else
-                        <div class="p-4 rounded-2xl border border-orange-100 bg-orange-50 flex items-center gap-3">
-                            <i class="fas fa-exclamation-triangle text-orange-400"></i>
-                            <div>
-                                <p class="text-xs font-black text-orange-700">Sin cuenta Intune registrada</p>
-                                <p class="text-[10px] text-orange-500 font-bold mt-0.5">Si se va a intervenir este equipo, verificar con el administrador si debe gestionarse la licencia.</p>
+                        {{-- Equipo de formación: cuenta por dispositivo desde DG --}}
+                        @if($intuneCuenta)
+                            <div class="p-4 rounded-2xl border border-blue-100 bg-blue-50 space-y-2">
+                                <p class="font-mono text-xs font-bold text-blue-800 break-all">{{ $intuneCuenta->cuenta }}</p>
+                                <div class="flex flex-wrap gap-3 text-[10px]">
+                                    <span class="font-bold text-gray-500">Sede: <span class="text-gray-700">{{ $intuneCuenta->id_sede }}</span></span>
+                                    <span class="font-bold text-gray-500">Estado:
+                                        @if($intuneCuenta->estado === 'activa')
+                                            <span class="text-green-600 font-black">Activa</span>
+                                        @else
+                                            <span class="text-orange-500 font-black">Pendiente por asignar</span>
+                                        @endif
+                                    </span>
+                                    @if($intuneCuenta->fecha_reporte)
+                                    <span class="font-bold text-gray-500">Reporte: <span class="text-gray-700">{{ $intuneCuenta->fecha_reporte->format('d/m/Y') }}</span></span>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
+                        @else
+                            <div class="p-4 rounded-2xl border border-orange-100 bg-orange-50 flex items-center gap-3">
+                                <i class="fas fa-exclamation-triangle text-orange-400"></i>
+                                <div>
+                                    <p class="text-xs font-black text-orange-700">Sin cuenta Intune registrada</p>
+                                    <p class="text-[10px] text-orange-500 font-bold mt-0.5">Verificar con el administrador si debe gestionarse la licencia en Dirección General.</p>
+                                </div>
+                            </div>
+                        @endif
                     @endif
                 </div>
                 @endif
@@ -227,6 +296,143 @@
 </div>
 @endif
     </div>
+
+    {{-- SOFTWARE INSTALADO --}}
+    @if($dispositivo->categoria == 'computo')
+    <div class="mt-8 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-indigo-50/30">
+            <div>
+                <h3 class="font-black text-gray-800 uppercase text-sm tracking-tighter flex items-center">
+                    <i class="fas fa-boxes mr-2 text-indigo-500"></i>
+                    Software Instalado
+                </h3>
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Catálogo Autorizado SENA — Dirección General</p>
+            </div>
+            <button onclick="abrirModalSw()"
+                    class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black hover:bg-indigo-700 transition shadow-lg flex items-center">
+                <i class="fas fa-plus-circle mr-2"></i> AGREGAR SOFTWARE
+            </button>
+        </div>
+
+        <div class="p-0">
+            @if($dispositivo->softwareInstalado->isEmpty())
+                <div class="p-10 text-center text-gray-400 italic text-xs">
+                    <i class="fas fa-box-open text-3xl mb-3 block opacity-20"></i>
+                    No se ha registrado software instalado en este equipo.
+                </div>
+            @else
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100/50 text-[9px] font-black text-gray-400 uppercase">
+                            <th class="p-4">Software</th>
+                            <th class="p-4">Tipo</th>
+                            <th class="p-4">Instalación</th>
+                            <th class="p-4">Versión / Notas</th>
+                            <th class="p-4">Registrado por</th>
+                            <th class="p-4 text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-sm">
+                        @foreach($dispositivo->softwareInstalado->sortBy('software.nombre') as $inst)
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="p-4">
+                                <p class="font-bold text-gray-800 text-xs">{{ $inst->software->nombre }}</p>
+                                @if($inst->software->subproducto)
+                                    <p class="text-[10px] text-gray-500">{{ $inst->software->subproducto }}</p>
+                                @endif
+                            </td>
+                            <td class="p-4">
+                                @if($inst->software->tipo === 'licenciado')
+                                    <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase bg-blue-100 text-blue-700">Licenciado</span>
+                                @else
+                                    <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase bg-green-100 text-green-700">Libre</span>
+                                @endif
+                            </td>
+                            <td class="p-4 font-bold text-gray-700 italic text-xs whitespace-nowrap">
+                                {{ $inst->fecha_instalacion->format('d/m/Y') }}
+                            </td>
+                            <td class="p-4 text-[10px] text-gray-500 max-w-xs">{{ $inst->version_notas ?? '—' }}</td>
+                            <td class="p-4 text-[10px] text-gray-600 whitespace-nowrap">{{ $inst->tecnico->name ?? 'Sistema' }}</td>
+                            <td class="p-4 text-right">
+                                <form method="POST"
+                                      action="{{ route('dispositivos.software.destroy', [$dispositivo, $inst]) }}"
+                                      onsubmit="return confirm('¿Eliminar este software del registro?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit"
+                                            class="text-red-400 hover:text-red-600 transition p-1" title="Eliminar">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
+    </div>
+
+    {{-- MODAL AGREGAR SOFTWARE (multi-select) --}}
+    <div id="modal-sw" class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+         style="background: rgba(0,0,0,0.5); backdrop-filter: blur(4px)">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div class="bg-indigo-600 text-white px-6 py-4 flex items-center justify-between">
+                <p class="font-black text-sm uppercase tracking-tight">
+                    <i class="fas fa-boxes mr-2"></i> Registrar Software Instalado
+                </p>
+                <button onclick="cerrarModalSw()" class="text-white/70 hover:text-white transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-sw" method="POST" action="{{ route('dispositivos.software.store', $dispositivo) }}" class="p-6 space-y-4">
+                @csrf
+                @include('software._picker', ['prefix' => 'modal-sw'])
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" id="modal-sw-submit" disabled
+                            class="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-widest transition">
+                        <i class="fas fa-save mr-1"></i> Registrar
+                    </button>
+                    <button type="button" onclick="cerrarModalSw()"
+                            class="px-5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-black rounded-xl text-sm uppercase tracking-widest transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @include('software._picker_js')
+
+    <script>
+    function abrirModalSw() {
+        const m = document.getElementById('modal-sw');
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+        swPickerInit('modal-sw');
+        setTimeout(function() {
+            var s = document.getElementById('modal-sw-search');
+            if (s) s.focus();
+        }, 50);
+    }
+
+    function cerrarModalSw() {
+        const m = document.getElementById('modal-sw');
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+        swResetPicker('modal-sw');
+    }
+
+    document.getElementById('modal-sw').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalSw();
+    });
+
+    document.getElementById('form-sw').addEventListener('submit', function(e) {
+        var p = _swPickers['modal-sw'];
+        if (!p || !p.items.length) { e.preventDefault(); return; }
+        swInjectInputs('modal-sw', this);
+    });
+    </script>
+    @endif
 
     <div class="mt-8 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-orange-50/30">

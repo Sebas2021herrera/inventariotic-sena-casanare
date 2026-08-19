@@ -13,6 +13,7 @@ class IntuneCuenta extends Model
         'id_sede',
         'placa',
         'estado',
+        'tipo',
         'fecha_reporte',
         'notas',
     ];

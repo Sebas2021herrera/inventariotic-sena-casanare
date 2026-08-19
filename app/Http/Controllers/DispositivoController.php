@@ -27,6 +27,7 @@ class DispositivoController extends Controller
         $categoria = $request->input('categoria');
         $intune    = $request->input('intune');
         $sede      = $request->input('sede');
+        $software  = $request->input('software');
 
         $query = Dispositivo::with(['responsable', 'ubicacion', 'editor', 'creador']);
 
@@ -42,6 +43,10 @@ class DispositivoController extends Controller
         if ($categoria) $query->where('categoria', $categoria);
         if ($intune)    $query->where('en_intune', $intune);
         if ($sede)      $query->whereHas('ubicacion.sede', fn ($q) => $q->where('nombre', 'LIKE', "%{$sede}%"));
+        if ($software)  $query->whereHas('softwareInstalado.software', function ($q) use ($software) {
+            $q->where('nombre', 'ILIKE', "%{$software}%")
+              ->orWhere('subproducto', 'ILIKE', "%{$software}%");
+        });
 
         $dispositivos = $query->orderBy('updated_at', 'desc')
             ->paginate(15)
@@ -85,6 +90,8 @@ public function show(Dispositivo $dispositivo)
         'perifericos',
         'mantenimientos',
         'conceptos',
+        'softwareInstalado.software',
+        'softwareInstalado.tecnico',
     ]);
 
     $intuneCuenta = \App\Models\IntuneCuenta::where('placa', $dispositivo->placa)->first();
@@ -193,6 +200,34 @@ public function store(Request $request)
                 }
             }
 
+            // 6.5 SOFTWARE: si es computo y se seleccionaron items en el picker
+            if (!empty($request->input('software_ids', [])) && $request->input('categoria') === 'computo') {
+                $fechaSw = $request->input('fecha_instalacion', now()->toDateString());
+                $notasSw = $request->input('version_notas');
+                foreach ($request->software_ids as $swId) {
+                    \App\Models\SoftwareInstalado::create([
+                        'dispositivo_id'       => $dispositivo->id,
+                        'software_catalogo_id' => (int) $swId,
+                        'fecha_instalacion'    => $fechaSw,
+                        'version_notas'        => $notasSw,
+                        'instalado_por'        => Auth::id(),
+                    ]);
+                }
+            }
+
+            // 7. CUENTA INTUNE: si es ADMINISTRATIVO y se proporcionó correo
+            if (($request->funcion ?? 'FORMACION') === 'ADMINISTRATIVO' && $request->filled('correo_intune')) {
+                \App\Models\IntuneCuenta::updateOrCreate(
+                    ['placa' => $dispositivo->placa, 'tipo' => 'usuario'],
+                    [
+                        'cuenta'  => strtolower(trim($request->correo_intune)),
+                        'id_sede' => 'ADM',
+                        'estado'  => ($request->en_intune === 'SI') ? 'activa' : 'pendiente',
+                        'tipo'    => 'usuario',
+                    ]
+                );
+            }
+
             DB::commit();
             return redirect()->route('dispositivos.index')
                              ->with('success', "Equipo con placa {$dispositivo->placa} registrado exitosamente.");
@@ -248,7 +283,9 @@ public function edit(Dispositivo $dispositivo)
 {
     $dispositivo->load(['responsable', 'ubicacion.sede', 'especificaciones', 'perifericos']);
     $sedes = Sede::orderBy('nombre')->pluck('nombre');
-    return view('dispositivos.edit', compact('dispositivo', 'sedes'));
+    $intuneCuenta = \App\Models\IntuneCuenta::where('placa', $dispositivo->placa)
+        ->where('tipo', 'usuario')->first();
+    return view('dispositivos.edit', compact('dispositivo', 'sedes', 'intuneCuenta'));
 }
 
 public function update(Request $request, Dispositivo $dispositivo)
@@ -321,6 +358,22 @@ public function update(Request $request, Dispositivo $dispositivo)
             $estadoIntune = $request->en_intune === 'SI' ? 'activa' : 'pendiente';
             \App\Models\IntuneCuenta::where('placa', $dispositivo->placa)
                 ->update(['estado' => $estadoIntune]);
+        }
+
+        // Cuenta Intune usuario: actualizar o crear si es ADMINISTRATIVO con correo
+        if ($request->funcion === 'ADMINISTRATIVO' && $request->filled('correo_intune')) {
+            \App\Models\IntuneCuenta::updateOrCreate(
+                ['placa' => $dispositivo->placa, 'tipo' => 'usuario'],
+                [
+                    'cuenta'  => strtolower(trim($request->correo_intune)),
+                    'id_sede' => 'ADM',
+                    'estado'  => ($request->en_intune === 'SI') ? 'activa' : 'pendiente',
+                    'tipo'    => 'usuario',
+                ]
+            );
+        } elseif ($request->funcion === 'ADMINISTRATIVO' && $request->has('correo_intune') && $request->correo_intune === '') {
+            // Si borraron el correo explícitamente, eliminar el registro
+            \App\Models\IntuneCuenta::where('placa', $dispositivo->placa)->where('tipo', 'usuario')->delete();
         }
 
         // 5. ACTUALIZAR ESPECIFICACIONES (Relación hasOne)

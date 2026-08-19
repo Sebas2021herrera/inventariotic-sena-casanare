@@ -231,7 +231,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Función</label>
-                                <select name="funcion" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold">
+                                <select name="funcion" id="select-funcion" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold" onchange="toggleCorreoIntune()">
                                     <option value="FORMACION"    {{ $func === 'FORMACION'    ? 'selected' : '' }}>APRENDIZ / FORMACIÓN</option>
                                     <option value="ADMINISTRATIVO" {{ $func === 'ADMINISTRATIVO' ? 'selected' : '' }}>ADMINISTRATIVO</option>
                                 </select>
@@ -243,6 +243,19 @@
                                     <option value="SI" {{ $int === 'SI' ? 'selected' : '' }}>SI</option>
                                 </select>
                             </div>
+                        </div>
+
+                        {{-- Correo Intune (solo administrativos) --}}
+                        @php $correoIntune = old('correo_intune', $intuneCuenta->cuenta ?? ''); @endphp
+                        <div id="div-correo-intune" class="md:col-span-2 {{ $func === 'ADMINISTRATIVO' ? '' : 'hidden' }}">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                                <i class="fab fa-microsoft text-blue-500"></i> Correo Intune del usuario
+                            </label>
+                            <input type="email" name="correo_intune" id="correo-intune"
+                                   value="{{ $correoIntune }}"
+                                   placeholder="correo.usuario@sena.edu.co"
+                                   class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 outline-none focus:bg-white focus:border-blue-400 transition font-bold text-sm">
+                            <p class="text-[10px] text-gray-400 mt-1">Correo institucional del usuario asignado. Se actualiza automáticamente en el módulo Intune.</p>
                         </div>
 
                         {{-- Fila 4: Marca + Modelo --}}
@@ -437,6 +450,12 @@
             if (sRedes) sRedes.classList.add('hidden');
             if (sComputo) sComputo.classList.remove('hidden');
         }
+    }
+
+    function toggleCorreoIntune() {
+        const funcion = document.getElementById('select-funcion')?.value;
+        const div     = document.getElementById('div-correo-intune');
+        if (div) div.classList.toggle('hidden', funcion !== 'ADMINISTRATIVO');
     }
 
     // Aseguramos que se ejecute al cargar para mostrar la sección correcta del equipo

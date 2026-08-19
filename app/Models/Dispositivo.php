@@ -61,4 +61,9 @@ public function editor()
     return $this->belongsTo(User::class, 'updated_by');
 }
 
+public function softwareInstalado()
+{
+    return $this->hasMany(SoftwareInstalado::class);
+}
+
 }

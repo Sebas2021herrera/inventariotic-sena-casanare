@@ -12,14 +12,17 @@ class IntuneController extends Controller
     // ── Listado con búsqueda ──────────────────────────────────────────────────
     public function index(Request $request)
     {
-        $query = IntuneCuenta::query();
+        $query = IntuneCuenta::with('dispositivo');
 
         if ($buscar = $request->get('buscar')) {
             $b = strtolower(trim($buscar));
             $query->where(function ($q) use ($b) {
                 $q->whereRaw('LOWER(placa) LIKE ?', ["%{$b}%"])
                   ->orWhereRaw('LOWER(cuenta) LIKE ?', ["%{$b}%"])
-                  ->orWhereRaw('LOWER(id_sede) LIKE ?', ["%{$b}%"]);
+                  ->orWhereRaw('LOWER(id_sede) LIKE ?', ["%{$b}%"])
+                  ->orWhereHas('dispositivo.responsable', function ($r) use ($b) {
+                      $r->whereRaw('LOWER(nombre) LIKE ?', ["%{$b}%"]);
+                  });
             });
         }
 
@@ -27,12 +30,18 @@ class IntuneController extends Controller
             $query->where('estado', $estado);
         }
 
-        $cuentas = $query->orderBy('placa')->paginate(30)->withQueryString();
+        if ($tipo = $request->get('tipo')) {
+            $query->where('tipo', $tipo);
+        }
+
+        $cuentas = $query->orderBy('tipo')->orderBy('placa')->paginate(30)->withQueryString();
 
         $stats = [
-            'total'     => IntuneCuenta::count(),
-            'activas'   => IntuneCuenta::where('estado', 'activa')->count(),
-            'pendientes'=> IntuneCuenta::where('estado', 'pendiente')->count(),
+            'total'          => IntuneCuenta::count(),
+            'activas'        => IntuneCuenta::where('estado', 'activa')->count(),
+            'pendientes'     => IntuneCuenta::where('estado', 'pendiente')->count(),
+            'dispositivos'   => IntuneCuenta::where('tipo', 'dispositivo')->count(),
+            'usuarios'       => IntuneCuenta::where('tipo', 'usuario')->count(),
         ];
 
         return view('intune.index', compact('cuentas', 'stats'));
@@ -108,6 +117,36 @@ class IntuneController extends Controller
         return redirect()->route('intune.index')->with('success', $msg);
     }
 
+    // ── Registrar/actualizar correo de usuario para equipo administrativo ────
+    public function registrarAdministrativo(Request $request)
+    {
+        $request->validate([
+            'placa'          => 'required|string|exists:dispositivos,placa',
+            'correo_usuario' => 'required|email|max:150',
+            'notas'          => 'nullable|string|max:500',
+        ], [
+            'correo_usuario.email'    => 'El formato del correo no es válido.',
+            'correo_usuario.required' => 'El correo del usuario es obligatorio.',
+            'placa.exists'            => 'La placa no existe en el inventario.',
+        ]);
+
+        $placa  = strtoupper(trim($request->placa));
+        $correo = strtolower(trim($request->correo_usuario));
+
+        IntuneCuenta::updateOrCreate(
+            ['placa' => $placa, 'tipo' => 'usuario'],
+            [
+                'cuenta'  => $correo,
+                'id_sede' => 'ADM',
+                'estado'  => 'activa',
+                'tipo'    => 'usuario',
+                'notas'   => $request->notas ?: null,
+            ]
+        );
+
+        return back()->with('success', 'Cuenta Intune del usuario registrada correctamente.');
+    }
+
     // ── AJAX: buscar cuenta por placa ─────────────────────────────────────────
     public function buscarPorPlaca($placa)
     {
@@ -129,15 +168,27 @@ class IntuneController extends Controller
     // ── Editar cuenta (fecha_reporte y notas) ────────────────────────────────
     public function update(Request $request, IntuneCuenta $intune)
     {
-        $request->validate([
-            'fecha_reporte' => 'nullable|date',
-            'notas'         => 'nullable|string|max:500',
-        ]);
+        if ($intune->tipo === 'usuario') {
+            $request->validate([
+                'cuenta' => 'required|email|max:150',
+                'notas'  => 'nullable|string|max:500',
+            ], ['cuenta.email' => 'El formato del correo no es válido.']);
 
-        $intune->update([
-            'fecha_reporte' => $request->fecha_reporte ?: null,
-            'notas'         => $request->notas ?: null,
-        ]);
+            $intune->update([
+                'cuenta' => strtolower(trim($request->cuenta)),
+                'notas'  => $request->notas ?: null,
+            ]);
+        } else {
+            $request->validate([
+                'fecha_reporte' => 'nullable|date',
+                'notas'         => 'nullable|string|max:500',
+            ]);
+
+            $intune->update([
+                'fecha_reporte' => $request->fecha_reporte ?: null,
+                'notas'         => $request->notas ?: null,
+            ]);
+        }
 
         return back()->with('success', 'Cuenta Intune actualizada.');
     }

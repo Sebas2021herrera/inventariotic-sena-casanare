@@ -195,7 +195,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Función</label>
-                                <select name="funcion" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold outline-none" onchange="sugerirHostname()">
+                                <select name="funcion" id="select-funcion" class="w-full bg-white border-gray-200 rounded-lg p-2 text-sm font-bold outline-none" onchange="sugerirHostname(); toggleCorreoIntune()">
                                     <option value="FORMACION">APRENDIZ / FORMACIÓN</option>
                                     <option value="ADMINISTRATIVO">ADMINISTRATIVO</option>
                                 </select>
@@ -207,6 +207,18 @@
                                     <option value="SI">SI</option>
                                 </select>
                             </div>
+                        </div>
+
+                        {{-- Correo Intune (solo administrativos) --}}
+                        <div id="div-correo-intune" class="md:col-span-2 hidden">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                                <i class="fab fa-microsoft text-blue-500"></i> Correo Intune del usuario
+                            </label>
+                            <input type="email" name="correo_intune" id="correo-intune"
+                                   value="{{ old('correo_intune') }}"
+                                   placeholder="correo.usuario@sena.edu.co"
+                                   class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 outline-none focus:bg-white focus:border-blue-400 transition font-bold text-sm">
+                            <p class="text-[10px] text-gray-400 mt-1">Correo institucional de la persona a quien se asigna el equipo. Se registra automáticamente en el módulo Intune.</p>
                         </div>
 
                         {{-- Fila 4: Marca + Modelo --}}
@@ -380,6 +392,14 @@
                     </div>
                 </div>
 
+                <div id="seccion-software" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-indigo-100">
+                    <div class="flex items-center mb-4 text-indigo-600 font-black uppercase text-xs tracking-widest border-b border-indigo-100 pb-2">
+                        <i class="fas fa-boxes mr-2"></i> Software a Instalar
+                        <span class="ml-2 text-gray-300 font-normal normal-case text-[10px]">— opcional, puedes agregarlo después desde la ficha del equipo</span>
+                    </div>
+                    @include('software._picker', ['prefix' => 'crea-sw'])
+                </div>
+
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Observaciones / Novedades</label>
                     <textarea name="observaciones" rows="3" class="w-full bg-gray-50 border-gray-200 rounded-xl p-3 text-sm">{{ old('observaciones') }}</textarea>
@@ -402,14 +422,23 @@
      * Alterna la visibilidad entre Cómputo y Redes
      * No se pierde la lógica de perifericos
      */
+    function toggleCorreoIntune() {
+        const funcion = document.getElementById('select-funcion')?.value;
+        const cat     = document.getElementById('categoria-select')?.value;
+        const div     = document.getElementById('div-correo-intune');
+        if (div) div.classList.toggle('hidden', !(funcion === 'ADMINISTRATIVO' && cat === 'computo'));
+    }
+
     function toggleSecciones() {
         const cat = document.getElementById('categoria-select')?.value;
-        const sComputo = document.getElementById('seccion-computo');
-        const sRedes = document.getElementById('seccion-redes');
+        const sComputo    = document.getElementById('seccion-computo');
+        const sRedes      = document.getElementById('seccion-redes');
         const sPerifericos = document.getElementById('seccion-perifericos');
+        const sSoftware   = document.getElementById('seccion-software');
         const divTipoEquipo = document.getElementById('div-tipo-equipo');
-        const btnGenerar = document.getElementById('btn-generar-hostname');
-        const esComputo = cat === 'computo';
+        const btnGenerar  = document.getElementById('btn-generar-hostname');
+        const esComputo   = cat === 'computo';
+        toggleCorreoIntune();
 
         // Mostrar/ocultar tipo_equipo y placeholder + botón hostname
         divTipoEquipo?.classList.toggle('hidden', !esComputo);
@@ -420,10 +449,12 @@
             sRedes?.classList.remove('hidden');
             sComputo?.classList.add('hidden');
             sPerifericos?.classList.add('hidden');
+            sSoftware?.classList.add('hidden');
         } else {
             sRedes?.classList.add('hidden');
             sComputo?.classList.remove('hidden');
             sPerifericos?.classList.remove('hidden');
+            sSoftware?.classList.toggle('hidden', !esComputo);
         }
     }
 
@@ -570,6 +601,14 @@
 </script>
 
 @include('partials.modal-buscar-responsable')
+@include('software._picker_js')
+<script>
+document.getElementById('form-inventario').addEventListener('submit', function() {
+    if (document.getElementById('categoria-select')?.value === 'computo') {
+        swInjectInputs('crea-sw', this);
+    }
+});
+</script>
 
 <script>
 /**
