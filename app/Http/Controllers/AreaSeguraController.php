@@ -7,6 +7,9 @@ use App\Models\AreaSeguraVerificacion;
 use App\Models\Sede;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\AreaSeguraExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AreaSeguraController extends Controller
 {
@@ -105,6 +108,45 @@ class AreaSeguraController extends Controller
         $areasSegura->delete();
         return redirect()->route('areas-seguras.index')
             ->with('success', "Área {$areasSegura->codigo} eliminada.");
+    }
+
+    // ── Exportar consolidado PDF ───────────────────────────────────────────────
+
+    public function exportarConsolidado()
+    {
+        $areas = AreaSegura::with(['ultimaVerificacion', 'sede'])
+            ->orderByRaw("CASE nivel_sena
+                WHEN 'Nivel 1 - Crítico'   THEN 1
+                WHEN 'Nivel 2 - Sensible'  THEN 2
+                WHEN 'Nivel 3 - Operativo' THEN 3
+                ELSE 4 END")
+            ->orderBy('codigo')
+            ->get();
+
+        $stats = [
+            'total'         => $areas->count(),
+            'nivel1'        => $areas->where('nivel_sena', 'Nivel 1 - Crítico')->count(),
+            'nivel2'        => $areas->where('nivel_sena', 'Nivel 2 - Sensible')->count(),
+            'nivel3'        => $areas->where('nivel_sena', 'Nivel 3 - Operativo')->count(),
+            'con_checklist' => $areas->filter(fn($a) => $a->ultimaVerificacion)->count(),
+            'conformes'     => $areas->filter(fn($a) => $a->ultimaVerificacion?->resultado === 'Conforme')->count(),
+        ];
+
+        $fecha = now()->format('d/m/Y');
+        $pdf = Pdf::loadView('areas_seguras.consolidado_pdf', compact('areas', 'stats', 'fecha'));
+        $pdf->setPaper('letter', 'landscape');
+
+        return $pdf->download('Consolidado_Areas_Seguras_' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    // ── Exportar consolidado Excel ────────────────────────────────────────────
+
+    public function exportarConsolidadoExcel()
+    {
+        return Excel::download(
+            new AreaSeguraExport(),
+            'Consolidado_Areas_Seguras_' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 
     // ── Checklist ──────────────────────────────────────────────────────────────

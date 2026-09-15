@@ -14,6 +14,7 @@ use App\Http\Controllers\SgspiController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IntuneController;
 use App\Http\Controllers\SoftwareController;
+use App\Http\Controllers\ConectividadController;
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
     return auth()->check()
@@ -83,6 +84,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('equipos-energia', EquipoEnergiaController::class);
 
     // Áreas Seguras — ISO 27001:2022
+    Route::get('areas-seguras/exportar-consolidado',       [AreaSeguraController::class, 'exportarConsolidado'])->name('areas-seguras.exportar-consolidado');
+    Route::get('areas-seguras/exportar-consolidado-excel', [AreaSeguraController::class, 'exportarConsolidadoExcel'])->name('areas-seguras.exportar-consolidado-excel');
     Route::resource('areas-seguras', AreaSeguraController::class);
     Route::get('areas-seguras/{areasSegura}/verificacion', [AreaSeguraController::class, 'crearVerificacion'])->name('areas-seguras.verificacion.create');
     Route::post('areas-seguras/{areasSegura}/verificacion', [AreaSeguraController::class, 'guardarVerificacion'])->name('areas-seguras.verificacion.store');
@@ -102,6 +105,9 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/software-catalogo/{sw}/toggle', [SoftwareController::class, 'catalogoToggle'])->name('sw.catalogo.toggle');
         Route::delete('/software-catalogo/{sw}', [SoftwareController::class, 'catalogoDestroy'])->name('sw.catalogo.destroy');
     });
+
+    // Conectividad — red HUAWEI (lectura: todos)
+    Route::get('/conectividad', [ConectividadController::class, 'index'])->name('conectividad.index');
 
     // Intune (todos los usuarios autenticados pueden ver; carga y borrado solo admin)
     Route::get('/intune', [IntuneController::class, 'index'])->name('intune.index');

@@ -155,7 +155,7 @@ public function store(Request $request)
             $dispositivo = Dispositivo::create([
                 'placa' => $request->placa,
                 'serial' => $request->serial,
-                'hostname'    => $request->hostname ?: null,
+                'hostname'    => $this->resolveHostname($request->hostname ?: null),
                 'tipo_equipo' => $request->tipo_equipo ?: null,
                 'marca' => $request->marca ?? 'Genérico',
                 'modelo' => $request->modelo ?? 'Genérico',
@@ -338,7 +338,7 @@ public function update(Request $request, Dispositivo $dispositivo)
         $dispositivo->update([
             'placa' => $request->placa,
             'serial' => $request->serial,
-            'hostname'    => $request->hostname ?: null,
+            'hostname'    => $this->resolveHostname($request->hostname ?: null, $dispositivo->id),
             'tipo_equipo' => $request->tipo_equipo ?: null,
             'marca' => $request->marca,
             'modelo' => $request->modelo,
@@ -507,6 +507,34 @@ public function generarHostname(Request $request)
         'prefijo'   => $prefijo,
         'siguiente' => $siguiente,
     ]);
+}
+
+/**
+ * Devuelve el candidato si está libre; si ya existe, devuelve el siguiente consecutivo.
+ * $excludeId permite ignorar el propio dispositivo al editar (no se auto-desplaza).
+ */
+private function resolveHostname(?string $candidato, ?int $excludeId = null): ?string
+{
+    if (!$candidato) return null;
+
+    $existe = Dispositivo::where('hostname', $candidato)
+        ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+        ->exists();
+
+    if (!$existe) return $candidato;
+
+    // Conflicto: prefijo = todo menos los 3 dígitos finales
+    $prefijo   = substr($candidato, 0, -3);
+    $longTotal = strlen($candidato);
+
+    $ultimo = Dispositivo::where('hostname', 'LIKE', "{$prefijo}%")
+        ->whereRaw('LENGTH(hostname) = ?', [$longTotal])
+        ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+        ->orderByRaw("CAST(RIGHT(hostname, 3) AS INTEGER) DESC")
+        ->value('hostname');
+
+    $siguiente = $ultimo ? ((int) substr($ultimo, -3)) + 1 : 1;
+    return $prefijo . str_pad($siguiente, 3, '0', STR_PAD_LEFT);
 }
 
 public function verificarPlaca($placa)

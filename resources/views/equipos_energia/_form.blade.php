@@ -1,6 +1,10 @@
 @php
 use App\Models\EquipoEnergia;
-$v = fn($campo, $def = null) => old($campo, $equipo?->$campo ?? $def);
+$v = fn($campo, $def = null) => old($campo,
+    $equipo?->$campo instanceof \Carbon\Carbon
+        ? $equipo->$campo->format('Y-m-d')
+        : ($equipo?->$campo ?? $def)
+);
 @endphp
 
 {{-- ── IDENTIFICACIÓN ──────────────────────────────────────────────────────── --}}
@@ -83,10 +87,10 @@ $v = fn($campo, $def = null) => old($campo, $equipo?->$campo ?? $def);
     </div>
 </div>
 
-{{-- ── ESPECIFICACIONES ELÉCTRICAS ─────────────────────────────────────────── --}}
+{{-- ── ESPECIFICACIONES NOMINALES ───────────────────────────────────────────── --}}
 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
     <h2 class="text-[10px] font-black text-[#39A900] uppercase tracking-widest mb-5 border-b pb-2">
-        <i class="fas fa-bolt mr-2"></i> Especificaciones Eléctricas
+        <i class="fas fa-bolt mr-2"></i> Especificaciones Nominales
     </h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
@@ -99,36 +103,20 @@ $v = fn($campo, $def = null) => old($campo, $equipo?->$campo ?? $def);
             </select>
         </div>
         <div>
-            <label class="lbl">Potencia (VA)</label>
-            <input type="number" step="0.01" name="potencia_va" value="{{ $v('potencia_va') }}" class="inp" placeholder="1500">
+            <label class="lbl">Potencia nominal (VA)</label>
+            <input type="number" step="0.01" name="potencia_va" value="{{ $v('potencia_va') }}" class="inp" placeholder="3000">
         </div>
         <div>
-            <label class="lbl">Potencia (W)</label>
-            <input type="number" step="0.01" name="potencia_w" value="{{ $v('potencia_w') }}" class="inp" placeholder="1050">
+            <label class="lbl">Potencia nominal (W)</label>
+            <input type="number" step="0.01" name="potencia_w" value="{{ $v('potencia_w') }}" class="inp" placeholder="2700">
         </div>
         <div>
-            <label class="lbl">Voltaje Entrada (V)</label>
+            <label class="lbl">Voltaje de entrada (V)</label>
             <input type="number" name="voltaje_entrada" value="{{ $v('voltaje_entrada') }}" class="inp" placeholder="120 / 220">
         </div>
         <div>
-            <label class="lbl">Voltaje Salida (V)</label>
+            <label class="lbl">Voltaje de salida (V)</label>
             <input type="number" name="voltaje_salida" value="{{ $v('voltaje_salida') }}" class="inp" placeholder="120 / 220">
-        </div>
-        <div>
-            <label class="lbl">Capacidad Salida (VA)</label>
-            <input type="number" step="0.01" name="capacidad_va" value="{{ $v('capacidad_va') }}" class="inp" placeholder="1500">
-        </div>
-        <div>
-            <label class="lbl">Capacidad Salida (W)</label>
-            <input type="number" step="0.01" name="capacidad_w" value="{{ $v('capacidad_w') }}" class="inp" placeholder="1050">
-        </div>
-        <div>
-            <label class="lbl">Capacidad (A)</label>
-            <input type="number" step="0.01" name="capacidad_a" value="{{ $v('capacidad_a') }}" class="inp" placeholder="10">
-        </div>
-        <div>
-            <label class="lbl">Cap. Conmutación (A)</label>
-            <input type="number" step="0.01" name="capacidad_conmutacion_a" value="{{ $v('capacidad_conmutacion_a') }}" class="inp" placeholder="40">
         </div>
         <div>
             <label class="lbl">Frecuencia (Hz)</label>
@@ -137,39 +125,107 @@ $v = fn($campo, $def = null) => old($campo, $equipo?->$campo ?? $def);
                 <option value="50" {{ $v('frecuencia') == '50' ? 'selected' : '' }}>50 Hz</option>
             </select>
         </div>
+        <div>
+            <label class="lbl">Factor de potencia</label>
+            <input type="number" step="0.01" min="0" max="1" name="factor_de_potencia"
+                   value="{{ $v('factor_de_potencia') }}" class="inp" placeholder="0.9">
+        </div>
+        <div>
+            <label class="lbl">Tecnología</label>
+            <input type="text" name="tecnologia" value="{{ $v('tecnologia') }}" class="inp"
+                   placeholder="Online (doble conversión), Line-Interactive...">
+        </div>
     </div>
 </div>
 
-{{-- ── BATERÍA Y RESPALDO (solo UPS / Planta) ──────────────────────────────── --}}
+{{-- ── MEDICIONES ACTUALES ──────────────────────────────────────────────────── --}}
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+    <h2 class="text-[10px] font-black text-[#39A900] uppercase tracking-widest mb-5 border-b pb-2">
+        <i class="fas fa-chart-bar mr-2"></i> Mediciones Actuales
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div>
+            <label class="lbl">Carga actual (%)</label>
+            <input type="number" step="0.01" min="0" max="100" name="carga_actual_pct"
+                   value="{{ $v('carga_actual_pct') }}" class="inp" placeholder="8">
+        </div>
+        <div>
+            <label class="lbl">Potencia activa actual (kW)</label>
+            <input type="number" step="0.001" name="potencia_activa_actual_kw"
+                   value="{{ $v('potencia_activa_actual_kw') }}" class="inp" placeholder="0.2">
+        </div>
+        <div>
+            <label class="lbl">Potencia aparente actual (kVA)</label>
+            <input type="number" step="0.001" name="potencia_aparente_actual_kva"
+                   value="{{ $v('potencia_aparente_actual_kva') }}" class="inp" placeholder="0.2">
+        </div>
+        <div>
+            <label class="lbl">Batería actual (%)</label>
+            <input type="number" step="0.01" min="0" max="100" name="bateria_actual_pct"
+                   value="{{ $v('bateria_actual_pct') }}" class="inp" placeholder="100">
+        </div>
+        <div>
+            <label class="lbl">Autonomía estimada (min)</label>
+            <input type="number" name="autonomia_estimada_min"
+                   value="{{ $v('autonomia_estimada_min') }}" class="inp" placeholder="332">
+        </div>
+        <div>
+            <label class="lbl">Estado operativo</label>
+            <input type="text" name="estado_operativo" value="{{ $v('estado_operativo') }}" class="inp"
+                   placeholder="SAI correcto, Falla de batería...">
+        </div>
+    </div>
+    <p class="text-[10px] text-gray-400 mt-3 italic">
+        <i class="fas fa-info-circle mr-1"></i>
+        Los datos nominales indican la capacidad del equipo; las mediciones actuales muestran su condición en campo.
+    </p>
+</div>
+
+{{-- ── BATERÍAS Y RESPALDO ─────────────────────────────────────────────────── --}}
 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100" id="seccion-baterias">
     <h2 class="text-[10px] font-black text-[#39A900] uppercase tracking-widest mb-5 border-b pb-2">
-        <i class="fas fa-battery-three-quarters mr-2"></i> Batería y Respaldo
+        <i class="fas fa-battery-three-quarters mr-2"></i> Baterías y Respaldo
     </h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div>
-            <label class="lbl">Capacidad Batería (Ah)</label>
-            <input type="number" step="0.01" name="capacidad_baterias_ah" value="{{ $v('capacidad_baterias_ah') }}" class="inp" placeholder="7.2">
+            <label class="lbl">Tipo de batería</label>
+            <input type="text" name="tipo_bateria" value="{{ $v('tipo_bateria') }}" class="inp"
+                   placeholder="VRLA sellada, Litio...">
         </div>
         <div>
-            <label class="lbl">Número de Baterías</label>
-            <input type="number" name="numero_baterias" value="{{ $v('numero_baterias') }}" class="inp" placeholder="1">
+            <label class="lbl">Capacidad por batería (Ah)</label>
+            <input type="number" step="0.01" name="capacidad_baterias_ah"
+                   value="{{ $v('capacidad_baterias_ah') }}" class="inp" placeholder="9">
         </div>
         <div>
-            <label class="lbl">Tiempo Respaldo Nominal (min)</label>
-            <input type="number" name="tiempo_respaldo_min" value="{{ $v('tiempo_respaldo_min') }}" class="inp" placeholder="8">
+            <label class="lbl">Baterías internas</label>
+            <input type="number" id="baterias-internas" name="baterias_internas"
+                   value="{{ $v('baterias_internas') }}" class="inp" placeholder="6"
+                   oninput="calcularTotalBaterias()">
         </div>
         <div>
-            <label class="lbl">Tiempo Respaldo Verificado (min)</label>
-            <input type="number" name="tiempo_respaldo_verificado_min" value="{{ $v('tiempo_respaldo_verificado_min') }}" class="inp" placeholder="6">
+            <label class="lbl">Baterías banco externo</label>
+            <input type="number" id="baterias-banco" name="baterias_banco_externo"
+                   value="{{ $v('baterias_banco_externo') }}" class="inp" placeholder="12"
+                   oninput="calcularTotalBaterias()">
         </div>
-        <div id="campo-tecnologia-ups" class="{{ $v('tipo') === 'UPS' ? '' : 'hidden' }}">
-            <label class="lbl">Tecnología UPS</label>
-            <select name="tecnologia_ups" class="inp">
-                <option value="">— Selecciona —</option>
-                @foreach(['Online (doble conversión)','Offline (standby)','Line-Interactive'] as $tech)
-                    <option value="{{ $tech }}" {{ $v('tecnologia_ups') === $tech ? 'selected' : '' }}>{{ $tech }}</option>
-                @endforeach
-            </select>
+        <div>
+            <label class="lbl">Total instalado</label>
+            <input type="number" id="baterias-total" name="_total_baterias"
+                   value="{{ ($v('baterias_internas',0) + $v('baterias_banco_externo',0)) ?: '' }}"
+                   class="inp bg-gray-100 text-gray-500 cursor-default" readonly placeholder="Auto">
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div>
+            <label class="lbl">Modelo del banco</label>
+            <input type="text" name="modelo_banco" value="{{ $v('modelo_banco') }}" class="inp font-mono"
+                   placeholder="9PXEBM72RT">
+        </div>
+        <div>
+            <label class="lbl">Serial del banco</label>
+            <input type="text" name="serial_banco" value="{{ $v('serial_banco') }}" class="inp font-mono"
+                   placeholder="PA32T47YEP">
         </div>
     </div>
 </div>
@@ -216,12 +272,11 @@ $v = fn($campo, $def = null) => old($campo, $equipo?->$campo ?? $def);
 </style>
 
 <script>
-function toggleCamposUPS() {
-    const tipo = document.getElementById('select-tipo')?.value;
-    const campoTech = document.getElementById('campo-tecnologia-ups');
-    if (campoTech) {
-        campoTech.classList.toggle('hidden', tipo !== 'UPS');
-    }
+function calcularTotalBaterias() {
+    const internas = parseInt(document.getElementById('baterias-internas')?.value) || 0;
+    const banco    = parseInt(document.getElementById('baterias-banco')?.value)    || 0;
+    const total    = document.getElementById('baterias-total');
+    if (total) total.value = (internas + banco) > 0 ? (internas + banco) : '';
 }
-document.addEventListener('DOMContentLoaded', toggleCamposUPS);
+document.addEventListener('DOMContentLoaded', calcularTotalBaterias);
 </script>

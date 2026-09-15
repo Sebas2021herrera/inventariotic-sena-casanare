@@ -11,10 +11,17 @@ class EquipoEnergia extends Model
     protected $fillable = [
         'sede_id','cuarto','ubicacion_id','tipo','marca','modelo',
         'numero_serie','placa','pertenece','estado','marquillado',
-        'fase','potencia_va','potencia_w','capacidad_va','capacidad_w',
-        'capacidad_a','capacidad_conmutacion_a','voltaje_entrada','voltaje_salida','frecuencia',
-        'capacidad_baterias_ah','numero_baterias','tiempo_respaldo_min','tiempo_respaldo_verificado_min',
-        'tecnologia_ups','fecha_instalacion','fecha_ultimo_mantenimiento',
+        // Especificaciones nominales
+        'fase','potencia_va','potencia_w','voltaje_entrada','voltaje_salida','frecuencia',
+        'tecnologia','factor_de_potencia',
+        // Mediciones actuales
+        'carga_actual_pct','potencia_activa_actual_kw','potencia_aparente_actual_kva',
+        'bateria_actual_pct','autonomia_estimada_min','estado_operativo',
+        // Baterías y respaldo
+        'tipo_bateria','capacidad_baterias_ah','baterias_internas','baterias_banco_externo',
+        'modelo_banco','serial_banco',
+        // Administrativa
+        'fecha_instalacion','fecha_ultimo_mantenimiento',
         'proximo_mantenimiento','garantia_hasta','proveedor','observaciones',
         'activo','created_by','updated_by',
     ];

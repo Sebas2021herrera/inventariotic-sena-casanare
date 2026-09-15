@@ -26,10 +26,20 @@ $resultadoColor = [
                 ISO 27001:2022 · Controles 7.5 Perímetros / 7.6 Entrada física
             </p>
         </div>
-        <a href="{{ route('areas-seguras.create') }}"
-           class="bg-[#39A900] text-white px-5 py-3 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-green-700 transition flex items-center gap-2">
-            <i class="fas fa-shield-alt"></i> Registrar Área
-        </a>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('areas-seguras.exportar-consolidado-excel') }}"
+               class="bg-[#166534] text-white px-5 py-3 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-green-900 transition flex items-center gap-2">
+                <i class="fas fa-file-excel"></i> Exportar Excel
+            </a>
+            <a href="{{ route('areas-seguras.exportar-consolidado') }}"
+               class="bg-[#1e3a5f] text-white px-5 py-3 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-blue-900 transition flex items-center gap-2">
+                <i class="fas fa-file-pdf"></i> Exportar PDF
+            </a>
+            <a href="{{ route('areas-seguras.create') }}"
+               class="bg-[#39A900] text-white px-5 py-3 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-green-700 transition flex items-center gap-2">
+                <i class="fas fa-shield-alt"></i> Registrar Área
+            </a>
+        </div>
     </div>
 
     @if(session('success'))

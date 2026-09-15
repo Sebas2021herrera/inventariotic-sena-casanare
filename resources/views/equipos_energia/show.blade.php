@@ -71,56 +71,89 @@ $ec = EquipoEnergia::ESTADOS_COLOR[$equipo->estado] ?? 'bg-gray-100 text-gray-60
             @endforeach
         </div>
 
-        {{-- Especificaciones Eléctricas --}}
+        {{-- Especificaciones Nominales --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
             <h3 class="text-[10px] font-black text-[#39A900] uppercase tracking-widest border-b pb-2">
-                <i class="fas fa-bolt mr-2"></i>Especificaciones Eléctricas
+                <i class="fas fa-bolt mr-2"></i>Especificaciones Nominales
             </h3>
             @php
             $specs = [
-                'Fase'               => $equipo->fase,
-                'Potencia'           => ($equipo->potencia_va ? number_format($equipo->potencia_va).' VA' : '') . ($equipo->potencia_w ? ' / '.number_format($equipo->potencia_w).' W' : ''),
-                'Capacidad Salida'   => ($equipo->capacidad_va ? number_format($equipo->capacidad_va).' VA' : '') . ($equipo->capacidad_w ? ' / '.number_format($equipo->capacidad_w).' W' : ''),
-                'Capacidad (A)'      => $equipo->capacidad_a ? $equipo->capacidad_a.' A' : null,
-                'Cap. Conmutación'   => $equipo->capacidad_conmutacion_a ? $equipo->capacidad_conmutacion_a.' A' : null,
-                'Voltaje E / S'      => ($equipo->voltaje_entrada ? $equipo->voltaje_entrada.'V' : '') . ($equipo->voltaje_salida ? ' → '.$equipo->voltaje_salida.'V' : ''),
-                'Frecuencia'         => $equipo->frecuencia.' Hz',
+                'Fase'                => $equipo->fase,
+                'Potencia nominal'    => ($equipo->potencia_va ? number_format($equipo->potencia_va).' VA' : '') . ($equipo->potencia_w ? ' / '.number_format($equipo->potencia_w).' W' : ''),
+                'Voltaje E → S'       => ($equipo->voltaje_entrada ? $equipo->voltaje_entrada.'V' : '') . ($equipo->voltaje_salida ? ' → '.$equipo->voltaje_salida.'V' : ''),
+                'Frecuencia'          => $equipo->frecuencia ? $equipo->frecuencia.' Hz' : null,
+                'Factor de potencia'  => $equipo->factor_de_potencia,
+                'Tecnología'          => $equipo->tecnologia,
             ];
-            if ($equipo->tipo === 'UPS') $specs['Tecnología UPS'] = $equipo->tecnologia_ups;
             @endphp
             @foreach($specs as $lbl => $val)
             @if($val)
-            <div class="flex justify-between">
-                <span class="text-[10px] font-black text-gray-400 uppercase">{{ $lbl }}</span>
-                <span class="text-xs font-bold text-gray-700">{{ $val }}</span>
+            <div class="flex justify-between gap-4">
+                <span class="text-[10px] font-black text-gray-400 uppercase shrink-0">{{ $lbl }}</span>
+                <span class="text-xs font-bold text-gray-700 text-right">{{ $val }}</span>
             </div>
             @endif
             @endforeach
         </div>
 
-        {{-- Batería y Respaldo --}}
+        {{-- Mediciones Actuales --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
             <h3 class="text-[10px] font-black text-[#39A900] uppercase tracking-widest border-b pb-2">
-                <i class="fas fa-battery-three-quarters mr-2"></i>Batería y Respaldo
+                <i class="fas fa-chart-bar mr-2"></i>Mediciones Actuales
             </h3>
             @php
-            $bat = [
-                'Capacidad Batería'       => $equipo->capacidad_baterias_ah ? $equipo->capacidad_baterias_ah.' Ah' : null,
-                'Número de Baterías'      => $equipo->numero_baterias,
-                'Respaldo Nominal'        => $equipo->tiempo_respaldo_min ? $equipo->tiempo_respaldo_min.' min' : null,
-                'Respaldo Verificado'     => $equipo->tiempo_respaldo_verificado_min ? $equipo->tiempo_respaldo_verificado_min.' min' : null,
+            $med = [
+                'Carga actual'           => $equipo->carga_actual_pct !== null ? $equipo->carga_actual_pct.' %' : null,
+                'Potencia activa'        => $equipo->potencia_activa_actual_kw !== null ? $equipo->potencia_activa_actual_kw.' kW' : null,
+                'Potencia aparente'      => $equipo->potencia_aparente_actual_kva !== null ? $equipo->potencia_aparente_actual_kva.' kVA' : null,
+                'Batería actual'         => $equipo->bateria_actual_pct !== null ? $equipo->bateria_actual_pct.' %' : null,
+                'Autonomía estimada'     => $equipo->autonomia_estimada_min ? $equipo->autonomia_estimada_min.' min' : null,
+                'Estado operativo'       => $equipo->estado_operativo,
             ];
             @endphp
-            @foreach($bat as $lbl => $val)
+            @foreach($med as $lbl => $val)
             @if($val)
-            <div class="flex justify-between">
-                <span class="text-[10px] font-black text-gray-400 uppercase">{{ $lbl }}</span>
-                <span class="text-xs font-bold {{ $lbl === 'Respaldo Verificado' ? 'text-[#39A900]' : 'text-gray-700' }}">{{ $val }}</span>
+            <div class="flex justify-between gap-4">
+                <span class="text-[10px] font-black text-gray-400 uppercase shrink-0">{{ $lbl }}</span>
+                <span class="text-xs font-bold {{ $lbl === 'Estado operativo' ? 'text-[#39A900]' : 'text-gray-700' }} text-right">{{ $val }}</span>
             </div>
             @endif
             @endforeach
-            @if(!$equipo->capacidad_baterias_ah && !$equipo->tiempo_respaldo_min)
-                <p class="text-[10px] text-gray-400 italic">No aplica o sin datos de batería.</p>
+            @if(!array_filter($med))
+                <p class="text-[10px] text-gray-400 italic">Sin mediciones registradas.</p>
+            @endif
+        </div>
+
+        {{-- Baterías y Respaldo --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
+            <h3 class="text-[10px] font-black text-[#39A900] uppercase tracking-widest border-b pb-2">
+                <i class="fas fa-battery-three-quarters mr-2"></i>Baterías y Respaldo
+            </h3>
+            @php
+            $totalBat = ($equipo->baterias_internas ?? 0) + ($equipo->baterias_banco_externo ?? 0);
+            $bat = [
+                'Tipo de batería'         => $equipo->tipo_bateria,
+                'Capacidad por batería'   => $equipo->capacidad_baterias_ah ? $equipo->capacidad_baterias_ah.' Ah' : null,
+                'Baterías internas'       => $equipo->baterias_internas,
+                'Baterías banco externo'  => $equipo->baterias_banco_externo,
+                'Total instalado'         => $totalBat > 0 ? $totalBat : null,
+                'Modelo del banco'        => $equipo->modelo_banco,
+                'Serial del banco'        => $equipo->serial_banco,
+            ];
+            @endphp
+            @foreach($bat as $lbl => $val)
+            @if($val !== null && $val !== '')
+            <div class="flex justify-between gap-4">
+                <span class="text-[10px] font-black text-gray-400 uppercase shrink-0">{{ $lbl }}</span>
+                <span class="text-xs font-bold {{ $lbl === 'Total instalado' ? 'text-[#39A900]' : 'text-gray-700' }}
+                             {{ in_array($lbl,['Modelo del banco','Serial del banco']) ? 'font-mono' : '' }} text-right">
+                    {{ $val }}
+                </span>
+            </div>
+            @endif
+            @endforeach
+            @if(!$equipo->tipo_bateria && !$equipo->capacidad_baterias_ah)
+                <p class="text-[10px] text-gray-400 italic">No aplica o sin datos de baterías.</p>
             @endif
         </div>
 
