@@ -6,6 +6,8 @@ use App\Models\SgspiParticipante;
 use App\Models\SgspiPregunta;
 use App\Models\SgspiResultado;
 use App\Models\SgspiConfig;
+use App\Models\PhishingConfig;
+use App\Models\PhishingResultado;
 use Illuminate\Http\Request;
 
 class SgspiController extends Controller
@@ -13,7 +15,31 @@ class SgspiController extends Controller
     // ── Página principal pública ──────────────────────────────────────────────
     public function index()
     {
-        return view('sgspi.index');
+        $topBuscaminas = SgspiResultado::with('participante')
+            ->orderByDesc('puntaje')
+            ->take(5)->get();
+
+        $topPhishing = PhishingResultado::with('participante')
+            ->orderByDesc('puntaje')
+            ->take(5)->get();
+
+        $statsBuscaminas = [
+            'partidas' => SgspiResultado::count(),
+            'prom'     => round(SgspiResultado::avg('puntaje') ?? 0),
+        ];
+        $statsPhishing = [
+            'partidas' => PhishingResultado::count(),
+            'prom'     => round(PhishingResultado::avg('puntaje') ?? 0),
+        ];
+
+        $configBuscaminas = SgspiConfig::get();
+        $configPhishing   = PhishingConfig::get();
+
+        return view('sgspi.index', compact(
+            'topBuscaminas', 'topPhishing',
+            'statsBuscaminas', 'statsPhishing',
+            'configBuscaminas', 'configPhishing'
+        ));
     }
 
     // ── Instrucciones + QR imprimible ─────────────────────────────────────────
@@ -206,11 +232,25 @@ class SgspiController extends Controller
     // ── Admin: listado de resultados ──────────────────────────────────────────
     public function adminResultados()
     {
-        $resultados = SgspiResultado::with('participante')
-            ->latest()
-            ->paginate(30);
+        $resultadosBuscaminas = SgspiResultado::with('participante')
+            ->latest()->paginate(25, ['*'], 'bm');
 
-        return view('sgspi.admin.resultados', compact('resultados'));
+        $resultadosPhishing = PhishingResultado::with('participante')
+            ->latest()->paginate(25, ['*'], 'ph');
+
+        $statsBuscaminas = [
+            'total'      => SgspiResultado::count(),
+            'prom_score' => round(SgspiResultado::avg('puntaje') ?? 0),
+        ];
+        $statsPhishing = [
+            'total'      => PhishingResultado::count(),
+            'prom_score' => round(PhishingResultado::avg('puntaje') ?? 0),
+        ];
+
+        return view('sgspi.admin.resultados', compact(
+            'resultadosBuscaminas', 'resultadosPhishing',
+            'statsBuscaminas', 'statsPhishing'
+        ));
     }
 
     // ── Admin: configuración del juego ────────────────────────────────────────

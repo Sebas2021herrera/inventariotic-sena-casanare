@@ -1,0 +1,432 @@
+<?php
+
+namespace App\Data;
+
+class PhishingScenarios
+{
+    public static function all(): array
+    {
+        return [
+
+            // ══════════════════════════════════════════════════════════════════
+            // NIVEL 1 — FÁCIL  (señales obvias)
+            // ══════════════════════════════════════════════════════════════════
+
+            [
+                'id'         => 1,
+                'nivel'      => 1,
+                'de_nombre'  => 'Seguridad Bancolombia',
+                'de_email'   => 'noreply@bancolombia-seguridad.com',
+                'para'       => 'usuario@sena.edu.co',
+                'asunto'     => '⚠️ Su cuenta ha sido BLOQUEADA - Actúe AHORA',
+                'fecha'      => 'Lun, 15 Sep 2026  09:23',
+                'cuerpo'     => "Estimado cliente,\n\nHemos detectado actividad inusual en su cuenta. Su acceso a la banca en línea ha sido TEMPORALMENTE SUSPENDIDO.\n\nPara reactivar su cuenta INMEDIATAMENTE debe verificar su identidad en las próximas 24 horas o perderá el acceso permanentemente.\n\nHaga clic en el siguiente enlace para verificar:",
+                'enlace_txt' => 'VERIFICAR MI CUENTA AHORA →',
+                'enlace_url' => 'http://bancolombia-seguridad.com/login/verificar?token=a8f3k2',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'Dominio falso: "bancolombia-seguridad.com" (el real es bancolombia.com.co)'],
+                    ['icon'=>'🔕','texto'=>'Sin HTTPS (http://...) — sitio no cifrado'],
+                    ['icon'=>'😱','texto'=>'Urgencia extrema: "BLOQUEADA", "AHORA", "permanentemente"'],
+                    ['icon'=>'📧','texto'=>'Los bancos NUNCA piden reactivar cuentas por enlace en email'],
+                ],
+                'explicacion' => 'Los bancos colombianos nunca bloquean cuentas ni piden verificación por email con un enlace. El dominio oficial de Bancolombia es bancolombia.com.co, no "bancolombia-seguridad.com". Si recibe este email, reportelo y no haga clic.',
+            ],
+
+            [
+                'id'         => 2,
+                'nivel'      => 1,
+                'de_nombre'  => 'DIAN Colombia Oficial',
+                'de_email'   => 'notificaciones@dian-colombia.net',
+                'para'       => 'contribuyente@empresa.com',
+                'asunto'     => 'Requerimiento tributario urgente - Evite sanciones',
+                'fecha'      => 'Mar, 16 Sep 2026  14:07',
+                'cuerpo'     => "Señor(a) Contribuyente,\n\nLa DIAN ha identificado inconsistencias en su declaración de renta del período gravable 2025. Usted debe regularizar su situación tributaria en un plazo máximo de 48 horas.\n\nDe no hacerlo, su RUT será inhabilitado y se iniciarán procesos coactivos de cobro.\n\nIngrese al portal para resolver su requerimiento:",
+                'enlace_txt' => 'Portal DIAN — Resolver requerimiento',
+                'enlace_url' => 'http://dian-colombia.net/contribuyente/regularizar',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'Dominio falso: "dian-colombia.net" (el real es dian.gov.co)'],
+                    ['icon'=>'🏛️','texto'=>'Las entidades del gobierno colombiano usan dominios .gov.co'],
+                    ['icon'=>'⏰','texto'=>'Plazo irreal de 48 horas para generar pánico'],
+                    ['icon'=>'🔕','texto'=>'Sin HTTPS en el enlace'],
+                ],
+                'explicacion' => 'La DIAN usa exclusivamente el dominio dian.gov.co. Ninguna entidad gubernamental colombiana usa ".net" o ".com". Los requerimientos legítimos de la DIAN llegan por correo certificado físico o a través de la plataforma MUISCA en dian.gov.co.',
+            ],
+
+            [
+                'id'         => 3,
+                'nivel'      => 1,
+                'de_nombre'  => 'Movistar Premios',
+                'de_email'   => 'premios@movistar-ganadores.info',
+                'para'       => 'ganador@correo.com',
+                'asunto'     => '🎉 ¡Felicidades! Ganaste un Samsung Galaxy S26',
+                'fecha'      => 'Miér, 17 Sep 2026  11:45',
+                'cuerpo'     => "¡Enhorabuena!\n\nEres el GANADOR del sorteo mensual de Movistar Colombia. Tu número celular fue seleccionado entre millones de participantes para recibir un SAMSUNG GALAXY S26 ULTRA completamente GRATIS.\n\nPara reclamar tu premio solo necesitas:\n1. Pagar el costo de envío ($25.000 COP)\n2. Confirmar tus datos personales\n\nLa oferta vence en 12 HORAS.",
+                'enlace_txt' => '🎁 Reclamar mi premio ahora',
+                'enlace_url' => 'http://movistar-ganadores.info/premio/reclamar?id=WIN2026',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'Dominio falso: "movistar-ganadores.info" (no es movistar.com.co)'],
+                    ['icon'=>'💰','texto'=>'Pide pago previo para reclamar premio — señal clásica de estafa'],
+                    ['icon'=>'🎰','texto'=>'Nunca participaste en ningún sorteo'],
+                    ['icon'=>'⏰','texto'=>'Caducidad artificial de 12 horas'],
+                    ['icon'=>'📩','texto'=>'El destinatario es genérico, no tu nombre real'],
+                ],
+                'explicacion' => 'Esta es una estafa de "premio falso". Ninguna empresa legítima pide pagar para recibir un premio. El dominio movistar.com.co es el oficial. Los correos de premios no solicitados son casi siempre fraudulentos.',
+            ],
+
+            [
+                'id'         => 4,
+                'nivel'      => 1,
+                'de_nombre'  => 'Soporte SENA',
+                'de_email'   => 'soporte-sena@gmail.com',
+                'para'       => 'funcionario@sena.edu.co',
+                'asunto'     => 'Actualizacion obligatoria de contraseña sofia plus',
+                'fecha'      => 'Jue, 18 Sep 2026  08:15',
+                'cuerpo'     => "Estimado funcionario,\n\nEl equipo de soporte technico del SENA le informa que su clave de acceso al sistema Sofia Plus a expirado.\n\nDebe actualizarla de manera obligatoria antes del viernes para no perder su acceso. Ingrese sus credenciales actuales para el proceso de actualizacion:\n\nUsuario: ___________\nContraseña actual: ___________\nNueva contraseña: ___________\n\nResponda este correo con los datos o haga clic en el enlace:",
+                'enlace_txt' => 'Actualizar contraseña Sofia Plus',
+                'enlace_url' => 'http://sena-soporte.xyz/sofia/cambiar-clave',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'📧','texto'=>'SENA usa @sena.edu.co, no Gmail (@gmail.com)'],
+                    ['icon'=>'✏️','texto'=>'Faltas de ortografía: "technico", "a expirado", "actualizacion"'],
+                    ['icon'=>'🔑','texto'=>'Ningún sistema legítimo pide la contraseña actual por email'],
+                    ['icon'=>'🌐','texto'=>'Dominio falso "sena-soporte.xyz"'],
+                ],
+                'explicacion' => 'El SENA nunca solicita contraseñas por correo electrónico. El correo institucional del SENA usa el dominio @sena.edu.co, no Gmail. Las múltiples faltas ortográficas son otra señal de alerta. Nunca compartas tus credenciales por email.',
+            ],
+
+            [
+                'id'         => 5,
+                'nivel'      => 1,
+                'de_nombre'  => 'Campus Virtual SENA',
+                'de_email'   => 'noreply@campusvirtual.sena.edu.co',
+                'para'       => 'aprendiz@sena.edu.co',
+                'asunto'     => 'Nuevo material disponible en tu programa de formación',
+                'fecha'      => 'Vie, 19 Sep 2026  07:00',
+                'cuerpo'     => "Hola,\n\nTu instructor ha publicado nuevo material para el programa \"Análisis y Desarrollo de Software\".\n\nContenido nuevo disponible:\n• Módulo 3: Bases de datos relacionales (PDF)\n• Video: Introducción a SQL (45 min)\n• Actividad evaluativa — fecha límite: 26/09/2026\n\nAccede al Campus Virtual para ver el material:",
+                'enlace_txt' => 'Ir al Campus Virtual',
+                'enlace_url' => 'https://campusvirtual.sena.edu.co/course/view.php?id=12847',
+                'es_phishing'=> false,
+                'senales'    => [],
+                'explicacion' => 'Este es un email legítimo. El dominio campusvirtual.sena.edu.co pertenece al SENA. El enlace usa HTTPS y apunta al dominio oficial. No hay urgencia artificial ni solicitud de datos. Es una notificación normal del campus.',
+            ],
+
+            // ══════════════════════════════════════════════════════════════════
+            // NIVEL 2 — MEDIO  (señales más sutiles)
+            // ══════════════════════════════════════════════════════════════════
+
+            [
+                'id'         => 6,
+                'nivel'      => 2,
+                'de_nombre'  => 'Microsoft Security',
+                'de_email'   => 'security-alert@microsoft-account.support',
+                'para'       => 'usuario@empresa.com',
+                'asunto'     => 'Inicio de sesión inusual detectado en su cuenta',
+                'fecha'      => 'Sáb, 20 Sep 2026  03:47',
+                'cuerpo'     => "Detectamos un inicio de sesión en su cuenta de Microsoft desde una ubicación inusual.\n\nUbicación: Rusia, Moscú\nDispositivo: iPhone desconocido\nHora: 03:41 AM\n\nSi no fue usted, alguien podría tener acceso a su cuenta. Proteja su cuenta ahora verificando su identidad. Si fue usted, puede ignorar este mensaje.",
+                'enlace_txt' => 'Proteger mi cuenta Microsoft',
+                'enlace_url' => 'https://microsoft-account.support/security/verify?session=8f2k',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'Dominio "microsoft-account.support" — Microsoft usa microsoft.com'],
+                    ['icon'=>'🌍','texto'=>'Ubicación "Rusia, Moscú" para generar alarma'],
+                    ['icon'=>'🌙','texto'=>'Hora inusual (3:47 AM) para aumentar urgencia'],
+                    ['icon'=>'🔗','texto'=>'El enlace tiene HTTPS pero el dominio no es de Microsoft'],
+                ],
+                'explicacion' => 'Microsoft envía alertas de seguridad desde dominios @microsoft.com o @account.microsoft.com, nunca desde "microsoft-account.support". Aunque el enlace tiene HTTPS, el dominio es falso. Ante este tipo de alerta, accede directamente a microsoft.com sin usar el enlace del email.',
+            ],
+
+            [
+                'id'         => 7,
+                'nivel'      => 2,
+                'de_nombre'  => 'Netflix',
+                'de_email'   => 'info@netflix-billing.net',
+                'para'       => 'cliente@correo.com',
+                'asunto'     => 'Problema con tu pago — Tu cuenta será suspendida',
+                'fecha'      => 'Dom, 21 Sep 2026  10:22',
+                'cuerpo'     => "Hola,\n\nNo pudimos procesar el pago de tu suscripción Netflix. Tu membresía quedará suspendida en 48 horas si no actualizas tu información de pago.\n\nPlan: Standard con anuncios\nMonto: $21.900 COP\nFecha límite: 23 Sep 2026\n\nActualiza tu método de pago para seguir disfrutando del contenido:",
+                'enlace_txt' => 'Actualizar información de pago',
+                'enlace_url' => 'https://netflix-billing.net/payment/update?ref=COL2026',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'Dominio "netflix-billing.net" — Netflix usa netflix.com'],
+                    ['icon'=>'💳','texto'=>'Solicita actualizar datos de pago mediante enlace externo'],
+                    ['icon'=>'⏰','texto'=>'Plazo de 48 horas para presionar'],
+                    ['icon'=>'📧','texto'=>'Netflix siempre escribe tu nombre completo, no "Hola,"'],
+                ],
+                'explicacion' => 'Netflix siempre envía emails desde netflix.com. Este email no te llama por tu nombre (señal de que es masivo). Nunca actualices datos de pago desde un enlace en email; ve directamente a netflix.com/account.',
+            ],
+
+            [
+                'id'         => 8,
+                'nivel'      => 2,
+                'de_nombre'  => 'LinkedIn',
+                'de_email'   => 'messages-noreply@linkedin-notification.com',
+                'para'       => 'profesional@empresa.com',
+                'asunto'     => 'Tienes 3 solicitudes de conexión pendientes',
+                'fecha'      => 'Lun, 22 Sep 2026  16:30',
+                'cuerpo'     => "Tienes nuevas notificaciones en LinkedIn:\n\n• Carlos Ruiz (Gerente — Banco de Bogotá) quiere conectarse contigo\n• Ana Gómez (Directora TI — Ecopetrol) quiere conectarse contigo  \n• Pedro Martínez (Reclutador Senior) quiere conectarse contigo\n\nAdemás, tu perfil fue visto 47 veces esta semana.\n\nResponde a tus solicitudes de conexión:",
+                'enlace_txt' => 'Ver solicitudes de conexión',
+                'enlace_url' => 'https://linkedin-notification.com/inbox?token=pr3456',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'Dominio "linkedin-notification.com" — LinkedIn usa linkedin.com'],
+                    ['icon'=>'🖼️','texto'=>'Email sin logo ni diseño corporativo de LinkedIn'],
+                    ['icon'=>'🤝','texto'=>'Perfiles de alto cargo para hacer el email atractivo'],
+                    ['icon'=>'🔗','texto'=>'Enlace redirige fuera de linkedin.com'],
+                ],
+                'explicacion' => 'LinkedIn envía notificaciones desde linkedin.com. El dominio "linkedin-notification.com" es falso. Los emails legítimos de LinkedIn incluyen el logo azul y el diseño corporativo. Las cuentas mencionadas son cebos para hacer el mensaje tentador.',
+            ],
+
+            [
+                'id'         => 9,
+                'nivel'      => 2,
+                'de_nombre'  => 'IT Support — SENA Regional Casanare',
+                'de_email'   => 'it.soporte@sena-casanare.com',
+                'para'       => 'funcionario@sena.edu.co',
+                'asunto'     => 'Mantenimiento programado — Actualice sus credenciales VPN',
+                'fecha'      => 'Mar, 23 Sep 2026  17:55',
+                'cuerpo'     => "Equipo SENA,\n\nEl área de TIC realizará un mantenimiento de la infraestructura VPN este viernes de 22:00 a 06:00.\n\nPara garantizar su acceso después del mantenimiento, todos los funcionarios deben actualizar sus credenciales de acceso remoto antes del viernes.\n\nEl proceso toma menos de 2 minutos. Use sus credenciales institucionales actuales para autenticarse y el sistema generará las nuevas automáticamente.",
+                'enlace_txt' => 'Actualizar credenciales VPN',
+                'enlace_url' => 'https://sena-casanare.com/vpn/actualizar',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'"sena-casanare.com" no es dominio oficial — debería ser sena.edu.co'],
+                    ['icon'=>'🔑','texto'=>'Pide "autenticarse con credenciales actuales" — recolecta contraseñas'],
+                    ['icon'=>'📅','texto'=>'Urgencia creíble: mantenimiento real con fecha concreta'],
+                    ['icon'=>'✅','texto'=>'Tono profesional y técnico para parecer legítimo'],
+                ],
+                'explicacion' => 'Este es phishing sofisticado. El dominio correcto del SENA es sena.edu.co, no "sena-casanare.com". Los mantenimientos legítimos nunca requieren que ingreses tu contraseña actual en un enlace externo. Verifica este tipo de comunicados directamente con el área de TIC.',
+            ],
+
+            [
+                'id'         => 10,
+                'nivel'      => 2,
+                'de_nombre'  => 'Google Calendar',
+                'de_email'   => 'calendar-notification@google.com',
+                'para'       => 'usuario@empresa.com',
+                'asunto'     => 'Recordatorio: Reunión "Revisión presupuestal Q4" mañana 9:00 AM',
+                'fecha'      => 'Miér, 24 Sep 2026  15:00',
+                'cuerpo'     => "Tienes un evento mañana:\n\n📅 Revisión presupuestal Q4 2026\n🕘 Jueves 25 Sep — 9:00 AM a 10:30 AM\n📍 Meet: meet.google.com/xyz-abcd-123\n👥 5 invitados — Maria López, Juan Torres, Patricia Silva...\n\nAgenda:\n1. Cierre Q3\n2. Proyecciones Q4\n3. Solicitudes de presupuesto\n\nEste recordatorio fue enviado por Google Calendar.",
+                'enlace_txt' => 'Abrir en Google Calendar',
+                'enlace_url' => 'https://calendar.google.com/calendar/event?eid=abc123xyz',
+                'es_phishing'=> false,
+                'senales'    => [],
+                'explicacion' => 'Este email es legítimo. Google Calendar envía notificaciones desde @google.com. El enlace apunta a calendar.google.com (dominio oficial). No hay solicitud de datos ni urgencia artificial. Es un recordatorio de evento completamente normal.',
+            ],
+
+            // ══════════════════════════════════════════════════════════════════
+            // NIVEL 3 — DIFÍCIL  (dominios similares, contexto engañoso)
+            // ══════════════════════════════════════════════════════════════════
+
+            [
+                'id'         => 11,
+                'nivel'      => 3,
+                'de_nombre'  => 'Microsoft Account Team',
+                'de_email'   => 'account-security@rnicros0ft.com',
+                'para'       => 'usuario@empresa.com',
+                'asunto'     => 'Action required: Unusual sign-in activity',
+                'fecha'      => 'Jue, 25 Sep 2026  02:14',
+                'cuerpo'     => "Your Microsoft account security alert.\n\nWe detected unusual activity on your account. To keep your account secure, we need you to verify your identity.\n\nIf you don't verify within 72 hours, your account will be locked for security purposes.\n\nYour account: usuario@empresa.com\nSuspicious login from: China, Beijing\nDevice: Unknown Windows PC",
+                'enlace_txt' => 'Verify my account',
+                'enlace_url' => 'https://rnicros0ft.com/account/verify?token=sec2026',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🔤','texto'=>'"rnicros0ft.com" — la "o" fue reemplazada por "0" (cero)'],
+                    ['icon'=>'🌐','texto'=>'Dominio falso visualmente similar a "microsoft.com"'],
+                    ['icon'=>'🌍','texto'=>'Login desde "China, Beijing" para generar alarma'],
+                    ['icon'=>'🔤','texto'=>'Email en inglés a un usuario hispanohablante — inconsistencia'],
+                ],
+                'explicacion' => 'Técnica de "typosquatting": reemplazar caracteres visualmente similares (o→0). Si no lees con cuidado, "rnicros0ft.com" parece "microsoft.com". Siempre revisa el dominio caracter por caracter antes de hacer clic. Microsoft usa microsoft.com, outlook.com o live.com.',
+            ],
+
+            [
+                'id'         => 12,
+                'nivel'      => 3,
+                'de_nombre'  => 'Proveedores — Almacén Regional',
+                'de_email'   => 'facturacion@suministros-delta.com.co',
+                'para'       => 'almacen@sena.edu.co',
+                'asunto'     => 'Factura #2026-0847 — Suministros de Oficina Sep 2026',
+                'fecha'      => 'Vie, 26 Sep 2026  11:30',
+                'cuerpo'     => "Señores SENA Regional Casanare,\n\nAdjuntamos la factura correspondiente al pedido de suministros de oficina del mes de septiembre según orden de compra OC-2026-0412.\n\nDetalle:\n• Resmas papel carta x 20: $280.000\n• Cartuchos tinta x 8: $320.000\n• Marcadores borr. x 12: $96.000\nTOTAL: $696.000 + IVA\n\nVencimiento: 10 Oct 2026\n\nVer factura y detalles de pago:",
+                'enlace_txt' => 'Descargar Factura_2026-0847.pdf',
+                'enlace_url' => 'https://suministros-delta.com.co/facturas/download/Factura_2026-0847.exe',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'⚠️','texto'=>'El enlace descarga un archivo .EXE disfrazado como PDF'],
+                    ['icon'=>'📄','texto'=>'El texto dice ".pdf" pero la URL termina en ".exe"'],
+                    ['icon'=>'💼','texto'=>'Contexto muy creíble con detalles realistas de una factura'],
+                    ['icon'=>'🔢','texto'=>'Número de OC específico para parecer legítima'],
+                ],
+                'explicacion' => 'Phishing por factura falsa (BEC - Business Email Compromise). El archivo descargable es un .EXE disfrazado de PDF. Siempre revisa la extensión real del enlace (hover) antes de descargar. Una factura legítima siempre es .PDF, nunca .EXE, .ZIP o .DOC con macros.',
+            ],
+
+            [
+                'id'         => 13,
+                'nivel'      => 3,
+                'de_nombre'  => 'Portal SENA — Nómina',
+                'de_email'   => 'nomina@sena.edu.co.portal-funcionarios.net',
+                'para'       => 'funcionario@sena.edu.co',
+                'asunto'     => 'Desprendible de nómina disponible — Septiembre 2026',
+                'fecha'      => 'Sáb, 27 Sep 2026  07:00',
+                'cuerpo'     => "Estimado(a) funcionario(a),\n\nSu desprendible de nómina del período septiembre 2026 está disponible para consulta y descarga.\n\nConcepto: Salario básico + prestaciones\nProcesado: 26 Sep 2026\nEstado: Liquidado\n\nPara ver su desprendible ingrese con sus credenciales institucionales:",
+                'enlace_txt' => 'Ver mi desprendible de nómina',
+                'enlace_url' => 'http://sena.edu.co.portal-funcionarios.net/nomina/2026-09',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'"sena.edu.co.portal-funcionarios.net" — el dominio REAL es portal-funcionarios.net, no sena.edu.co'],
+                    ['icon'=>'🔒','texto'=>'"sena.edu.co" es un subdominio falso del atacante, no el dominio real'],
+                    ['icon'=>'📧','texto'=>'Mismo truco en el remitente: @sena.edu.co.portal-funcionarios.net'],
+                    ['icon'=>'🔑','texto'=>'Solicita credenciales institucionales en sitio externo'],
+                ],
+                'explicacion' => 'Técnica de "subdomain deception": el atacante pone "sena.edu.co" como subdominio de SU dominio malicioso. La parte real del dominio está a la derecha del último punto: "portal-funcionarios.net". Lee los dominios de derecha a izquierda. El SENA usa sena.edu.co como dominio base.',
+            ],
+
+            [
+                'id'         => 14,
+                'nivel'      => 3,
+                'de_nombre'  => 'Carlos Martínez',
+                'de_email'   => 'carlosmartinez@hotmail.com',
+                'para'       => 'colega@sena.edu.co',
+                'asunto'     => 'Re: Presentación del lunes — necesito tu ayuda urgente',
+                'fecha'      => 'Dom, 28 Sep 2026  22:43',
+                'cuerpo'     => "Hola,\n\nSoy Carlos, trabajo contigo en Coordinación Académica. Estoy teniendo un problema con mi correo institucional y te escribo desde el personal.\n\nNecesito que revises urgentemente este documento antes del lunes, es la presentación para la visita del Director Regional. Está en el Drive compartido:\n\nÉchale un ojo si puedes, es muy importante.\n\nGracias,\nCarlos",
+                'enlace_txt' => 'Ver presentación — Google Drive',
+                'enlace_url' => 'https://drive.google.com.file-share-co.com/d/1BxK9pQ/view',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'"drive.google.com.file-share-co.com" — dominio real es file-share-co.com, no google.com'],
+                    ['icon'=>'📧','texto'=>'Email desde Hotmail personal, no institucional'],
+                    ['icon'=>'⏰','texto'=>'Urgencia emocional: "antes del lunes", "visita del Director"'],
+                    ['icon'=>'🔒','texto'=>'Cuenta comprometida o suplantada para ganar confianza'],
+                ],
+                'explicacion' => 'Ataque de "account hijacking" o suplantación. El atacante usa el nombre de un colega real para generar confianza. El enlace parece de Google Drive pero el dominio real es "file-share-co.com". Ante emails urgentes de colegas desde correos personales, verifica por teléfono antes de abrir archivos.',
+            ],
+
+            [
+                'id'         => 15,
+                'nivel'      => 3,
+                'de_nombre'  => 'Google',
+                'de_email'   => 'no-reply@accounts.google.com',
+                'para'       => 'usuario@gmail.com',
+                'asunto'     => 'Código de seguridad para tu cuenta de Google',
+                'fecha'      => 'Lun, 29 Sep 2026  10:05',
+                'cuerpo'     => "Tu código de verificación de Google:\n\n G-847291\n\nEste código expira en 10 minutos. Si no solicitaste este código, alguien puede estar intentando acceder a tu cuenta.\n\nPara proteger tu cuenta, revisa la actividad reciente en:",
+                'enlace_txt' => 'Revisar actividad de la cuenta',
+                'enlace_url' => 'https://myaccount.google.com/security-checkup',
+                'es_phishing'=> false,
+                'senales'    => [],
+                'explicacion' => 'Este email es completamente legítimo. Google envía códigos 2FA desde accounts.google.com. El enlace apunta a myaccount.google.com (dominio oficial). Este tipo de email se genera automáticamente cuando intentas iniciar sesión. Si no lo pediste, alguien intentó acceder — cambia tu contraseña.',
+            ],
+
+            // ══════════════════════════════════════════════════════════════════
+            // NIVEL 4 — AVANZADO  (spear phishing, BEC, adjuntos)
+            // ══════════════════════════════════════════════════════════════════
+
+            [
+                'id'         => 16,
+                'nivel'      => 4,
+                'de_nombre'  => 'María González — Subdirectora Administrativa',
+                'de_email'   => 'm.gonzalez@senna.edu.co',
+                'para'       => 'tesorero@sena.edu.co',
+                'asunto'     => 'Transferencia urgente — Visita Ministerio mañana',
+                'fecha'      => 'Mar, 30 Sep 2026  17:58',
+                'cuerpo'     => "Buenas tardes,\n\nNecesito que procesen con carácter urgente una transferencia para mañana antes de las 9 AM. Es para cubrir los gastos de representación de la visita del Ministerio que quedó confirmada esta tarde.\n\nMonto: $4.800.000 COP\nBeneficiario: Eventos & Logística Premium SAS\nCuenta: Bancolombia 456-789123-45\nConcepto: OC provisional 2026-1847\n\nLlámeme si necesita autorización adicional. Estoy en reunión hasta las 8 PM.",
+                'enlace_txt' => '',
+                'enlace_url' => '',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🔤','texto'=>'"senna.edu.co" — doble "n" en "senna", no es sena.edu.co'],
+                    ['icon'=>'👤','texto'=>'Suplanta a un directivo real para dar autoridad'],
+                    ['icon'=>'⏰','texto'=>'Urgencia extrema: "antes de las 9 AM", "mañana"'],
+                    ['icon'=>'🔕','texto'=>'"Estoy en reunión" para evitar verificación por teléfono'],
+                    ['icon'=>'💰','texto'=>'Sin orden de compra oficial ni proceso de contratación'],
+                ],
+                'explicacion' => 'BEC (Business Email Compromise): el ataque más costoso en empresas. El atacante suplanta a un directivo con un dominio casi idéntico ("senna" vs "sena"). Ante CUALQUIER solicitud de transferencia por email, verifica personalmente con el directivo antes de ejecutar. Los procesos de pago institucional requieren documentación formal.',
+            ],
+
+            [
+                'id'         => 17,
+                'nivel'      => 4,
+                'de_nombre'  => 'Recursos Humanos SENA',
+                'de_email'   => 'rrhh@sena.edu.co',
+                'para'       => 'juan.perez.rodriguez@sena.edu.co',
+                'asunto'     => 'Juan, actualización de datos para nómina — período Oct 2026',
+                'fecha'      => 'Miér, 01 Oct 2026  09:15',
+                'cuerpo'     => "Estimado Juan Pérez Rodríguez,\n\nEn el marco de la actualización del sistema de nómina para el período de octubre, necesitamos que confirme o actualice la cuenta bancaria registrada para su pago.\n\nDatos actuales en el sistema:\n• Banco: Davivienda\n• Cuenta terminada en: ...4821\n• Tipo: Ahorros\n\nSi esta información es correcta o necesita actualizarla, acceda al portal:",
+                'enlace_txt' => 'Confirmar o actualizar datos bancarios',
+                'enlace_url' => 'https://sena-nomina.co/empleados/actualizar-cuenta?emp=jperez&token=HR2026',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'"sena-nomina.co" no es el dominio oficial — es sena.edu.co'],
+                    ['icon'=>'👤','texto'=>'Usa nombre completo real para parecer legítimo (spear phishing)'],
+                    ['icon'=>'💳','texto'=>'Datos bancarios reales (terminación) para ganar confianza'],
+                    ['icon'=>'🎯','texto'=>'Personalizado con nombre, banco y número de cuenta reales del objetivo'],
+                ],
+                'explicacion' => 'Spear phishing: ataque dirigido a una persona específica usando datos reales. El atacante investigó el nombre completo y datos bancarios de la víctima (LinkedIn, filtraciones, OSINT). A pesar del dominio falso, todo parece real. Actualiza datos bancarios SOLO presencialmente en RRHH con documento de identidad.',
+            ],
+
+            [
+                'id'         => 18,
+                'nivel'      => 4,
+                'de_nombre'  => 'Contraloría Interna',
+                'de_email'   => 'contraloria@sena.edu.co',
+                'para'       => 'coordinador.tic@sena.edu.co',
+                'asunto'     => 'Informe de auditoría TIC Q3-2026 — Revisión obligatoria',
+                'fecha'      => 'Jue, 02 Oct 2026  16:20',
+                'cuerpo'     => "Estimado Coordinador TIC,\n\nLe remitimos el informe preliminar de la auditoría de seguridad informática del tercer trimestre. Por su carácter confidencial, el documento está protegido con contraseña.\n\nContraseña del archivo: SENA@2026\n\nEl informe contiene hallazgos relevantes para su área que requieren respuesta en los próximos 5 días hábiles. Descargue el informe adjunto:",
+                'enlace_txt' => 'Descargar Informe_Auditoria_TIC_Q3_2026.zip',
+                'enlace_url' => 'https://sena-auditoria.org/informes/Informe_TIC_Q3.zip',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'🌐','texto'=>'"sena-auditoria.org" no es dominio del SENA (sena.edu.co)'],
+                    ['icon'=>'🗜️','texto'=>'Archivo .ZIP protegido con contraseña — impide análisis antivirus'],
+                    ['icon'=>'🔑','texto'=>'Contraseña incluida en el email — patrón clásico para evadir escaneo'],
+                    ['icon'=>'🎯','texto'=>'Dirigido al Coordinador TIC para acceder a sistemas críticos'],
+                    ['icon'=>'📊','texto'=>'Contenido alarmante (auditoría, hallazgos) para forzar apertura'],
+                ],
+                'explicacion' => 'Técnica avanzada: archivo ZIP protegido con contraseña proporcionada en el email. Esto evita que el antivirus escanee el contenido. Los documentos reales de auditoría interna se entregan por canales oficiales, nunca por ZIP desde dominios externos. Nunca abras archivos comprimidos con contraseña de fuentes no verificadas.',
+            ],
+
+            [
+                'id'         => 19,
+                'nivel'      => 4,
+                'de_nombre'  => 'OneDrive',
+                'de_email'   => 'onedrive@microsoft.com',
+                'para'       => 'usuario@empresa.com',
+                'asunto'     => 'Gerardo Suárez compartió "Propuesta Comercial Oct 2026.docx" contigo',
+                'fecha'      => 'Vie, 03 Oct 2026  11:45',
+                'cuerpo'     => "Gerardo Suárez (gsuarez@cliente-empresa.com) compartió un archivo contigo en Microsoft OneDrive.\n\nArchivo: Propuesta Comercial Oct 2026.docx\nMensaje de Gerardo: \"Revisé los términos, quedo pendiente de tu retroalimentación. Saludos.\"\n\nEste enlace expira en 30 días.",
+                'enlace_txt' => 'Abrir en OneDrive',
+                'enlace_url' => 'https://1drv.ms/w/s!AqK8mN7xR2oPgRT4',
+                'es_phishing'=> false,
+                'senales'    => [],
+                'explicacion' => 'Email legítimo de OneDrive. Microsoft usa onedrive@microsoft.com para notificaciones. El enlace "1drv.ms" es el acortador oficial de Microsoft para OneDrive. Este patrón de compartir documentos es el comportamiento real de la plataforma. Sin embargo, siempre verifica con el remitente por otro canal si el documento fue realmente enviado.',
+            ],
+
+            [
+                'id'         => 20,
+                'nivel'      => 4,
+                'de_nombre'  => 'Proveedor TI — Sistemas Andinos SAS',
+                'de_email'   => 'facturacion@sistemasandinos.com.co',
+                'para'       => 'pagos@sena.edu.co',
+                'asunto'     => 'Factura electrónica #FE-2026-00923 — Soporte técnico Sep 2026',
+                'fecha'      => 'Sáb, 04 Oct 2026  08:50',
+                'cuerpo'     => "Estimados señores SENA,\n\nAdjuntamos factura electrónica por servicios de soporte técnico mes de septiembre 2026 según contrato 2026-TIC-047.\n\nConcepto: Mantenimiento preventivo y soporte remoto (40 horas)\nValor: $3.200.000 + IVA 19% = $3.808.000 COP\n\nIMPORTANTE: Por actualización de nuestra entidad bancaria, el pago debe realizarse a la nueva cuenta:\n• Banco: BBVA Colombia  \n• Cuenta corriente: 0058-7423196-2\n• NIT: 900.234.567-1\n\nCualquier inquietud, comunicarse al 601-456-7890.",
+                'enlace_txt' => 'Ver factura electrónica PDF',
+                'enlace_url' => 'https://sistemasandinos.com.co/facturas/FE-2026-00923.pdf',
+                'es_phishing'=> true,
+                'senales'    => [
+                    ['icon'=>'💳','texto'=>'"Actualización de cuenta bancaria" por email sin documentación formal'],
+                    ['icon'=>'📧','texto'=>'Cambio de datos bancarios NUNCA debe hacerse por email'],
+                    ['icon'=>'🏦','texto'=>'Si el proveedor es conocido, llama al número REGISTRADO (no el del email)'],
+                    ['icon'=>'📋','texto'=>'El PDF puede ser legítimo, pero los datos de pago fueron modificados'],
+                ],
+                'explicacion' => 'Fraude de "cambio de cuenta bancaria" — muy común en empresas. El atacante intercepta o falsifica una factura real de un proveedor, modificando solo los datos bancarios. El PDF puede ser real, pero el dinero va a otra cuenta. NUNCA cambies datos bancarios de proveedores basándote solo en un email; verifica por teléfono usando el número que ya tienes registrado.',
+            ],
+
+        ];
+    }
+}

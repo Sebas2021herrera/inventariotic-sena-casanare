@@ -15,6 +15,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IntuneController;
 use App\Http\Controllers\SoftwareController;
 use App\Http\Controllers\ConectividadController;
+use App\Http\Controllers\PhishingController;
 // 1. RAIZ DEL ALIAS: Cuando el técnico entra a .../gitic/
 Route::get('/', function () {
     return auth()->check()
@@ -33,6 +34,15 @@ Route::prefix('sgspi')->name('sgspi.')->group(function () {
     Route::post('/finalizar',              [SgspiController::class, 'finalizar'])->name('finalizar');
     Route::get('/resultado/{resultado}',   [SgspiController::class, 'resultado'])->name('resultado');
     Route::get('/instrucciones',           [SgspiController::class, 'instrucciones'])->name('instrucciones');
+
+    // Phishing Game
+    Route::prefix('phishing')->name('phishing.')->group(function () {
+        Route::get('/',                 [PhishingController::class, 'index'])->name('index');
+        Route::post('/registrar',       [PhishingController::class, 'registrar'])->name('registrar');
+        Route::get('/jugar',            [PhishingController::class, 'jugar'])->name('jugar');
+        Route::post('/finalizar',       [PhishingController::class, 'finalizar'])->name('finalizar');
+        Route::get('/resultado/{resultado}', [PhishingController::class, 'resultado'])->name('resultado');
+    });
 });
 
 // 3. RUTAS DE AUTENTICACIÓN (Sin prefijo gitic porque Apache ya lo da)
@@ -117,7 +127,10 @@ Route::middleware(['auth'])->group(function () {
     // Solo admin
     Route::middleware('admin')->group(function () {
         Route::resource('usuarios', UsuarioController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
-        Route::get('/sgspi/admin/resultados',       [SgspiController::class, 'adminResultados'])->name('sgspi.admin.resultados');
+        Route::get('/sgspi/phishing/admin',                [PhishingController::class, 'adminResultados'])->name('sgspi.phishing.admin');
+        Route::get('/sgspi/phishing/admin/configuracion', [PhishingController::class, 'adminConfig'])->name('sgspi.phishing.admin.config');
+        Route::put('/sgspi/phishing/admin/configuracion', [PhishingController::class, 'adminConfigUpdate'])->name('sgspi.phishing.admin.config.update');
+        Route::get('/sgspi/admin/resultados',             [SgspiController::class, 'adminResultados'])->name('sgspi.admin.resultados');
         Route::get('/sgspi/admin/configuracion',    [SgspiController::class, 'adminConfig'])->name('sgspi.admin.config');
         Route::put('/sgspi/admin/configuracion',    [SgspiController::class, 'adminConfigUpdate'])->name('sgspi.admin.config.update');
 
