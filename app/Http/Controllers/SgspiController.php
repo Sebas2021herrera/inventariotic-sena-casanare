@@ -9,6 +9,7 @@ use App\Models\SgspiConfig;
 use App\Models\PhishingConfig;
 use App\Models\PhishingResultado;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SgspiController extends Controller
 {
@@ -230,13 +231,29 @@ class SgspiController extends Controller
     }
 
     // ── Admin: listado de resultados ──────────────────────────────────────────
-    public function adminResultados()
+    public function adminResultados(\Illuminate\Http\Request $request)
     {
         $resultadosBuscaminas = SgspiResultado::with('participante')
             ->latest()->paginate(25, ['*'], 'bm');
 
+        $columnasP = [
+            'nombre'    => 'phishing_participantes.nombre',
+            'area'      => 'phishing_participantes.area',
+            'puntaje'   => 'phishing_resultados.puntaje',
+            'correctas' => 'phishing_resultados.correctas',
+            'bonus'     => 'phishing_resultados.bonus',
+            'nivel'     => 'phishing_resultados.nivel_alcanzado',
+            'fecha'     => 'phishing_resultados.created_at',
+        ];
+        $sortByP  = array_key_exists($request->sort_p ?? '', $columnasP) ? $request->sort_p  : 'fecha';
+        $sortDirP = in_array(strtolower($request->dir_p ?? ''), ['asc','desc']) ? strtolower($request->dir_p) : 'desc';
+
         $resultadosPhishing = PhishingResultado::with('participante')
-            ->latest()->paginate(25, ['*'], 'ph');
+            ->join('phishing_participantes', 'phishing_participantes.id', '=', 'phishing_resultados.participante_id')
+            ->select('phishing_resultados.*')
+            ->orderBy($columnasP[$sortByP], $sortDirP)
+            ->paginate(25, ['*'], 'ph')
+            ->withQueryString();
 
         $statsBuscaminas = [
             'total'      => SgspiResultado::count(),
@@ -249,7 +266,8 @@ class SgspiController extends Controller
 
         return view('sgspi.admin.resultados', compact(
             'resultadosBuscaminas', 'resultadosPhishing',
-            'statsBuscaminas', 'statsPhishing'
+            'statsBuscaminas', 'statsPhishing',
+            'sortByP', 'sortDirP'
         ));
     }
 
@@ -287,5 +305,56 @@ class SgspiController extends Controller
 
         return redirect()->route('sgspi.admin.config')
             ->with('success', 'Configuración actualizada correctamente.');
+    }
+
+    // ── Informe PDF Buscaminas ────────────────────────────────────────────────
+    public function reporteBuscaminasPdf()
+    {
+        $resultados = SgspiResultado::with('participante')
+            ->orderByDesc('puntaje')
+            ->get();
+
+        $stats = [
+            'total'       => $resultados->count(),
+            'prom_score'  => round($resultados->avg('puntaje') ?? 0),
+            'prom_pct'    => round(
+                $resultados->filter(fn($r) => $r->total > 0)
+                    ->avg(fn($r) => ($r->correctas / $r->total) * 100) ?? 0
+            ),
+            'mejor_score' => $resultados->max('puntaje') ?? 0,
+        ];
+
+        $pdf = Pdf::loadView('sgspi.admin.reporte_buscaminas_pdf', compact('resultados', 'stats'));
+        $pdf->setPaper('A4', 'portrait');
+
+        $fecha = now()->format('Y-m-d');
+        return $pdf->download("SGSPI_Buscaminas_{$fecha}.pdf");
+    }
+
+    // ── Informe PDF Phishing ──────────────────────────────────────────────────
+    public function reportePhishingPdf()
+    {
+        $resultados = PhishingResultado::with('participante')
+            ->orderByDesc('puntaje')
+            ->get();
+
+        $config = PhishingConfig::get();
+
+        $stats = [
+            'total'        => $resultados->count(),
+            'prom_score'   => round($resultados->avg('puntaje') ?? 0),
+            'prom_pct'     => round(
+                $resultados->filter(fn($r) => $r->total > 0)
+                    ->avg(fn($r) => ($r->correctas / $r->total) * 100) ?? 0
+            ),
+            'total_bonus'  => $resultados->sum('bonus'),
+            'mejor_score'  => $resultados->max('puntaje') ?? 0,
+        ];
+
+        $pdf = Pdf::loadView('sgspi.phishing.reporte_phishing_pdf', compact('resultados', 'stats', 'config'));
+        $pdf->setPaper('A4', 'landscape');
+
+        $fecha = now()->format('Y-m-d');
+        return $pdf->download("SGSPI_Phishing_{$fecha}.pdf");
     }
 }

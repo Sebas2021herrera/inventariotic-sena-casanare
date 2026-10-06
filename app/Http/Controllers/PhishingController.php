@@ -105,11 +105,27 @@ class PhishingController extends Controller
     }
 
     // Admin: resultados
-    public function adminResultados()
+    public function adminResultados(\Illuminate\Http\Request $request)
     {
+        $columnas = [
+            'nombre'    => 'phishing_participantes.nombre',
+            'area'      => 'phishing_participantes.area',
+            'puntaje'   => 'phishing_resultados.puntaje',
+            'correctas' => 'phishing_resultados.correctas',
+            'bonus'     => 'phishing_resultados.bonus',
+            'nivel'     => 'phishing_resultados.nivel_alcanzado',
+            'fecha'     => 'phishing_resultados.created_at',
+        ];
+
+        $sortBy  = array_key_exists($request->sort ?? '', $columnas) ? $request->sort  : 'fecha';
+        $sortDir = in_array(strtolower($request->dir ?? ''), ['asc','desc'])  ? strtolower($request->dir) : 'desc';
+
         $resultados = PhishingResultado::with('participante')
-            ->latest()
-            ->paginate(30);
+            ->join('phishing_participantes', 'phishing_participantes.id', '=', 'phishing_resultados.participante_id')
+            ->select('phishing_resultados.*')
+            ->orderBy($columnas[$sortBy], $sortDir)
+            ->paginate(30)
+            ->withQueryString();
 
         $stats = [
             'total'      => PhishingResultado::count(),
@@ -122,7 +138,7 @@ class PhishingController extends Controller
         $config      = PhishingConfig::get();
         $totalBanco  = count(PhishingScenarios::all());
 
-        return view('sgspi.phishing.admin', compact('resultados', 'stats', 'config', 'totalBanco'));
+        return view('sgspi.phishing.admin', compact('resultados', 'stats', 'config', 'totalBanco', 'sortBy', 'sortDir'));
     }
 
     // Admin: ver y editar configuración

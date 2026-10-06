@@ -4,11 +4,15 @@
 
 @php
     $activeFilters = collect([
-        'estado'    => request('estado'),
-        'categoria' => request('categoria'),
-        'intune'    => request('intune'),
-        'sede'      => request('sede'),
-        'software'  => request('software'),
+        'estado'      => request('estado'),
+        'categoria'   => request('categoria'),
+        'tipo_equipo' => request('tipo_equipo'),
+        'intune'      => request('intune'),
+        'sede'        => request('sede'),
+        'software'    => request('software'),
+        'tecnico_id'  => request('tecnico_id'),
+        'fecha_desde' => request('fecha_desde'),
+        'fecha_hasta' => request('fecha_hasta'),
     ])->filter()->count();
 
     $estadoConfig = [
@@ -102,12 +106,19 @@
 
             {{-- CABECERA --}}
             <div class="p-5 border-b border-gray-100 space-y-3">
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center gap-3 flex-wrap">
                     <h2 class="font-black text-gray-700 uppercase tracking-wider text-sm">Inventario de Equipos</h2>
-                    <a href="{{ route('dispositivos.create') }}"
-                        class="bg-[#39A900] text-white px-4 py-2 rounded-xl text-xs font-black hover:bg-green-700 transition shadow flex items-center gap-2">
-                        <i class="fas fa-plus"></i> Agregar
-                    </a>
+                    <div class="flex gap-2 flex-wrap">
+                        <a href="{{ route('dispositivos.exportar-tecnico', ['tecnico_id' => auth()->id()]) }}"
+                           class="flex items-center gap-2 bg-emerald-50 hover:bg-emerald-600 border border-emerald-300 hover:border-emerald-600 text-emerald-700 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition"
+                           title="Descargar en Excel los equipos que tú has registrado">
+                            <i class="fas fa-file-excel"></i> Mi Inventario
+                        </a>
+                        <a href="{{ route('dispositivos.create') }}"
+                            class="bg-[#39A900] text-white px-4 py-2 rounded-xl text-xs font-black hover:bg-green-700 transition shadow flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Agregar
+                        </a>
+                    </div>
                 </div>
 
                 {{-- BUSCADOR + BOTÓN FILTROS --}}
@@ -141,11 +152,15 @@
                         @endif
 
                         {{-- Campos ocultos para filtros activos --}}
-                        <input type="hidden" name="estado"    id="h_estado"    value="{{ request('estado') }}">
-                        <input type="hidden" name="categoria" id="h_categoria" value="{{ request('categoria') }}">
-                        <input type="hidden" name="intune"    id="h_intune"    value="{{ request('intune') }}">
-                        <input type="hidden" name="sede"      id="h_sede"      value="{{ request('sede') }}">
-                        <input type="hidden" name="software"  id="h_software"  value="{{ request('software') }}">
+                        <input type="hidden" name="estado"      id="h_estado"      value="{{ request('estado') }}">
+                        <input type="hidden" name="categoria"   id="h_categoria"   value="{{ request('categoria') }}">
+                        <input type="hidden" name="intune"      id="h_intune"      value="{{ request('intune') }}">
+                        <input type="hidden" name="sede"        id="h_sede"        value="{{ request('sede') }}">
+                        <input type="hidden" name="software"    id="h_software"    value="{{ request('software') }}">
+                        <input type="hidden" name="tipo_equipo" id="h_tipo_equipo" value="{{ request('tipo_equipo') }}">
+                        <input type="hidden" name="tecnico_id"  id="h_tecnico_id"  value="{{ request('tecnico_id') }}">
+                        <input type="hidden" name="fecha_desde" id="h_fecha_desde" value="{{ request('fecha_desde') }}">
+                        <input type="hidden" name="fecha_hasta" id="h_fecha_hasta" value="{{ request('fecha_hasta') }}">
                     </div>
 
                     {{-- PANEL DE FILTROS (colapsable) --}}
@@ -174,6 +189,17 @@
                         </div>
 
                         <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Tipo de Equipo</label>
+                            <select id="sel_tipo_equipo" onchange="aplicarFiltro('h_tipo_equipo', this.value)"
+                                class="w-full text-xs font-bold border border-gray-200 rounded-lg px-2 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#39A900]">
+                                <option value="">Todos</option>
+                                @foreach($tiposEquipo as $t)
+                                    <option value="{{ $t }}" {{ request('tipo_equipo') === $t ? 'selected' : '' }}>{{ $t }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Intune</label>
                             <select id="sel_intune" onchange="aplicarFiltro('h_intune', this.value)"
                                 class="w-full text-xs font-bold border border-gray-200 rounded-lg px-2 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#39A900]">
@@ -194,6 +220,33 @@
                             </select>
                         </div>
 
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Técnico (Registrado por)</label>
+                            <select id="sel_tecnico_id" onchange="aplicarFiltro('h_tecnico_id', this.value)"
+                                class="w-full text-xs font-bold border border-gray-200 rounded-lg px-2 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#39A900]">
+                                <option value="">Todos los técnicos</option>
+                                @foreach($tecnicos as $t)
+                                    <option value="{{ $t->id }}" {{ request('tecnico_id') == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Fecha registro desde</label>
+                            <input type="date" id="sel_fecha_desde"
+                                   value="{{ request('fecha_desde') }}"
+                                   onchange="aplicarFiltro('h_fecha_desde', this.value)"
+                                   class="w-full text-xs font-bold border border-gray-200 rounded-lg px-2 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#39A900]">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Fecha registro hasta</label>
+                            <input type="date" id="sel_fecha_hasta"
+                                   value="{{ request('fecha_hasta') }}"
+                                   onchange="aplicarFiltro('h_fecha_hasta', this.value)"
+                                   class="w-full text-xs font-bold border border-gray-200 rounded-lg px-2 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#39A900]">
+                        </div>
+
                         <div class="col-span-2 md:col-span-4">
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Software Instalado</label>
                             <input type="text" id="sel_software"
@@ -201,6 +254,15 @@
                                    value="{{ request('software') }}"
                                    oninput="aplicarFiltroTexto('h_software', this.value)"
                                    class="w-full text-xs font-bold border border-gray-200 rounded-lg px-2 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#39A900]">
+                        </div>
+
+                        {{-- Botón Exportar Excel con filtros activos --}}
+                        <div class="col-span-2 md:col-span-4 flex justify-end pt-1 border-t border-gray-200">
+                            <a id="btn-exportar-tecnico"
+                               href="{{ route('dispositivos.exportar-tecnico', request()->only(['search','estado','categoria','intune','sede','software','tecnico_id','fecha_desde','fecha_hasta'])) }}"
+                               class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black px-5 py-2 rounded-xl text-xs uppercase tracking-widest transition shadow-sm">
+                                <i class="fas fa-file-excel"></i> Exportar Excel
+                            </a>
                         </div>
                     </div>
                 </form>
@@ -218,6 +280,11 @@
                                 Categoría: {{ ucfirst(request('categoria')) }}
                             </span>
                         @endif
+                        @if(request('tipo_equipo'))
+                            <span class="inline-flex items-center gap-1 bg-violet-100 text-violet-700 text-[10px] font-black px-2 py-1 rounded-full">
+                                Tipo: {{ request('tipo_equipo') }}
+                            </span>
+                        @endif
                         @if(request('intune'))
                             <span class="inline-flex items-center gap-1 bg-cyan-100 text-cyan-700 text-[10px] font-black px-2 py-1 rounded-full">
                                 Intune: {{ request('intune') }}
@@ -231,6 +298,22 @@
                         @if(request('software'))
                             <span class="inline-flex items-center gap-1 bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-1 rounded-full">
                                 <i class="fas fa-boxes text-[8px]"></i> Software: {{ request('software') }}
+                            </span>
+                        @endif
+                        @if(request('tecnico_id'))
+                            @php $tecNombre = $tecnicos->firstWhere('id', request('tecnico_id'))?->name ?? 'Técnico'; @endphp
+                            <span class="inline-flex items-center gap-1 bg-purple-100 text-purple-700 text-[10px] font-black px-2 py-1 rounded-full">
+                                <i class="fas fa-user-cog text-[8px]"></i> Técnico: {{ $tecNombre }}
+                            </span>
+                        @endif
+                        @if(request('fecha_desde'))
+                            <span class="inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-[10px] font-black px-2 py-1 rounded-full">
+                                <i class="fas fa-calendar text-[8px]"></i> Desde: {{ request('fecha_desde') }}
+                            </span>
+                        @endif
+                        @if(request('fecha_hasta'))
+                            <span class="inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-[10px] font-black px-2 py-1 rounded-full">
+                                <i class="fas fa-calendar text-[8px]"></i> Hasta: {{ request('fecha_hasta') }}
                             </span>
                         @endif
                         <span class="text-[10px] text-gray-400 font-bold self-center">
@@ -409,8 +492,24 @@ document.getElementById('toggleFiltros').addEventListener('click', function () {
 // Aplicar filtro desde select y enviar formulario
 function aplicarFiltro(hiddenId, value) {
     document.getElementById(hiddenId).value = value;
+    actualizarBtnExportar();
     document.getElementById('filtroForm').submit();
 }
+
+// Actualiza el href del botón exportar con los parámetros del formulario
+function actualizarBtnExportar() {
+    const base = "{{ route('dispositivos.exportar-tecnico') }}";
+    const params = new URLSearchParams();
+    ['h_estado','h_categoria','h_tipo_equipo','h_intune','h_sede','h_software','h_tecnico_id','h_fecha_desde','h_fecha_hasta'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value) params.set(id.replace('h_', ''), el.value);
+    });
+    const search = document.getElementById('searchInput');
+    if (search && search.value) params.set('search', search.value);
+    const btn = document.getElementById('btn-exportar-tecnico');
+    if (btn) btn.href = base + (params.toString() ? '?' + params.toString() : '');
+}
+document.addEventListener('DOMContentLoaded', actualizarBtnExportar);
 
 // Filtro de texto con debounce (para el campo de software)
 let _textFiltroTimer;

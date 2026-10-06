@@ -13,6 +13,8 @@ use App\Imports\InventarioSenaImport; // Esto le dice a Laravel dónde buscar la
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use App\Exports\PlantillaInventarioExport;
+use App\Exports\DispositivoTecnicoExport;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -22,12 +24,16 @@ class DispositivoController extends Controller
 
     public function index(Request $request)
     {
-        $search    = $request->input('search');
-        $estado    = $request->input('estado');
-        $categoria = $request->input('categoria');
-        $intune    = $request->input('intune');
-        $sede      = $request->input('sede');
-        $software  = $request->input('software');
+        $search      = $request->input('search');
+        $estado      = $request->input('estado');
+        $categoria   = $request->input('categoria');
+        $tipo_equipo = $request->input('tipo_equipo');
+        $intune      = $request->input('intune');
+        $sede        = $request->input('sede');
+        $software    = $request->input('software');
+        $tecnico_id  = $request->input('tecnico_id');
+        $fecha_desde = $request->input('fecha_desde');
+        $fecha_hasta = $request->input('fecha_hasta');
 
         $query = Dispositivo::with(['responsable', 'ubicacion', 'editor', 'creador']);
 
@@ -39,14 +45,18 @@ class DispositivoController extends Controller
             });
         }
 
-        if ($estado)    $query->where('estado_fisico', $estado);
-        if ($categoria) $query->where('categoria', $categoria);
-        if ($intune)    $query->where('en_intune', $intune);
-        if ($sede)      $query->whereHas('ubicacion.sede', fn ($q) => $q->where('nombre', 'LIKE', "%{$sede}%"));
-        if ($software)  $query->whereHas('softwareInstalado.software', function ($q) use ($software) {
+        if ($estado)      $query->where('estado_fisico', $estado);
+        if ($categoria)   $query->where('categoria', $categoria);
+        if ($tipo_equipo) $query->where('tipo_equipo', $tipo_equipo);
+        if ($intune)      $query->where('en_intune', $intune);
+        if ($sede)        $query->whereHas('ubicacion.sede', fn ($q) => $q->where('nombre', 'LIKE', "%{$sede}%"));
+        if ($software)    $query->whereHas('softwareInstalado.software', function ($q) use ($software) {
             $q->where('nombre', 'ILIKE', "%{$software}%")
               ->orWhere('subproducto', 'ILIKE', "%{$software}%");
         });
+        if ($tecnico_id)  $query->where('created_by', $tecnico_id);
+        if ($fecha_desde) $query->whereDate('created_at', '>=', $fecha_desde);
+        if ($fecha_hasta) $query->whereDate('created_at', '<=', $fecha_hasta);
 
         $dispositivos = $query->orderBy('updated_at', 'desc')
             ->paginate(15)
@@ -59,11 +69,13 @@ class DispositivoController extends Controller
             'red'      => Dispositivo::where('categoria', 'conectividad')->count(),
         ];
 
-        $sedes      = Sede::orderBy('nombre')->pluck('nombre');
-        $estados    = Dispositivo::distinct()->whereNotNull('estado_fisico')->orderBy('estado_fisico')->pluck('estado_fisico');
-        $categorias = Dispositivo::distinct()->whereNotNull('categoria')->orderBy('categoria')->pluck('categoria');
+        $sedes       = Sede::orderBy('nombre')->pluck('nombre');
+        $estados     = Dispositivo::distinct()->whereNotNull('estado_fisico')->orderBy('estado_fisico')->pluck('estado_fisico');
+        $categorias  = Dispositivo::distinct()->whereNotNull('categoria')->orderBy('categoria')->pluck('categoria');
+        $tiposEquipo = Dispositivo::distinct()->whereNotNull('tipo_equipo')->orderBy('tipo_equipo')->pluck('tipo_equipo');
+        $tecnicos    = User::orderBy('name')->get(['id', 'name']);
 
-        return view('dispositivos.index', compact('dispositivos', 'stats', 'sedes', 'estados', 'categorias'));
+        return view('dispositivos.index', compact('dispositivos', 'stats', 'sedes', 'estados', 'categorias', 'tiposEquipo', 'tecnicos'));
     }
 
 
@@ -215,7 +227,14 @@ public function store(Request $request)
                 }
             }
 
-            // 7. CUENTA INTUNE: si es ADMINISTRATIVO y se proporcionó correo
+            // 7. CUENTA INTUNE: sincronizar estado de cuentas existentes (ej: importadas masivamente)
+            if ($request->filled('en_intune')) {
+                $estadoIntune = $request->en_intune === 'SI' ? 'activa' : 'pendiente';
+                \App\Models\IntuneCuenta::where('placa', $dispositivo->placa)
+                    ->update(['estado' => $estadoIntune]);
+            }
+
+            // 7b. CUENTA INTUNE usuario: crear si es ADMINISTRATIVO con correo
             if (($request->funcion ?? 'FORMACION') === 'ADMINISTRATIVO' && $request->filled('correo_intune')) {
                 \App\Models\IntuneCuenta::updateOrCreate(
                     ['placa' => $dispositivo->placa, 'tipo' => 'usuario'],
@@ -552,7 +571,21 @@ public function verificarSerial($serial)
     ]);
 }
 
+    public function exportarTecnico(Request $request)
+    {
+        $export = new DispositivoTecnicoExport(
+            tecnico_id:  $request->input('tecnico_id')  ?: null,
+            estado:      $request->input('estado')       ?: null,
+            categoria:   $request->input('categoria')    ?: null,
+            tipo_equipo: $request->input('tipo_equipo')  ?: null,
+            sede:        $request->input('sede')         ?: null,
+            intune:      $request->input('intune')       ?: null,
+            fecha_desde: $request->input('fecha_desde')  ?: null,
+            fecha_hasta: $request->input('fecha_hasta')  ?: null,
+            search:      $request->input('search')       ?: null,
+        );
 
-
-
+        $fecha = now()->format('Y-m-d');
+        return Excel::download($export, "Consolidado_Tecnico_{$fecha}.xlsx");
+    }
 }

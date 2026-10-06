@@ -19,6 +19,14 @@
                class="flex items-center gap-2 bg-[#1e3a5f]/10 hover:bg-[#1e3a5f]/20 text-[#1e3a5f] font-black px-4 py-2.5 rounded-xl transition text-xs uppercase tracking-widest">
                 <i class="fas fa-fish"></i> Config Phishing
             </a>
+            <a href="{{ route('sgspi.admin.pdf.buscaminas') }}" target="_blank"
+               class="flex items-center gap-2 bg-[#39A900]/10 hover:bg-[#39A900]/20 text-[#39A900] font-black px-4 py-2.5 rounded-xl transition text-xs uppercase tracking-widest">
+                <i class="fas fa-file-pdf"></i> PDF Buscaminas
+            </a>
+            <a href="{{ route('sgspi.admin.pdf.phishing') }}" target="_blank"
+               class="flex items-center gap-2 bg-[#1e3a5f]/10 hover:bg-[#1e3a5f]/20 text-[#1e3a5f] font-black px-4 py-2.5 rounded-xl transition text-xs uppercase tracking-widest">
+                <i class="fas fa-file-pdf"></i> PDF Phishing
+            </a>
             <a href="{{ route('sgspi.index') }}" target="_blank"
                class="flex items-center gap-2 sena-bg text-white font-black px-4 py-2.5 rounded-xl transition text-xs uppercase tracking-widest hover:opacity-90">
                 <i class="fas fa-external-link-alt"></i> Ver Módulo
@@ -105,21 +113,62 @@
     </div>
 
     {{-- ── Tab Phishing ───────────────────────────────────────────────────── --}}
+    @php
+    $sortUrlP = fn(string $col) => request()->fullUrlWithQuery([
+        'sort_p' => $col,
+        'dir_p'  => ($sortByP === $col && $sortDirP === 'asc') ? 'desc' : 'asc',
+        'ph'     => 1,
+    ]) . '#phishing';
+    $sortIconP = function(string $col) use ($sortByP, $sortDirP): string {
+        if ($sortByP !== $col) return '<i class="fas fa-sort opacity-30 ml-1 text-[8px]"></i>';
+        return $sortDirP === 'asc'
+            ? '<i class="fas fa-sort-up ml-1 text-[9px] text-yellow-300"></i>'
+            : '<i class="fas fa-sort-down ml-1 text-[9px] text-yellow-300"></i>';
+    };
+    @endphp
     <div id="tab-phishing" class="hidden">
         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <table class="w-full text-sm">
                 <thead>
                     <tr class="bg-[#1e3a5f] text-white text-[10px] font-black uppercase tracking-widest">
                         <th class="px-5 py-3 text-left">#</th>
-                        <th class="px-5 py-3 text-left">Participante</th>
+                        <th class="px-5 py-3 text-left">
+                            <a href="{{ $sortUrlP('nombre') }}" class="flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                                Participante {!! $sortIconP('nombre') !!}
+                            </a>
+                        </th>
                         <th class="px-5 py-3 text-left">Documento</th>
-                        <th class="px-5 py-3 text-left">Área</th>
-                        <th class="px-5 py-3 text-center">Pts</th>
-                        <th class="px-5 py-3 text-center">Correctas</th>
-                        <th class="px-5 py-3 text-center">Bonus</th>
-                        <th class="px-5 py-3 text-center">Nivel</th>
+                        <th class="px-5 py-3 text-left">
+                            <a href="{{ $sortUrlP('area') }}" class="flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                                Área {!! $sortIconP('area') !!}
+                            </a>
+                        </th>
+                        <th class="px-5 py-3 text-center">
+                            <a href="{{ $sortUrlP('puntaje') }}" class="inline-flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                                Pts {!! $sortIconP('puntaje') !!}
+                            </a>
+                        </th>
+                        <th class="px-5 py-3 text-center">
+                            <a href="{{ $sortUrlP('correctas') }}" class="inline-flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                                Correctas {!! $sortIconP('correctas') !!}
+                            </a>
+                        </th>
+                        <th class="px-5 py-3 text-center">
+                            <a href="{{ $sortUrlP('bonus') }}" class="inline-flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                                Bonus {!! $sortIconP('bonus') !!}
+                            </a>
+                        </th>
+                        <th class="px-5 py-3 text-center">
+                            <a href="{{ $sortUrlP('nivel') }}" class="inline-flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                                Nivel {!! $sortIconP('nivel') !!}
+                            </a>
+                        </th>
                         <th class="px-5 py-3 text-center">%</th>
-                        <th class="px-5 py-3 text-left">Fecha</th>
+                        <th class="px-5 py-3 text-left">
+                            <a href="{{ $sortUrlP('fecha') }}" class="flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                                Fecha {!! $sortIconP('fecha') !!}
+                            </a>
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">

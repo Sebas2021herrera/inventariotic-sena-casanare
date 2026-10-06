@@ -62,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/responsables/{responsable}/reporte-pdf', [ResponsableController::class, 'reportePDF'])->name('responsables.reporte-pdf');
     Route::get('/dispositivos/verificar-placa/{placa}', [DispositivoController::class, 'verificarPlaca'])->name('dispositivos.verificar');
     Route::get('/dispositivos/verificar-serial/{serial}', [DispositivoController::class, 'verificarSerial'])->name('dispositivos.verificar-serial');
+    Route::get('/dispositivos/exportar-tecnico', [DispositivoController::class, 'exportarTecnico'])->name('dispositivos.exportar-tecnico');
 
     // Recursos principales
     Route::resource('dispositivos', DispositivoController::class);
@@ -97,8 +98,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('areas-seguras/exportar-consolidado',       [AreaSeguraController::class, 'exportarConsolidado'])->name('areas-seguras.exportar-consolidado');
     Route::get('areas-seguras/exportar-consolidado-excel', [AreaSeguraController::class, 'exportarConsolidadoExcel'])->name('areas-seguras.exportar-consolidado-excel');
     Route::resource('areas-seguras', AreaSeguraController::class);
-    Route::get('areas-seguras/{areasSegura}/verificacion', [AreaSeguraController::class, 'crearVerificacion'])->name('areas-seguras.verificacion.create');
-    Route::post('areas-seguras/{areasSegura}/verificacion', [AreaSeguraController::class, 'guardarVerificacion'])->name('areas-seguras.verificacion.store');
+    Route::get('areas-seguras/{areasSegura}/verificacion',     [AreaSeguraController::class, 'crearVerificacion'])->name('areas-seguras.verificacion.create');
+    Route::post('areas-seguras/{areasSegura}/verificacion',    [AreaSeguraController::class, 'guardarVerificacion'])->name('areas-seguras.verificacion.store');
+    Route::get('areas-seguras/{areasSegura}/verificacion-pdf', [AreaSeguraController::class, 'exportarVerificacionPdf'])->name('areas-seguras.verificacion.pdf');
 
     // Software — AJAX autocomplete (todos los usuarios)
     Route::get('/software/catalogo', [SoftwareController::class, 'catalogo'])->name('software.catalogo');
@@ -130,7 +132,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/sgspi/phishing/admin',                [PhishingController::class, 'adminResultados'])->name('sgspi.phishing.admin');
         Route::get('/sgspi/phishing/admin/configuracion', [PhishingController::class, 'adminConfig'])->name('sgspi.phishing.admin.config');
         Route::put('/sgspi/phishing/admin/configuracion', [PhishingController::class, 'adminConfigUpdate'])->name('sgspi.phishing.admin.config.update');
-        Route::get('/sgspi/admin/resultados',             [SgspiController::class, 'adminResultados'])->name('sgspi.admin.resultados');
+        Route::get('/sgspi/admin/resultados',                   [SgspiController::class, 'adminResultados'])->name('sgspi.admin.resultados');
+        Route::get('/sgspi/admin/resultados/pdf/buscaminas',   [SgspiController::class, 'reporteBuscaminasPdf'])->name('sgspi.admin.pdf.buscaminas');
+        Route::get('/sgspi/admin/resultados/pdf/phishing',     [SgspiController::class, 'reportePhishingPdf'])->name('sgspi.admin.pdf.phishing');
         Route::get('/sgspi/admin/configuracion',    [SgspiController::class, 'adminConfig'])->name('sgspi.admin.config');
         Route::put('/sgspi/admin/configuracion',    [SgspiController::class, 'adminConfigUpdate'])->name('sgspi.admin.config.update');
 

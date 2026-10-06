@@ -38,17 +38,59 @@
     </div>
 
     {{-- Tabla --}}
+    @php
+    // Helper para generar URL de ordenamiento
+    $sortUrl = fn(string $col) => request()->fullUrlWithQuery([
+        'sort' => $col,
+        'dir'  => ($sortBy === $col && $sortDir === 'asc') ? 'desc' : 'asc',
+        'page' => 1,
+    ]);
+    $sortIcon = function(string $col) use ($sortBy, $sortDir): string {
+        if ($sortBy !== $col) return '<i class="fas fa-sort opacity-30 ml-1 text-[8px]"></i>';
+        return $sortDir === 'asc'
+            ? '<i class="fas fa-sort-up ml-1 text-[9px] text-yellow-300"></i>'
+            : '<i class="fas fa-sort-down ml-1 text-[9px] text-yellow-300"></i>';
+    };
+    @endphp
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <table class="w-full text-sm">
             <thead>
                 <tr class="bg-[#1e3a5f] text-white text-[10px] font-black uppercase tracking-widest">
-                    <th class="px-4 py-3 text-left">Participante</th>
-                    <th class="px-4 py-3 text-left">Área</th>
-                    <th class="px-4 py-3 text-center">Pts</th>
-                    <th class="px-4 py-3 text-center">Correctas</th>
-                    <th class="px-4 py-3 text-center">Bonus</th>
-                    <th class="px-4 py-3 text-center">Nivel</th>
-                    <th class="px-4 py-3 text-center">Fecha</th>
+                    <th class="px-4 py-3 text-left">
+                        <a href="{{ $sortUrl('nombre') }}" class="flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                            Participante {!! $sortIcon('nombre') !!}
+                        </a>
+                    </th>
+                    <th class="px-4 py-3 text-left">
+                        <a href="{{ $sortUrl('area') }}" class="flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                            Área {!! $sortIcon('area') !!}
+                        </a>
+                    </th>
+                    <th class="px-4 py-3 text-center">
+                        <a href="{{ $sortUrl('puntaje') }}" class="inline-flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                            Pts {!! $sortIcon('puntaje') !!}
+                        </a>
+                    </th>
+                    <th class="px-4 py-3 text-center">
+                        <a href="{{ $sortUrl('correctas') }}" class="inline-flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                            Correctas {!! $sortIcon('correctas') !!}
+                        </a>
+                    </th>
+                    <th class="px-4 py-3 text-center">
+                        <a href="{{ $sortUrl('bonus') }}" class="inline-flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                            Bonus {!! $sortIcon('bonus') !!}
+                        </a>
+                    </th>
+                    <th class="px-4 py-3 text-center">
+                        <a href="{{ $sortUrl('nivel') }}" class="inline-flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                            Nivel {!! $sortIcon('nivel') !!}
+                        </a>
+                    </th>
+                    <th class="px-4 py-3 text-center">
+                        <a href="{{ $sortUrl('fecha') }}" class="inline-flex items-center gap-1 hover:text-yellow-300 transition whitespace-nowrap">
+                            Fecha {!! $sortIcon('fecha') !!}
+                        </a>
+                    </th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
